@@ -185,7 +185,7 @@ sub email_reset_password_link : Global {
 			}
 		);
 	};
-	eval { $c->model('DBIC')->txn_do($create_token_coderef); };
+	eval { $c->model('DBIC')->schema->txn_do($create_token_coderef); };
 	if ($@) {
 		my $message = "Not able to create token\n";
 		warn $message . $@;
