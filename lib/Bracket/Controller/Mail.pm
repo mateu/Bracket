@@ -80,9 +80,9 @@ sub send_email_to {
 
     use Net::SMTP;
 
-    my $smtp_server   = 'satya.huntana.com:25';
-    my $smtp_username = "hunter";
-    my $smtp_password = "4TossadeMar";
+    my $smtp_server   = '';
+    my $smtp_username = "";
+    my $smtp_password = "";
     my $from_name     = 'Bracket Master';
     my $from_email    = 'hunter@missoula.org';
     my $to_email      = $player->email;
