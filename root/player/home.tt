@@ -1,0 +1,23 @@
+[% page_title = c.config.name _ " Home Page for player: " _ player.first_name _ ' ' _ player.last_name %]
+
+<div id="player_page">
+
+<div id="player_page_header">
+
+<div style="font-size: 115%;"><strong>Bracket Home Page</strong> for player 
+<span class="player_name">[% player.first_name %] [% player.last_name %]</span> </div>	
+
+<div style="font-size: 108%;"> Men's Basketball - NCAA Tournament [% c.config.year %]</div>
+<div class="points">Total Points: [% player.points %]</div>
+<div><a href="[% c.uri_for('/all') %]">All Players Home</a></div>
+[% IF (is_admin && player_id != 1);
+    INCLUDE 'admin/links.tt';
+ END %]
+
+</div>
+
+<div>
+[% INCLUDE 'nav/edit_view_links.tt' %]
+</div>
+
+</div>

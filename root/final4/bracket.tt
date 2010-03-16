@@ -1,0 +1,67 @@
+   <table summary="Tournament Bracket">  
+		<tr>  
+		<td>
+		<p>
+			<span id="w15-t[% east_regional_pick.pick.id %]"></span>
+			<span class="[% class_for.15 %]">
+			[% east_regional_pick.pick.seed %]. [% east_regional_pick.pick.name %]
+			</span>
+		</p>
+		</td>  
+		<td rowspan="2">
+		<p id="w[% game = 61; game; %]">
+			<span id="w61-t[% picks.$game.id %]"></span>
+			<span class="[% class_for.61 %]">
+			[% picks.$game.seed %].	[% picks.$game.name %]
+			</span>
+		</p>
+		</td>  
+		<td rowspan="4">
+		<p id="w[% game = 63; game; %]">
+			<span id="w63-t[% picks.$game.id %]"></span>
+			<span class="[% class_for.63 %]">
+			[% picks.$game.seed %]. [% picks.$game.name %]
+			</span>
+		</p>
+		</td>  
+		</tr> 		
+		
+		<tr>  
+		<td>
+		<p>
+		    <span id="w45-t[% south_regional_pick.pick.id %]"></span>
+            <span class="[% class_for.45 %]">
+            [% south_regional_pick.pick.seed %]. [% south_regional_pick.pick.name %]
+            </span>
+		</p>
+		</td>  
+		</tr> 
+		<tr>  
+		<td>
+		<p>
+            <span id="w30-t[% midwest_regional_pick.pick.id %]"></span>
+            <span class="[% class_for.30 %]">
+            [% midwest_regional_pick.pick.seed %]. [% midwest_regional_pick.pick.name %]
+            </span>
+		</p>
+		</td>  
+		<td rowspan="2">
+		<p id="w[% game = 62; game; %]">
+			<span id="w62-t[% picks.$game.id %]"></span>
+			<span class="[% class_for.62 %]">
+			[% picks.$game.seed %]. [% picks.$game.name %]
+			</span>
+		</p>
+		</td>  
+		</tr> 
+		<tr>  
+		<td>
+		<p>
+			<span id="w60-t[% west_regional_pick.pick.id %]"></span>
+			<span class="[% class_for.60 %]">
+			[% west_regional_pick.pick.seed %]. [% west_regional_pick.pick.name %]
+			</span>
+		</p>
+		</td> 
+		</tr>  
+	</table> 

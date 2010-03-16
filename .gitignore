@@ -1,0 +1,14 @@
+bracket.db
+bracket_local.conf
+blib/*
+inc/*
+Makefile
+Makefile.old
+META.yml
+pm_to_blib
+.includepath
+.project
+*.out
+.directory
+*.swp
+

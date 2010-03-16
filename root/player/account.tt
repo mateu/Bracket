@@ -1,0 +1,9 @@
+[% page_title = 'Account for: ' _ c.user.first_name _ ' ' _ c.user.last_name %]
+
+<h1>[% page_title %]</h1>
+
+<ul>
+<li>
+<a href="[% c.uri_for('/change_password') %]">Change password</a>
+</li>
+</ul>

@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>[% page_title or template.title or site.title %]</title>
+[%- INCLUDE lib/site/javascripts.tt -%]
+[%- INCLUDE lib/site/style_sheets.tt -%]
+</head>
+
+<body[% body_attributes %]>
+<div id="body">
+[% INCLUDE lib/site/user_header.tt %]
+
+<span class="message">[% status_msg || c.flash.status_msg %]</span>
+<span class="error">[% error_msg %]</span>
+
+<div id="content">
+[%- content -%]
+</div>
+
+</div>
+</body>
+</html>

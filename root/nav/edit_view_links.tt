@@ -1,0 +1,16 @@
+<table id='player_links_table' summary="Edit and view a player's picks" >
+
+[% FOREACH region IN regions %]
+<tr>
+<td class="region_name">[% region.name %]</td>
+<td><a href="[% c.uri_for("/region/edit/$region.id/$player_id") %]">Edit</a></td>
+<td><a href="[% c.uri_for("/region/view/$region.id/$player_id") %]">View</a></td>
+</tr>
+[% END %]
+<tr>
+<td class="region_name"><em>Final 4<em></td>
+<td><a href="[% c.uri_for("/final4/make/$player_id") %]">Edit</a></td>
+<td><a href="[% c.uri_for("/final4/view/$player_id") %]">View</a></td>
+</tr>
+
+</table>

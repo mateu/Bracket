@@ -1,0 +1,43 @@
+[% page_title = "Men's Basketball - NCAA Tournament " _ c.config.year %]
+
+
+[% USE Dumper %]
+<table class="container">
+<tr><td style="font-size:1.33em; text-align:center; background-color:#cce0ff;">
+
+<div style="font-size: 1.2em;"><strong>All Players Home Page</strong></div>	
+<div style="font-size: 1.1em;"> Men's Basketball - NCAA Tournament [% c.config.year %]<br /></div>
+
+</td></tr>
+<tr><td class="no_border">
+
+[% i = 1 %]
+<table id="all_player_home">
+<tr><th>Rank</th><th>Player</th><th>Points</th><th>Brackets</th></tr>
+[% FOREACH player IN players.nsort('points').reverse %]
+	<tr class="[% i % 2 == 0 ? 'even' : 'odd' %]" >
+   [% IF player.active == 1 %]
+   <td><span style="font-size:0.88em;">[% i - 1 %]</span></td>
+   <td>
+   <span class="cash">
+   [% i == 2 ? '$60' : i == 3 ? '$40' : i == 4 ? '$25' : '' %]
+   </span>
+   [% player.first_name %] [% player.last_name %]
+   </td>
+   <td style="text-align:center;">&nbsp;<span class="points">[% player.points %]&nbsp;</span> </td>
+   <td>
+   [% FOREACH region IN regions %]
+   <a href="[% c.uri_for("/region/view/$region.id/") _ player.id %]">[% region.name %]</a> | 
+   [% END %]
+  <a href="[% c.uri_for("/final4/view/$player.id") %]">Final Four</a>
+<br />
+	</td>
+	</tr>
+
+   [% END %]
+	[% i = i +1 %]
+[% END %]
+</table>
+
+</td></tr>
+</table>

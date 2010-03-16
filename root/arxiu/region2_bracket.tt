@@ -1,0 +1,56 @@
+<html>
+<head>
+<script type="text/javascript" src="https://satya.huntana.com/js/jquery/jquery-1.2.3.js"></script>
+<script type="text/javascript" src="/static/javascript/bracket_picks.js"></script>
+<title>Round 1 - Men's Basketball - NCAA Tournament 2009</title>
+<style type="text/css"> 
+<!-- 
+table { border-collapse: collapse; border: none; font: small arial, helvetica, sans-serif; } 
+td { vertical-align: middle; width: 10em; margin: 0; padding: 0; } 
+td p { border-bottom: solid 1px black; margin: 0; padding: 5px 5px 2px 5px; } 
+--> 
+</style> 
+</head>
+<body>
+    <h1>Round 1 - Men's Basketball - NCAA Tournament 2009</h1>
+    <h2>Region [% region %]</h2>
+    <p>
+    [% USE Dumper %]
+    <a href='http://sports.yahoo.com/ncaab/teams/'>teams base url</a>
+    </p>
+   <table summary="Tournament Bracket">  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 1 + 15*(region -1) %]"></p></td>  <td rowspan="4"><p id="w[% 9+ 15*(region -1) %]"></p></td>  <td rowspan="8"><p id="w[% 13+ 15*(region -1) %]"></p></td>  <td rowspan="16"><p id="w[% 15+ 15*(region -1) %]"></p></td>  </tr> 		
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr> 
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 2 + 15*(region -1) %]"></p></td>  </tr> 
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 3 + 15*(region -1) %]"></p></td>  <td rowspan="4"><p id="w[% 10+ 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 4 + 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 5 + 15*(region -1) %]"></p></td>  <td rowspan="4"><p id="w[% 11+ 15*(region -1) %]"></p></td>  <td rowspan="8"><p id="w[% 14+ 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>  
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 6 + 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>
+[% team = teams.next %] 
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 7 + 15*(region -1) %]"></p></td>  <td rowspan="4"><p id="w[% 12+ 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr>  
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  <td rowspan="2"><p id="w[% 8 + 15*(region -1) %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]"></span></p></td>  </tr> 
+	</table> 
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!--
+<div>
+<br />
+<span style="font-size: 108%; font-weight: bold;">Make</span> 
+Picks for <span style="color:green; font-weight: bold;">First Time</span> or Start Anew:<br />
+<a href="[% c.uri_for("/region/bracket/1/$player") %]">East Region</a><br />
+<a href="[% c.uri_for("/region/bracket/2/$player") %]">Midwest Region</a><br />
+<a href="[% c.uri_for("/region/bracket/3/$player") %]">South Region</a><br />
+<a href="[% c.uri_for("/region/bracket/4/$player") %]">West Region</a><br />
+</div>
+-->
+
+<div>
+<br />
+<span style="font-size: 108%; font-weight: bold;">Make/Edit</span> Picks:<br />
+<a href="[% c.uri_for("/region/late_edit/1/196214") %]">East Region</a><br />
+<a href="[% c.uri_for("/region/late_edit/2/196214") %]">Midwest Region</a><br />
+<a href="[% c.uri_for("/region/late_edit/3/196214") %]">South Region</a><br />
+<a href="[% c.uri_for("/region/late_edit/4/196214") %]">West Region</a><br />
+</div>

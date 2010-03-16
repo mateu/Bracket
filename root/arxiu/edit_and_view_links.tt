@@ -1,0 +1,29 @@
+<!--
+<div>
+<br />
+<span style="font-size: 108%; font-weight: bold;">Make</span> 
+Picks for <span style="color:green; font-weight: bold;">First Time</span> or Start Anew:<br />
+<a href="[% c.uri_for("/region/bracket/1/$player") %]">East Region</a><br />
+<a href="[% c.uri_for("/region/bracket/2/$player") %]">Midwest Region</a><br />
+<a href="[% c.uri_for("/region/bracket/3/$player") %]">South Region</a><br />
+<a href="[% c.uri_for("/region/bracket/4/$player") %]">West Region</a><br />
+</div>
+-->
+
+<div>
+<br />
+<span style="font-size: 108%; font-weight: bold;">Make/Edit</span> Picks:<br />
+<a href="[% c.uri_for("/region/edit/1/$player") %]">East Region</a><br />
+<a href="[% c.uri_for("/region/edit/2/$player") %]">Midwest Region</a><br />
+<a href="[% c.uri_for("/region/edit/3/$player") %]">South Region</a><br />
+<a href="[% c.uri_for("/region/edit/4/$player") %]">West Region</a><br />
+</div>
+
+<div>
+<br />
+<span style="font-size: 108%; font-weight: bold;">View</span> Picks:<br />
+<a href="[% c.uri_for("/region/view/1/$player") %]">East Region</a><br />
+<a href="[% c.uri_for("/region/view/2/$player") %]">Midwest Region</a><br />
+<a href="[% c.uri_for("/region/view/3/$player") %]">South Region</a><br />
+<a href="[% c.uri_for("/region/view/4/$player") %]">West Region</a><br />
+</div>

@@ -1,0 +1,12 @@
+[% IF c.user_exists AND !user_header_off %]
+<div class="user_header">
+    <span>[% c.user.first_name %] [% c.user.last_name %]: </span>
+    [% IF show_home %]<span><a href="[% c.uri_for('/') %]">Home</a></span> | [% END %]
+    <span><a href="[% c.uri_for('/account') %]">Account</a></span>
+    |
+    <span><a href="[% c.uri_for('/logout') %]">Logout</a></span>
+</div>
+
+<br />
+[% END %]
+

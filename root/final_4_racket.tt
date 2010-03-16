@@ -1,0 +1,49 @@
+[% title = "Make Regional Picks - Men's Basketball - NCAA Tournament 2009" %]
+[% INCLUDE 'html_head.tt' %]
+<body>
+    <h1><span style="color:green;">Make</span> [% region_name %] region picks for player [% player_name %]<h1>
+    <h2>Men's Basketball - NCAA Tournament 2009</h2>
+    <p>
+    [% USE Dumper %]
+   <!-- <a href='http://sports.yahoo.com/ncaab/teams/'>Teams Home</a> -->
+    </p>
+    [% region_multiplier = region - 1 %]
+    <form action="[% c.uri_for("/region/save_picks/$region/$player") %]">
+   <table summary="Tournament Bracket">  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 1 + 15*region_multiplier %]"></p></td>  <td rowspan="4"><p id="w[% 9+ 15*region_multiplier %]"></p></td>  <td rowspan="8"><p id="w[% 13+ 15*region_multiplier %]"></p></td>  <td rowspan="16"><p id="w[% 15+ 15*region_multiplier %]"></p></td>  </tr> 		
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr> 
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 2 + 15*region_multiplier %]"></p></td>  </tr> 
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 3 + 15*region_multiplier %]"></p></td>  <td rowspan="4"><p id="w[% 10+ 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 4 + 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 5 + 15*region_multiplier %]"></p></td>  <td rowspan="4"><p id="w[% 11+ 15*region_multiplier %]"></p></td>  <td rowspan="8"><p id="w[% 14+ 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 6 + 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>
+[% team = teams.next %] 
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 7 + 15*region_multiplier %]"></p></td>  <td rowspan="4"><p id="w[% 12+ 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
+[% team = teams.next %]		
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  <td rowspan="2"><p id="w[% 8 + 15*region_multiplier %]"></p></td>  </tr>  
+[% team = teams.next %]
+		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr> 
+	</table> 
+	<input type="submit" value="Save Picks" />
+	</form>
+</body>
+</html>

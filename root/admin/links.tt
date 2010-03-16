@@ -1,0 +1,6 @@
+<div class="admin_links">
+<span style="text-decoration: underline;">Admin Features</span><br />
+<a href="[% c.uri_for('/player/1') %]">Perfect Player's Brackets</a><br />
+<a href="[% c.uri_for('/update_player_points') %]" 
+title="Run after updating Perfect Player's bracket">Update Player Points</a>
+</div>
