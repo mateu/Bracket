@@ -20,7 +20,7 @@
    <td><span style="font-size:0.88em;">[% i - 1 %]</span></td>
    <td>
    <span class="cash">
-   [% i == 2 ? '$60' : i == 3 ? '$40' : i == 4 ? '$25' : '' %]
+   [% i == 2 ? '$' _ c.config.prizes.first_place : i == 3 ? '$' _ c.config.prizes.second_place  : i == 4 ? '$' _ c.config.prizes.second_place : '' %]
    </span>
    [% player.first_name %] [% player.last_name %]
    </td>
