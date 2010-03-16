@@ -195,7 +195,7 @@ sub email_reset_password_link : Global {
 		$c->forward( $self->action_for('email_link'), [ $to_email, $token ] );
 		$c->flash->{status_msg} =
 		  "A password reset </strong>link</strong> has been <strong>emailed to you.</strong>";
-		$c->response->redirect('/message');
+		$c->response->redirect($c->uri_for('/message'));
 	}
 }
 
