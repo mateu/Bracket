@@ -147,4 +147,10 @@ table#player_links_table td {
 	border-right: grey thin solid;
 	border-left: grey thin solid;
 }
-
+.register_link {
+	font-size: 1.08em;
+	background-color: #ffffcc;
+	border: thin solid grey;
+	max-width: 13em;
+	padding: 3px;
+}

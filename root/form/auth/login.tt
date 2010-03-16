@@ -3,10 +3,10 @@
 [% form.render %]
 
 <hr />
-<span style="font-size:1em;">
+<div class="register_link">
 <a href="[% c.uri_for( c.controller('Auth').action_for('register') ) %]">Register</a>
-<span>
- | 
+ |  
 <span style="font-size:0.9em;">
 <a href="[% c.uri_for( c.controller('Auth').action_for('email_reset_password_link') ) %]">Forgot password?</a>
 </span>
+</div>
