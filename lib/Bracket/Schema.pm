@@ -194,6 +194,6 @@ sub create_initial_data {
             [ 63, 6 ],
         ]
     );
-    print "Success!  You probably want to start your application and login";
+    print "Success!  You probably want to start your application and login\n";
 }
 1

@@ -1,0 +1,23 @@
+0. Get the Application:
+  git clone http://github.com/mateu/Bracket.git
+
+1. Create a database in MySQL or PostgreSQL (call it bracket_2010 if you like)
+sql> create database bracket_2010
+
+1b. If your database fu sucks or is lazy use the SQLite which will
+create the DB for you and require not user/pass
+
+2. Edit bracket.conf to match your database and user/pass (SQLite users do nothing)
+
+3. Deploy the database, initialize it and create an admin user by running:
+  script/deploy_bracket.pl
+
+4. Start it up:
+  script/bracket_server.pl
+For production you might want to configure a front-end sever (pimp #catalyst for help)
+
+5. Login with your admin account at:
+  http://localhost:3000
+
+6. Let players know about your bracket.  They can register at /register
+
