@@ -1,7 +1,7 @@
 package Bracket;
 use Moose;
 
-our $VERSION = '0.03';
+our $VERSION = '0.98';
 use Catalyst::Runtime '5.80';
 
 # Set flags and add plugins for the application
@@ -88,6 +88,10 @@ Mateu X. Hunter 2008-2010
 
 This library is free software, you can redistribute it and/or modify
 it under the same terms as Perl itself.
+
+=head1 COPYRIGHT
+
+Mateu X. Hunter 2008
 
 =cut
 

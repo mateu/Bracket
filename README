@@ -1,1 +1,7 @@
-Run script/bracket_server.pl to test the application.
+perl Makefile.PL
+make test
+
+Then see INSTALL
+
+Description: College Basketball Tournament Bracket Software.
+Run your own bracket.

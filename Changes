@@ -1,5 +1,8 @@
 College Basketball Bracket System 
 
+0.98    2010 Mars 16
+		- Make a proper MANIFEST.SKIP to keep junk out of distribution.
+
 0.97    2010 Mars 15
 		- Prepare for general release
 
