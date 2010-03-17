@@ -1,1 +1,1 @@
-^(?!script/|examples/|lib/|root/|inc/|t/|Makefile.PL$|README$|INSTALL$|MANIFEST$|Changes$|LICENSE$|META.yml$)
+^(?!script/|examples/|lib/|root/|inc/|t/|bracket.conf$|Makefile.PL$|README$|INSTALL$|MANIFEST$|Changes$|LICENSE$|META.yml$)
