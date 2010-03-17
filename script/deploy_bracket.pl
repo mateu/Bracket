@@ -17,7 +17,10 @@ eval {
     if (!$dsn)
     {
         if (ref $config->{'Model::DBIC'}->{'connect_info'}) {
-            ($dsn, $user, $pass) = @{ $config->{'Model::DBIC'}->{'connect_info'} };
+            $dsn =  $config->{'Model::DBIC'}->{'connect_info'}->{dsn};
+            $user = $config->{'Model::DBIC'}->{'connect_info'}->{user};
+            $pass = $config->{'Model::DBIC'}->{'connect_info'}->{password};
+            
         }
         else {
             $dsn = $config->{'Model::DBIC'}->{'connect_info'};
