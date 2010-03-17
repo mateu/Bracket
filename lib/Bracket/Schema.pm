@@ -194,6 +194,9 @@ sub create_initial_data {
             [ 63, 6 ],
         ]
     );
-    print "Success!  You probably want to start your application and login\n";
+    print "Success!\n\nYou probably want to start your application, e.g:
+    script/bracket_server.pl
+and login with the admin account you just created.\n\n";
 }
+
 1

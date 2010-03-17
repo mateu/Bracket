@@ -44,7 +44,7 @@ if (!$@) {
     die "You have already deployed your database\n";
 }
 
-print "It's time to set up an admin account:\n";
+print "\nCreate an admin account..\n\n";
 my %custom_values = (
     admin_first_name => prompt('x', 'First name:', '', ''),
     admin_last_name  => prompt('x', 'Last name:',  '', ''),
@@ -52,7 +52,7 @@ my %custom_values = (
     admin_password   => prompt('x', 'Password:',   '', ''),
 );
 
-print "Deploying schema to $dsn\n";
+print "\nDeploying schema to $dsn\n";
 $schema->deploy;
-print "Creating initial data and admin account\n";
+print "Creating initial data and admin account.\n";
 $schema->create_initial_data($config, \%custom_values);

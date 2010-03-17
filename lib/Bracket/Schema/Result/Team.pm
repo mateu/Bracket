@@ -30,7 +30,7 @@ __PACKAGE__->table("team");
 
   data_type: TINYINT
   default_value: undef
-  extra: HASH(0x300a388)
+  extra: HASH(0x249d388)
   is_nullable: 0
   size: 3
 
@@ -135,8 +135,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-03-17 11:21:56
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:gJQ41JvAMd5ghhw+eENDwA
+# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-03-17 12:15:08
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:uFLHHEtHCDiKQkJf0XTrNg
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration

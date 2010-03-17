@@ -54,7 +54,7 @@ __PACKAGE__->add_columns(
   },
 );
 __PACKAGE__->set_primary_key("id");
-__PACKAGE__->add_unique_constraint("role", ["role"]);
+__PACKAGE__->add_unique_constraint("role_name_UNIQ", ["role"]);
 
 =head1 RELATIONS
 
@@ -73,8 +73,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-03-02 09:36:49
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CCp5/k5n5ASMZbShko7lyw
+# Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-03-17 12:15:08
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:wtNPV2NOLB6IEKVJm0rsTw
 
 
 # You can replace this text with custom content, and it will be preserved on regeneration
