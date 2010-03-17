@@ -261,8 +261,8 @@ END_MESSAGE
     );
     my $success = try_to_sendmail($email);
     use Data::Dumper::Concise;
-    warn "EMAIL SUCCESS";
-    warn Dumper $success;
+#    warn "EMAIL SUCCESS";
+#    warn Dumper $success;
 #    my $transport = Email::Sender::Transport::Test->new();
 #    my $envelope;
 #    my $v = $transport->delivery_failure($email, $envelope);

@@ -1,5 +1,15 @@
 College Basketball Bracket System 
 
+0.99    2010 Mars 17
+		Bug Fix: 
+		* correct deploy dsn reading from conf which recently changed.
+		* change Team result class so SQLite can deploy.
+		
+		Improvements:
+		* Better deploy wording
+		* Clean out un-needed files
+		* Added some POD
+		
 0.98    2010 Mars 16
 		- Make a proper MANIFEST.SKIP to keep junk out of distribution.
 
