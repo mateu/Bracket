@@ -9,7 +9,7 @@ use Bracket::Form::Password::Change;
 use Bracket::Form::Password::ResetEmail;
 use Bracket::Form::Password::Reset;
 
-sub debug { 1 }
+sub debug { 0 }
 require Data::Dumper if debug;
 
 has 'register_form' => (

@@ -1,4 +1,0 @@
-[% INCLUDE 'start_html.tt' %]
-<head>
-<title>[% title %]</title>
-</head>
