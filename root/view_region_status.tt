@@ -4,7 +4,7 @@
 [% #INCLUDE 'html_head_no_javascript.tt' %]
 [% USE Dumper %]
     <h1><span style="color:green;">View [% region.name %]</span> region picks for 
-    player [% player.first_name %] [% player.last_name %]</h1>
+    player [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</h1>
     <p>
     <div>
     Region Points: <span class="points">[% region_points %]</span> 
