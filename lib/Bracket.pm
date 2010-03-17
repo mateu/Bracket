@@ -4,14 +4,6 @@ use Moose;
 our $VERSION = '0.98';
 use Catalyst::Runtime '5.80';
 
-# Set flags and add plugins for the application
-#
-#   ConfigLoader: will load the configuration from a YAML file in the
-#                 application's home directory
-# Static::Simple: will serve static files from the application's root
-#                 directory
-
-#  +CatalystX::SimpleLogin
 use Catalyst qw/
   ConfigLoader
   Static::Simple
@@ -22,14 +14,6 @@ use Catalyst qw/
   /;
 extends 'Catalyst';
 
-# Configure the application.
-#
-# Note that settings in bracket.yml (or other external
-# configuration file that you set up manually) take precedence
-# over this when using ConfigLoader. Thus configuration
-# details given here can function as a default configuration,
-# with a external configuration file acting as an override for
-# local deployment.
 
 __PACKAGE__->config(
 	authentication => {
@@ -46,7 +30,7 @@ __PACKAGE__->config(
 					user_model                => 'DBIC::Player',
 					role_relation             => 'roles',
 					role_field                => 'role',
-#					use_userdata_from_session => 1,
+					use_userdata_from_session => 1,
 				},
 			},
 		}
@@ -66,19 +50,20 @@ __PACKAGE__->setup;
 
 =head1 NAME
 
-Bracket - National College Basketball tournament bracket application
+Bracket - College Basketball Tournament Bracket Web Application
 
 =head1 SYNOPSIS
 
-    script/bracket_server.pl
+    Run your own bracket software.  Simple, effective and ad free.
 
 =head1 DESCRIPTION
 
-College Basketball Bracket application.
+College Basketball Tournament Bracket Web application using the Catalyst framework.
+Deploy an instance of this bracket software to run your own bracket.  It requires
+a data store such as MySQL, PostgreSQL or SQLite.
 
-=head1 SEE ALSO unique => 1,
-
-L<Bracket::Controller::Root>, L<Catalyst>
+Simple admin interface to build the perfect bracket as the tournament unfolds.
+Player brackets are compared to the perfect bracket for scoring purposes.
 
 =head1 AUTHOR
 
@@ -92,6 +77,10 @@ it under the same terms as Perl itself.
 =head1 COPYRIGHT
 
 Mateu X. Hunter 2008
+
+=head1 LIMITATIONS
+
+Currently only supports one group of players.
 
 =cut
 
