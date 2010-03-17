@@ -5,7 +5,7 @@
 <div id="player_page_header">
 
 <div style="font-size: 115%;"><strong>Bracket Home Page</strong> for player 
-<span class="player_name">[% player.first_name %] [% player.last_name %]</span> </div>	
+<span class="player_name">[% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</span> </div>	
 
 <div style="font-size: 108%;"> Men's Basketball - NCAA Tournament [% c.config.year %]</div>
 <div class="points">Total Points: [% player.points %]</div>

@@ -20,6 +20,12 @@ has_field 'submit' => ( type => 'Submit', value => 'Register' );
 has '+unique_messages' =>
   ( default => sub { { player_email => 'Email address already registered' } } );
 
+# Insert basic role record into player_roles table on registration
+after 'update_model' => sub {
+    my $self = shift;
+    
+    $self->item->update_or_create_related('player_roles', { role => 2});
+};
 
 no HTML::FormHandler::Moose;
 __PACKAGE__->meta->make_immutable;

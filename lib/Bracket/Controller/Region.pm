@@ -56,12 +56,13 @@ sub save_picks : Local {
 
     #$c->stash->{template} = 'save_picks.tt';
     # If we are saving the perfect bracket then update scores
-#    if ($player_id == 1) {
-#        $c->detach($c->controller('Admin')->action_for('update_player_points'));
-#    }
-#    else {
-        $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
-#    }
+    #    if ($player_id == 1) {
+    #        $c->detach($c->controller('Admin')->action_for('update_player_points'));
+    #    }
+    #    else {
+    $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
+
+    #    }
 
     return;
 }
@@ -139,15 +140,15 @@ sub view : Local {
     return;
 }
 
-my @perfect_bracket_access_list = qw/127.0.0.1 98.223.159.168
-  156.56.91.65/;
-
 sub edit : Local {
     my ($self, $c, $region, $player) = @_;
 
     # Restrict edits to user or admin role.
     my @user_roles = $c->user->roles;
-    $c->go('/error_404') if (($player != $c->user->id) && ('admin' ne any(@user_roles)));
+    my $truth1     = ($player != $c->user->id);
+    my $truth2     = !(any(@user_roles) eq 'admin');
+    $c->go('/error_404') if (($player != $c->user->id) && !('admin' eq any(@user_roles)));
+    warn Dumper "ROLES truth: $truth1 and two: $truth2", @user_roles;
 
     # Player picks
     my @picks = $c->model('DBIC::Pick')->search({ player => $player });

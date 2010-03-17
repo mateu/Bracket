@@ -22,7 +22,7 @@
    <span class="cash">
    [% i == 2 ? '$' _ c.config.prizes.first_place : i == 3 ? '$' _ c.config.prizes.second_place  : i == 4 ? '$' _ c.config.prizes.third_place : '' %]
    </span>
-   [% player.first_name %] [% player.last_name %]
+   [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]
    </td>
    <td style="text-align:center;">&nbsp;<span class="points">[% player.points %]&nbsp;</span> </td>
    <td>

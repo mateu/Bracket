@@ -26,7 +26,7 @@ sub make : Local {
 	
 	# Restrict edits to user or admin role.
     my @user_roles = $c->user->roles;
-    $c->go('/error_404') if ( ($player_id != $c->user->id) && ('admin' ne any(@user_roles)) );
+    $c->go('/error_404') if ( ($player_id != $c->user->id) && !('admin' eq any(@user_roles)) );
 
 	my $player = $c->model('DBIC::Player')->find($player_id);
 	$c->stash->{player} = $player;
