@@ -125,7 +125,7 @@ sub view : Local {
     my $region = $c->model('DBIC::Region')->find($region_id);
     $c->stash->{region}       = $region;
     $c->stash->{teams}        = $c->model('DBIC::Team')->search(region => $region_id);
-    $c->stash->{regions}      = $c->model('DBIC::Region');
+    $c->stash->{regions}      = $c->model('DBIC::Region')->search({},{order_by => 'id'});
     $c->stash->{show_regions} = \@show_regions;
     $c->stash->{template}     = 'region/view_region_status.tt';
 
