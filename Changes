@@ -1,5 +1,14 @@
 College Basketball Bracket System 
 
+1.00    2010 Mars 18
+		Bug Fix: 
+		* Final 4 matchups (generalize to handle any year)
+		
+		Improvements:
+		* Regional Edits cut-off time added
+		* More cleaning of un-needed parts
+		* View refinements
+
 0.99    2010 Mars 17
 		Bug Fix: 
 		* correct deploy dsn reading from conf which recently changed.
