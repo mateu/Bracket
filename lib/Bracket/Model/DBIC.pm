@@ -5,12 +5,6 @@ use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(
     schema_class => 'Bracket::Schema',
-    connect_info => [
-        'dbi:mysql:bracket_2010',
-        'dbuser',
-        'generic',
-        
-    ],
 );
 
 =head1 NAME
