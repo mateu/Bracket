@@ -140,7 +140,9 @@ sub edit : Local {
     $c->go('/error_404') if (($player != $c->user->id) && !('admin' eq any(@user_roles)));
 
     # Go to home if edits are attempted after closing time
-    if (DateTime->now > edit_cutoff_time()) {
+    if (DateTime->now > edit_cutoff_time()
+        && (!$c->stash->{is_admin}))
+    {
         $c->flash->{status_msg} = 'Regional edits are closed';
         $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
     }
