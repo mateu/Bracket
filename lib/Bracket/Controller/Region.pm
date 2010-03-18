@@ -3,6 +3,7 @@ package Bracket::Controller::Region;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use DateTime;
 use Data::Dumper;
 
 my $PERFECT_BRACKET_MODE = 1;
@@ -136,10 +137,13 @@ sub edit : Local {
 
     # Restrict edits to user or admin role.
     my @user_roles = $c->user->roles;
-    my $truth1     = ($player != $c->user->id);
-    my $truth2     = !(any(@user_roles) eq 'admin');
     $c->go('/error_404') if (($player != $c->user->id) && !('admin' eq any(@user_roles)));
-    warn Dumper "ROLES truth: $truth1 and two: $truth2", @user_roles;
+
+    # Go to home if edits are attempted after closing time
+    if (DateTime->now > edit_cutoff_time()) {
+        $c->flash->{status_msg} = 'Regional edits are closed';
+        $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
+    }
 
     # Player picks
     my @picks = $c->model('DBIC::Pick')->search({ player => $player });
@@ -167,6 +171,20 @@ sub edit : Local {
     $c->stash->{template} = 'region/edit_region_picks.tt';
 
     return;
+}
+
+# This need to be edited in future years to reflect the start date/time.
+sub edit_cutoff_time {
+
+    return DateTime->new(
+        year   => 2010,
+        month  => 3,
+        day    => 18,
+        hour   => 16,
+        minute => 0,
+        second => 0,
+    );
+
 }
 
 =head1 AUTHOR

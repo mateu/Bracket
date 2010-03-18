@@ -17,6 +17,7 @@ requires(
 	'Config::General'                              => 0,
 	'Config::JFDI'                                 => 0,
 	'Crypt::Eksblowfish::Bcrypt'                   => 0,
+	'DateTime',                                    => 0,
 	'DBIx::Class'                                  => '0.08120',
 	'DBIx::Class::EncodedColumn'                   => 0,
 	'DBIx::Class::Schema'                          => 0,
