@@ -8,7 +8,7 @@
 .container {
 	margin:auto;
 	padding: 0px;
-	max-width: 50em;
+	max-width: 60em;
 }
 
 table.container {
@@ -29,6 +29,9 @@ td.container {
 
 table {
 	border-collapse: collapse; 
+}
+#all_player_home {
+	font-size: 1.33em;
 }
 table.all_player_home { 
 	border: none; 
@@ -79,10 +82,6 @@ td p {
 }
 
 .even {}
-
-#all_player_home {
-	font-size: 1.48em;
-}
 
 .user_header {
 	float:right; 
