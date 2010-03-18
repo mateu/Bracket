@@ -2,7 +2,7 @@
 
 
 [% USE Dumper %]
-<table class="container">
+<table class="container" style="border: thin solid #ddd;">
 <tr><td style="font-size:1.33em; text-align:center; background-color:#cce0ff;">
 
 <div style="font-size: 1.2em;"><strong>All Players Home Page</strong></div>	
@@ -27,7 +27,7 @@
    <td style="text-align:center;">&nbsp;<span class="points">[% player.points %]&nbsp;</span> </td>
    <td>
    [% FOREACH region IN regions %]
-   <a href="[% c.uri_for("/region/view/$region.id/") _ player.id %]">[% region.name %]</a> | 
+   <a href="[% c.uri_for("/region/view/$region.id/") _ player.id %]">[% region.name %]</a> <span class="separator"> | </span>
    [% END %]
   <a href="[% c.uri_for("/final4/view/$player.id") %]">Final Four</a>
 <br />

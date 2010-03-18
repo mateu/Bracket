@@ -53,16 +53,7 @@ sub save_picks : Local {
     }
 
     $c->stash->{params} = $params;
-
-    #$c->stash->{template} = 'save_picks.tt';
-    # If we are saving the perfect bracket then update scores
-    #    if ($player_id == 1) {
-    #        $c->detach($c->controller('Admin')->action_for('update_player_points'));
-    #    }
-    #    else {
     $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
-
-    #    }
 
     return;
 }
@@ -135,7 +126,7 @@ sub view : Local {
     $c->stash->{teams}        = $c->model('DBIC::Team')->search(region => $region_id);
     $c->stash->{regions}      = $c->model('DBIC::Region');
     $c->stash->{show_regions} = \@show_regions;
-    $c->stash->{template}     = 'view_region_status.tt';
+    $c->stash->{template}     = 'region/view_region_status.tt';
 
     return;
 }
@@ -173,7 +164,7 @@ sub edit : Local {
     # Teams
     $c->stash->{teams} = $c->model('DBIC::Team')->search(region => $region);
 
-    $c->stash->{template} = 'edit_region_picks.tt';
+    $c->stash->{template} = 'region/edit_region_picks.tt';
 
     return;
 }

@@ -3,9 +3,11 @@
 
 [% #INCLUDE 'html_head_no_javascript.tt' %]
 [% USE Dumper %]
+<div class="container">
+
     <h1><span style="color:green;">View [% region.name %]</span> region picks for 
     player [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</h1>
-    <p>
+    <div style="font-size: 1.2em; text-align:center;">
     <div>
     Region Points: <span class="points">[% region_points %]</span> 
     Total Points: <span class="points">[% player.points %]</span>
@@ -15,7 +17,7 @@
 	    <a href="[% c.uri_for('/region/view/') _ r.id _ '/' _ player.id %]">[% r.name %]</a> | 
 	[% END %]   
     <a href="[% c.uri_for('/all') %]">All Players Home</a><br />
-    </p>
+    </div>
     [% region_multiplier = region.id - 1 %]
    <table summary="Tournament Bracket" class="regional_bracket">  
 [% team = teams.next %]
@@ -114,5 +116,7 @@
 		<tr>  
 		<td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region.id %]"></span></p></td>  </tr> 
 	</table> 
+
+</div>
 </body>
 </html>

@@ -83,7 +83,7 @@ sub make : Local {
 	$c->stash->{class_for} = \%class_for;
 	# Inform to load final 4 javascript
 	$c->stash->{final_4_javascript} = 1;
-	$c->stash->{template}  = 'make_final4_picks.tt';
+	$c->stash->{template}  = 'final4/make_final4_picks.tt';
 
 	return;
 }
@@ -123,7 +123,6 @@ sub save_picks : Local {
 	$c->stash->{params}   = $params;
 	$c->response->redirect(
 	$c->uri_for( $c->controller('Player')->action_for('home') ) );
-	#$c->stash->{template} = 'save_final4_picks.tt';
 
 	return;
 }
@@ -183,7 +182,7 @@ sub view : Local {
 	$c->stash->{class_for} = \%class_for;
 	# Turn off javascript
 	$c->stash->{no_javascript} = 1;
-	$c->stash->{template}  = 'view_final4_picks.tt';
+	$c->stash->{template}  = 'final4/view_final4_picks.tt';
 	return;
 }
 

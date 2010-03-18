@@ -1,8 +1,12 @@
 [% page_title = "View Final 4 Picks - Men's Basketball - NCAA Tournament " _ c.config.year %]
+
+<div class="container">
+
     <h1><span style="color:green;">View</span> Final Four picks for player 
-    [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]<h1>
+    [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</h1>
     <h2>Men's Basketball - NCAA Tournament [% c.config.year %]</h2>
 
 	[% INCLUDE 'final4/bracket.tt' %] 
 
+</div>
 

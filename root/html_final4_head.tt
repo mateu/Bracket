@@ -1,6 +1,0 @@
-[% INCLUDE 'start_html.tt' %]
-<head>
-<script type="text/javascript" src="https://satya.huntana.com/js/jquery/jquery-1.4.2.min.js"></script>
-<script type="text/javascript" src="/static/javascript/final4_picks.js"></script>
-<title>[% title %]</title> 
-</head>

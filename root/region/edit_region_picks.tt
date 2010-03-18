@@ -1,5 +1,6 @@
 [% page_title = "Edit Regional Picks - Men's Basketball - NCAA Tournament " _  c.config.year  %]
 
+<div class="container">
 <h1>
 <span style="color:darkred;">Edit [% region_name %]</span> Region Picks 
 for player: <em>[% player_name %]</em><br />
@@ -70,5 +71,7 @@ for player: <em>[% player_name %]</em><br />
 <hr />
 <strong>Usage Limitation Note: </strong><div style="background:cornsilk; padding:2px; max-width:30em;">If you want to <u>change a pick</u> you must <u>start from the first round</u> 
 and carry it through the round you want to change.</div>
+
+</div>
 </body>
 </html>
