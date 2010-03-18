@@ -29,9 +29,9 @@
 		<tr>  
 		<td>
 		<p>
-		    <span id="w45-t[% region_3.pick.id %]"></span>
-            <span class="[% class_for.45 %]">
-            [% region_3.pick.seed %]. [% region_3.pick.name %]
+            <span id="w30-t[% region_2.pick.id %]"></span>
+            <span class="[% class_for.30 %]">
+            [% region_2.pick.seed %]. [% region_2.pick.name %]
             </span>
 		</p>
 		</td>  
@@ -39,9 +39,9 @@
 		<tr>  
 		<td>
 		<p>
-            <span id="w30-t[% region_2.pick.id %]"></span>
-            <span class="[% class_for.30 %]">
-            [% region_2.pick.seed %]. [% region_2.pick.name %]
+			<span id="w45-t[% region_3.pick.id %]"></span>
+            <span class="[% class_for.45 %]">
+            [% region_3.pick.seed %]. [% region_3.pick.name %]
             </span>
 		</p>
 		</td>  
