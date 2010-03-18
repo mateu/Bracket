@@ -59,7 +59,7 @@ sub auto : Private {
         if (
             ($c->action ne $c->controller('Player')->action_for('home'))
             || (   ($c->action eq $c->controller('Player')->action_for('home'))
-                && ($c->req->args->[0] != $c->user->id))
+                && ($c->req->args->[0] && ($c->req->args->[0]) != $c->user->id))
           )
         {
             $c->stash->{show_home} = 1;
