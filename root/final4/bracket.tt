@@ -2,9 +2,9 @@
 		<tr>  
 		<td>
 		<p>
-			<span id="w15-t[% east_regional_pick.pick.id %]"></span>
+			<span id="w15-t[% region_1.pick.id %]"></span>
 			<span class="[% class_for.15 %]">
-			[% east_regional_pick.pick.seed %]. [% east_regional_pick.pick.name %]
+			[% region_1.pick.seed %]. [% region_1.pick.name %]
 			</span>
 		</p>
 		</td>  
@@ -29,9 +29,9 @@
 		<tr>  
 		<td>
 		<p>
-		    <span id="w45-t[% south_regional_pick.pick.id %]"></span>
+		    <span id="w45-t[% region_3.pick.id %]"></span>
             <span class="[% class_for.45 %]">
-            [% south_regional_pick.pick.seed %]. [% south_regional_pick.pick.name %]
+            [% region_3.pick.seed %]. [% region_3.pick.name %]
             </span>
 		</p>
 		</td>  
@@ -39,9 +39,9 @@
 		<tr>  
 		<td>
 		<p>
-            <span id="w30-t[% midwest_regional_pick.pick.id %]"></span>
+            <span id="w30-t[% region_2.pick.id %]"></span>
             <span class="[% class_for.30 %]">
-            [% midwest_regional_pick.pick.seed %]. [% midwest_regional_pick.pick.name %]
+            [% region_2.pick.seed %]. [% region_2.pick.name %]
             </span>
 		</p>
 		</td>  
@@ -57,9 +57,9 @@
 		<tr>  
 		<td>
 		<p>
-			<span id="w60-t[% west_regional_pick.pick.id %]"></span>
+			<span id="w60-t[% region_4.pick.id %]"></span>
 			<span class="[% class_for.60 %]">
-			[% west_regional_pick.pick.seed %]. [% west_regional_pick.pick.name %]
+			[% region_4.pick.seed %]. [% region_4.pick.name %]
 			</span>
 		</p>
 		</td> 

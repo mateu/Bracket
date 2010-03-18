@@ -3,7 +3,7 @@
 <div class="container">
 
     <h1><span style="color:green;">Make</span> Final Four picks for player 
-    [% player.first_name %] [% player.last_name %]<h1>
+    [% player.first_name %] [% player.last_name %]</h1>
     <h2>Men's Basketball - NCAA Tournament [% c.config.year %]</h2>
 
 
