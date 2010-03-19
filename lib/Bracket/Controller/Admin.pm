@@ -94,7 +94,7 @@ sub qa : Global {
     my ($self, $c) = @_;
     my @played_games = $c->model('DBIC::Pick')->search({ player => 1 }, { order_by => 'game' });
     $c->stash->{played_games} = \@played_games;
-    $c->stash->{template}     = 'lower_seeds.tt';
+    $c->stash->{template}     = 'admin/lower_seeds.tt';
 }
 
 __PACKAGE__->meta->make_immutable;
