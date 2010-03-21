@@ -2,6 +2,7 @@ bracket.db
 bracket_local.conf
 blib/*
 inc/*
+t/var/*
 Makefile
 Makefile.old
 META.yml
