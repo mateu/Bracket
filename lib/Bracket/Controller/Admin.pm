@@ -137,5 +137,27 @@ sub round_out_POST {
     }
 }
 
+=head2 round_out_unmarked
+
+Show only the teams that havent' been marked out yet.
+
+=cut
+
+sub round_out_unmarked : Global : ActionClass('REST') {
+    my ($self, $c) = @_;
+    $c->stash->{template} = 'admin/round_out.tt';
+    my @teams = $c->model('DBIC::Team')->search({round_out => 7})->all;
+    $c->stash(teams => \@teams);
+}
+sub round_out_unmarked_GET {}
+
+sub round_out_unmarked_POST {
+    my  ($self, $c) = @_;
+    
+    foreach my $team (@{$c->stash->{teams}}) {
+        $team->update({ round_out => $c->request->body_parameters->{$team->id} });
+    }
+}
+
 __PACKAGE__->meta->make_immutable;
 1
