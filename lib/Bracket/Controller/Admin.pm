@@ -145,7 +145,7 @@ Show only the teams that havent' been marked out yet.
 
 sub round_out_unmarked : Global : ActionClass('REST') {
     my ($self, $c) = @_;
-    $c->stash->{template} = 'admin/round_out.tt';
+    $c->stash->{template} = 'admin/round_out_unmarked.tt';
     my @teams = $c->model('DBIC::Team')->search({round_out => 7})->all;
     $c->stash(teams => \@teams);
 }
