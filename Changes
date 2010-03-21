@@ -1,5 +1,20 @@
 College Basketball Bracket System 
 
+1.02    2010 Mars ?
+		
+		Improvements:
+		* Create /round_out page to mark the round teams go out.
+		  This is used to strike them out in subsequent rounds.
+		* Increased cookie expiration to 3 weeks to reduce logins
+		  
+1.01    2010 Mars 19
+		Bug Fix: 
+		* Create BracketTestSchema to support Catalyst::Test tests
+		
+		Improvements:
+		* Activate /qa page to help verify that lower seed winners 
+		  have been marked correctly.
+		
 1.00    2010 Mars 18
 		Bug Fix: 
 		* Final 4 matchups (generalize to handle any year)

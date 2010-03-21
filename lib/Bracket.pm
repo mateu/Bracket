@@ -1,7 +1,7 @@
 package Bracket;
 use Moose;
 
-our $VERSION = '1.01';
+our $VERSION = '1.02';
 use Catalyst::Runtime '5.80';
 
 use Catalyst qw/
