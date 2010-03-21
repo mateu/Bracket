@@ -44,7 +44,7 @@ sub update_player_points : Global {
             $region_score->update;
         }
     }
-    $c->stash->{players} = \@players;
+    $c->stash->{players}    = \@players;
     $c->flash->{status_msg} = 'Scores Updated';
     $c->response->redirect($c->uri_for($c->controller('Player')->action_for('all')));
     return;
@@ -95,6 +95,30 @@ sub qa : Global {
     my @played_games = $c->model('DBIC::Pick')->search({ player => 1 }, { order_by => 'game' });
     $c->stash->{played_games} = \@played_games;
     $c->stash->{template}     = 'admin/lower_seeds.tt';
+}
+
+=head2 round_out
+
+Mark the round teams go out.
+
+=cut
+
+sub round_out : Global : ActionClass('REST') {
+    my ($self, $c) = @_;
+
+    $c->stash->{template} = 'admin/round_out.tt';
+    my @teams = $c->model('DBIC::Team')->all;
+    $c->stash(teams => \@teams);
+}
+
+sub round_out_GET {}
+
+sub round_out_POST {
+    my  ($self, $c) = @_;
+    
+    foreach my $team (@{$c->stash->{teams}}) {
+        $team->update({ round_out => $c->request->body_parameters->{$team->id} });
+    }
 }
 
 __PACKAGE__->meta->make_immutable;
