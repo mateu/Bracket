@@ -6,17 +6,7 @@ use Data::Dumper::Concise;
 
 =head1 NAME
 
-Bracket::Controller::Region - Catalyst Controller
-
-=head1 DESCRIPTION
-
-Catalyst Controller.
-
-=head1 METHODS
-
-=cut
-
-=head2 index 
+Bracket::Controller::Final4 - Edit/View Final 4 Picks
 
 =cut
 

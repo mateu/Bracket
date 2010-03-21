@@ -10,13 +10,8 @@ my $PERFECT_BRACKET_MODE = 1;
 
 =head1 NAME
 
-Bracket::Controller::Region - Catalyst Controller
+Bracket::Controller::Region - Edit/View Regional picks
 
-=head1 DESCRIPTION
-
-Catalyst Controller.
-
-=head1 METHODS
 
 =cut
 

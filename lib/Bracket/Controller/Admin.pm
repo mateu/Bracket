@@ -4,6 +4,22 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 
+=head1 Name
+
+Bracket::Controller::Admin - Functions for admin users.
+  
+=head1 Description
+
+Controller for admin functions:
+
+* Update player points
+* Mark the round teams go out
+* Check which wins are by a lower seed
+
+=head1 Methods
+
+=cut
+
 sub auto : Private {
     my ($self, $c) = @_;
 

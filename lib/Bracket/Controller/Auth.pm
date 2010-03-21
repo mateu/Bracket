@@ -12,6 +12,21 @@ use Bracket::Form::Password::Reset;
 sub debug { 0 }
 require Data::Dumper if debug;
 
+
+=head1 Name
+
+Bracket::Controller::Admin - Functions for admin users
+  
+=head1 Description
+
+Controller with authentication related actions:
+
+* register
+* login/logout
+* change/reset password
+
+=cut
+
 has 'register_form' => (
     isa     => 'Bracket::Form::Register',
     is      => 'rw',

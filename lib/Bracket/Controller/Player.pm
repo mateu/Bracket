@@ -4,6 +4,12 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 
+=head1 NAME
+
+Bracket::Controller::Player - Individual and all player homes
+
+=cut
+
 sub home : Path('/player') {
 	my ( $self, $c, $player_id ) = @_;
 
