@@ -17,10 +17,10 @@ eval {
     if (!$dsn)
     {
         if (ref $config->{'Model::DBIC'}->{'connect_info'}) {
-            $dsn =  $config->{'Model::DBIC'}->{'connect_info'}->{dsn};
+            $dsn  = $config->{'Model::DBIC'}->{'connect_info'}->{dsn};
             $user = $config->{'Model::DBIC'}->{'connect_info'}->{user};
             $pass = $config->{'Model::DBIC'}->{'connect_info'}->{password};
-            
+
         }
         else {
             $dsn = $config->{'Model::DBIC'}->{'connect_info'};
@@ -56,3 +56,6 @@ print "\nDeploying schema to $dsn\n";
 $schema->deploy;
 print "Creating initial data and admin account.\n";
 $schema->create_initial_data($config, \%custom_values);
+print "Success!\n\nYou probably want to start your application, e.g:
+    script/bracket_server.pl
+and login with the admin account you just created.\n\n";
