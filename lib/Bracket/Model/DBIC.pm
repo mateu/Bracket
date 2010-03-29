@@ -21,21 +21,21 @@ sub update_points {
             my $self = shift;
             my $dbh  = shift;
             my $sth  = $dbh->prepare('
-                update player p, 
+                update player player, 
                 (
                 select  player_picks.player,
-                        sum(g.round*(5 + g.lower_seed*t.seed)) as points
-                  from picks player_picks, picks perfect_picks, game g, team t 
+                        sum(game.round*(5 + game.lower_seed*team.seed)) as points
+                  from picks player_picks, picks perfect_picks, game game, team team
                  where perfect_picks.pick   = player_picks.pick 
                    and perfect_picks.game   = player_picks.game 
-                   and player_picks.game    = g.id
-                   and player_picks.pick    = t.id
+                   and player_picks.game    = game.id
+                   and player_picks.pick    = team.id
                    and perfect_picks.player = 1
                    group by player_picks.player
-                )  pp
-                set p.points = pp.points
-                where p.id = pp.player
-                  and p.id <> 1
+                )  computed_player_points
+                set player.points = computed_player_points.points
+                where player.id = computed_player_points.player
+                  and player.id <> 1
                 ;'
             );
             $sth->execute();
