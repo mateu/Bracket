@@ -5,6 +5,14 @@ use base 'Catalyst::Model::DBIC::Schema';
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
+=head2 update_points
+
+SQL update of points that is way faster than player_points action in Admin.
+DRAWBACK: only tested on MySQL, may be MySQL specfic update.
+SOLUTION: Find DBIC way of doing it?  Use sub-query.
+
+=cut
+
 sub update_points {
     my $self    = shift;
     my $storage = $self->schema->storage;
@@ -31,8 +39,6 @@ sub update_points {
                 ;'
             );
             $sth->execute();
-            my @rows = @{$sth->fetchall_arrayref()};
-            return @rows;
         }
     );
 }
