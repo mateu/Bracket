@@ -3,9 +3,39 @@ package Bracket::Model::DBIC;
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 
-__PACKAGE__->config(
-    schema_class => 'Bracket::Schema',
-);
+__PACKAGE__->config(schema_class => 'Bracket::Schema',);
+
+sub update_points {
+    my $self    = shift;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+                update player p, 
+                (
+                select  player_picks.player,
+                        sum(g.round*(5 + g.lower_seed*t.seed)) as points
+                  from picks player_picks, picks perfect_picks, game g, team t 
+                 where perfect_picks.pick   = player_picks.pick 
+                   and perfect_picks.game   = player_picks.game 
+                   and player_picks.game    = g.id
+                   and player_picks.pick    = t.id
+                   and perfect_picks.player = 1
+                   group by player_picks.player
+                )  pp
+                set p.points = pp.points
+                where p.id = pp.player
+                  and p.id <> 1
+                ;'
+            );
+            $sth->execute();
+            my @rows = @{$sth->fetchall_arrayref()};
+            return @rows;
+        }
+    );
+}
 
 =head1 NAME
 

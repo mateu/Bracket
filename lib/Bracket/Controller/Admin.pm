@@ -113,6 +113,14 @@ sub qa : Global {
     $c->stash->{template}     = 'admin/lower_seeds.tt';
 }
 
+sub update_points : Global {
+    my ($self, $c) = @_;
+    my @points = $c->model('DBIC')->update_points;
+    $c->flash->{status_msg} = 'Scores Updated';
+    $c->response->redirect($c->uri_for($c->controller('Player')->action_for('all')));
+    return;
+}
+
 =head2 round_out
 
 Mark the round teams go out.
