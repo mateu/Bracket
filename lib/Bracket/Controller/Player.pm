@@ -60,6 +60,13 @@ sub all : Global {
 	$c->stash->{players} = \@players;
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
+
+	# Count of picks already made per player
+	# This is useful to see overall pick status. 
+	# TODO: Could be turned off when games start.
+    my $number_of_picks_per_player = $c->model('DBIC')->count_player_picks;
+    $c->stash->{picks_per_player} = $number_of_picks_per_player;
+
 }
 
 

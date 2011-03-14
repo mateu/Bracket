@@ -43,6 +43,13 @@ sub update_points {
     );
 }
 
+=heads2 count_region_picks
+
+Count up how many picks a player has made for each region.
+Displayed on Player home page.
+
+=cut
+
 sub count_region_picks {
     my ($self, $player_id) = @_;
     my $storage = $self->schema->storage;
@@ -69,6 +76,38 @@ sub count_region_picks {
         }
     );
 }
+
+=heads2 count_player_picks
+
+Count up how many picks a player has made out of the total (63).
+Displayed on All Players home page.
+
+=cut
+
+sub count_player_picks {
+    my ($self, $player_id) = @_;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+            select player.id, count(*) from player
+            join picks on player.id = picks.player
+            group by player.id
+            ;'
+            );
+            $sth->execute() or die $sth->errstr;
+            my $picks_per_player = {};
+            my $result = $sth->fetchall_arrayref;
+            foreach my $row (@{$result}) {
+                $picks_per_player->{$row->[0]} = $row->[1];
+            }
+            return $picks_per_player;
+        }
+    );
+}
+
 =head1 NAME
 
 Bracket::Model::DBIC - Catalyst DBIC Schema Model

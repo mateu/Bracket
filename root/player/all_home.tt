@@ -27,10 +27,24 @@
    <td style="text-align:center;">&nbsp;<span class="points">[% player.points %]&nbsp;</span> </td>
    <td>
    [% FOREACH region IN regions %]
-   <a href="[% c.uri_for("/region/view/$region.id/") _ player.id %]">[% region.name %]</a> <span class="separator"> | </span>
+   <a href="[% c.uri_for("/region/view/$region.id/") _ player.id %]">[% region.name %]</a> 
+   <span class="separator"> | </span>
    [% END %]
   <a href="[% c.uri_for("/final4/view/$player.id") %]">Final Four</a>
 <br />
+	</td>
+    <td style="font-size: 0.72em;">
+    <span class="separator"> | </span>
+    [% 
+      SET player_id = player.id; 
+      SET picks_made = picks_per_player.$player_id || 0;
+      %]
+    [% IF picks_made < 63;
+       '<span style="color:red;">' _ picks_made _ '/63 picked</span>';
+       ELSE %]
+       <span style="color:darkgreen;">complete</span>
+    [% END %]
+
 	</td>
 	</tr>
 
