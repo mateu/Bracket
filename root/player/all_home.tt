@@ -40,7 +40,7 @@
       SET picks_made = picks_per_player.$player_id || 0;
       %]
     [% IF picks_made < 63;
-       '<span style="color:red;">' _ picks_made _ '/63 picked</span>';
+       '<span style="color:sienna;">' _ picks_made _ '/63 picked</span>';
        ELSE %]
        <span style="color:darkgreen;">complete</span>
     [% END %]
