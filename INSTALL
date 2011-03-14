@@ -14,7 +14,6 @@ create the DB for you and does not require a user or password.
 
 4. Start it up:
      script/bracket_server.pl
-For production you might want to configure a front-end sever (pimp #catalyst for help)
 
 5. Login with your admin account at:
   http://localhost:3000
