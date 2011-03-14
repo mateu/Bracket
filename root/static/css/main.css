@@ -172,3 +172,8 @@ h1 {
 	padding: 3px;
 	background-color: cornsilk;
 }
+
+.region_picks_made {
+    font-size: 0.72em;
+    font-style: italic;
+}

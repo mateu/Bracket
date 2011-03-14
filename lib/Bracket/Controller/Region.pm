@@ -164,6 +164,7 @@ sub edit : Local {
 
     # Teams
     $c->stash->{teams} = $c->model('DBIC::Team')->search(region => $region);
+    
 
     $c->stash->{template} = 'region/edit_region_picks.tt';
 
@@ -174,10 +175,10 @@ sub edit : Local {
 sub edit_cutoff_time {
 
     return DateTime->new(
-        year   => 2010,
+        year   => 2011,
         month  => 3,
-        day    => 18,
-        hour   => 16,
+        day    => 17,
+        hour   => 12,
         minute => 0,
         second => 0,
     );

@@ -31,6 +31,9 @@ sub home : Path('/player') {
 	# Get regions 
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
+    # Picks made per region
+    my $number_of_picks_per_region = $c->model('DBIC')->count_region_picks($player_id);
+    $c->stash->{picks_per_region} = $number_of_picks_per_region;	
 	
 	return;
 }

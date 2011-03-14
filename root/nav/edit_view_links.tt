@@ -5,6 +5,17 @@
 <td class="region_name">[% region.name %]</td>
 <td><a href="[% c.uri_for("/region/edit/$region.id/$player_id") %]">Edit</a></td>
 <td><a href="[% c.uri_for("/region/view/$region.id/$player_id") %]">View</a></td>
+<td class="region_picks_made" style="font-size: 0.78em;">[% 
+  SET region_id = region.id; 
+  SET picks_made = picks_per_region.$region_id;
+  %]
+[% IF picks_made < 15;
+   '<span style="color:red;">' _ picks_made _ '/15</span>';
+   ELSE %]
+   <span style="color:darkgreen;">complete</span>
+[% END %]
+
+</td>
 </tr>
 [% END %]
 <tr>

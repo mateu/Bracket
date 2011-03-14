@@ -43,6 +43,32 @@ sub update_points {
     );
 }
 
+sub count_region_picks {
+    my ($self, $player_id) = @_;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+            select region.id, count(*) from picks  
+            join team on picks.pick = team.id  
+            join region on team.region = region.id  
+            join game on picks.game = game.id  
+            where game.round < 5 and player = ? 
+            group by region.id
+            ;'
+            );
+            $sth->execute($player_id) or die $sth->errstr;;
+            my $picks_per_region;
+            my $result = $sth->fetchall_arrayref;
+            foreach my $row (@{$result}) {
+                $picks_per_region->{$row->[0]} = $row->[1];
+            }
+            return $picks_per_region;
+        }
+    );
+}
 =head1 NAME
 
 Bracket::Model::DBIC - Catalyst DBIC Schema Model
