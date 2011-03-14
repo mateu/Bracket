@@ -19,5 +19,18 @@ For production you might want to configure a front-end sever (pimp #catalyst for
 5. Login with your admin account at:
   http://localhost:3000
 
-6. Let players know about your bracket.  They can register at /register
+6. Once you've verified that Bracket is working for you with the Catalyst builtin web
+server, then you can deploy it more permanently.  To do so w/ apache and mod_perl
+do something like the following in an apache conf file:
+
+PerlSwitches -I/home/user/apps/Bracket/lib
+PerlModule Bracket
+<Location /bracket>
+  SetHandler          modperl
+  PerlResponseHandler Bracket
+</Location>
+
+This will make /bracket the URL for the base of the application.
+
+7. Let players know about your bracket.  They can register at /register
 
