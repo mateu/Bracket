@@ -60,7 +60,7 @@ sub count_region_picks {
             ;'
             );
             $sth->execute($player_id) or die $sth->errstr;;
-            my $picks_per_region;
+            my $picks_per_region = { 1 => 0, 2 => 0, 3 => 0, 4 => 0 };
             my $result = $sth->fetchall_arrayref;
             foreach my $row (@{$result}) {
                 $picks_per_region->{$row->[0]} = $row->[1];

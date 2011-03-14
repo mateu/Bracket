@@ -10,7 +10,7 @@
   SET picks_made = picks_per_region.$region_id;
   %]
 [% IF picks_made < 15;
-   '<span style="color:red;">' _ picks_made _ '/15</span>';
+   '<span style="color:red;">' _ picks_made _ '/15 picked</span>';
    ELSE %]
    <span style="color:darkgreen;">complete</span>
 [% END %]
