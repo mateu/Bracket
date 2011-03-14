@@ -1,11 +1,20 @@
 College Basketball Bracket System 
 
-1.02    2010 Mars ?
-		
-		Improvements:
-		* Create /round_out page to mark the round teams go out.
-		  This is used to strike them out in subsequent rounds.
-		* Increased cookie expiration to 3 weeks to reduce logins
+1.03    2011 Mars 13
+        - 2011 Data loaded.
+
+1.02    2010 Mars 28
+        Bug Fix:
+        * Championship game pairings
+        
+        Improvements:
+        * Increased cookie expiration to 3 weeks to reduce logins
+        
+        New features:
+        * Create /round_out page to mark the round teams go out.
+          This is used to strike them out in subsequent rounds.
+        * update_points/ which is much faster than /update_player_point,
+          but only tested on MySQL so far.
 		  
 1.01    2010 Mars 19
 		Bug Fix: 
