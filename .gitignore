@@ -1,7 +1,7 @@
 bracket.db
 bracket_local.conf
-blib/*
-inc/*
+blib/
+inc/
 t/var/*
 Makefile
 Makefile.old
