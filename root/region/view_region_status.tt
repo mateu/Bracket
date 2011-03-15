@@ -15,8 +15,9 @@
     [% #Dumper.dump(show_regions) %]
     [% WHILE (r = regions.next) %]
 	    <a href="[% c.uri_for('/region/view/') _ r.id _ '/' _ player.id %]">[% r.name %]</a> | 
-	[% END %]   
-    <a href="[% c.uri_for('/all') %]">All Players Home</a><br />
+	[% END %]
+	<span style="font-style: italic;"><a href="[% c.uri_for('/final4/view/') _ player.id %]">Final 4</a></span> |    
+    <span style="font-size: 0.82em;"><a href="[% c.uri_for('/all') %]">All Players Home</a></span><br />
     </div>
     [% region_multiplier = region.id - 1 %]
    <table summary="Tournament Bracket" class="regional_bracket">  

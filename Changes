@@ -1,8 +1,9 @@
 College Basketball Bracket System 
 
-1.04    2011 Mars 14
+1.04    2011 Mars 15
         Improvements:
-        - Counts of picks made
+        - Counts of picks made (region and final4)
+        - Refined Player home page view
 
 1.03    2011 Mars 13
         - 2011 Data loaded.

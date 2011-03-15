@@ -168,6 +168,7 @@ sub view : Local {
         }
     }
     $c->stash->{class_for} = \%class_for;
+    $c->stash->{regions}      = $c->model('DBIC::Region')->search({},{order_by => 'id'});
 
     # Turn off javascript
     $c->stash->{no_javascript} = 1;

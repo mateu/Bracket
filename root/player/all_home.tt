@@ -6,7 +6,7 @@
 <table class="container" style="border: thin solid #ddd;">
 <tr><td style="font-size:1.33em; text-align:center; background-color:#cce0ff;">
 
-<div style="font-size: 1.2em;"><strong>All Players Home Page</strong></div>	
+<div style="font-size: 1.2em;"><strong>All Players Page</strong></div>	
 <div style="font-size: 1.1em;"> Men's Basketball - NCAA Tournament [% c.config.year %]<br /></div>
 
 </td></tr>
