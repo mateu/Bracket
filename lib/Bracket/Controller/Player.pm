@@ -34,7 +34,9 @@ sub home : Path('/player') {
     # Picks made per region
     my $number_of_picks_per_region = $c->model('DBIC')->count_region_picks($player_id);
     $c->stash->{picks_per_region} = $number_of_picks_per_region;	
-	
+    # Number of Final 4 picks
+    my $number_of_picks_per_final4 = $c->model('DBIC')->count_final4_picks($player_id);
+    $c->stash->{picks_per_final4} = $number_of_picks_per_final4;	
 	return;
 }
 

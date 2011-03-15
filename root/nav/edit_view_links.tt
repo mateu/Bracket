@@ -3,14 +3,16 @@
 [% FOREACH region IN regions %]
 <tr>
 <td class="region_name">[% region.name %]</td>
-<td><a href="[% c.uri_for("/region/edit/$region.id/$player_id") %]">Edit</a></td>
-<td><a href="[% c.uri_for("/region/view/$region.id/$player_id") %]">View</a></td>
+<td style="border-bottom:1px dotted gray;border-right:1px dotted gray;border-left:1px dotted gray;">
+<a href="[% c.uri_for("/region/edit/$region.id/$player_id") %]">Edit</a>
+</td>
+<td style="border-bottom:1px dotted gray;border-right:1px dotted gray;border-left:1px dotted gray;"><a href="[% c.uri_for("/region/view/$region.id/$player_id") %]">View</a></td>
 <td class="region_picks_made" style="font-size: 0.78em;">[% 
   SET region_id = region.id; 
   SET picks_made = picks_per_region.$region_id;
   %]
 [% IF picks_made < 15;
-   '<span style="color:red;">' _ picks_made _ '/15 picked</span>';
+   '<span style="color:sienna;">' _ picks_made _ '/15 picked</span>';
    ELSE %]
    <span style="color:darkgreen;">complete</span>
 [% END %]
@@ -18,10 +20,17 @@
 </td>
 </tr>
 [% END %]
-<tr>
-<td class="region_name"><em>Final 4<em></td>
-<td><a href="[% c.uri_for("/final4/make/$player_id") %]">Edit</a></td>
-<td><a href="[% c.uri_for("/final4/view/$player_id") %]">View</a></td>
+<tr style="border-bottom-style:hidden;">
+<td class="region_name" style="background-color: #dcdcdc;"><em>Final 4<em></td>
+<td style="border:1px dotted gray;"><a href="[% c.uri_for("/final4/make/$player_id") %]">Edit</a></td>
+<td style="border:1px dotted gray;"><a href="[% c.uri_for("/final4/view/$player_id") %]">View</a></td>
+<td style="font-size: 0.78em; font-style:italic;">
+[% IF picks_per_final4 < 3;
+   '<span style="color:sienna;">' _ picks_per_final4 _ '/3 picked</span>';
+   ELSE %]
+   <span style="color:darkgreen;">complete</span>
+[% END %]
+</td>
 </tr>
 
 </table>

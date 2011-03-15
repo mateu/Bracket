@@ -85,7 +85,7 @@ Displayed on All Players home page.
 =cut
 
 sub count_player_picks {
-    my ($self, $player_id) = @_;
+    my ($self) = @_;
     my $storage = $self->schema->storage;
     return $storage->dbh_do(
         sub {
@@ -104,6 +104,34 @@ sub count_player_picks {
                 $picks_per_player->{$row->[0]} = $row->[1];
             }
             return $picks_per_player;
+        }
+    );
+}
+
+=heads2 count_final4_picks
+
+Count up how many picks a player has made in the final 4 (3 total).
+Displayed on Players home page.
+
+=cut
+
+sub count_final4_picks {
+    my ($self, $player_id) = @_;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+            select count(*) from player
+            join picks on player.id = picks.player
+            where picks.game > 60
+            and player.id = ?
+            ;'
+            );
+            $sth->execute($player_id) or die $sth->errstr;
+            
+            return $sth->fetchall_arrayref->[0]->[0];
         }
     );
 }
