@@ -1,6 +1,9 @@
 [% IF c.user_exists AND !user_header_off %]
+<div class="tournament_header">
+<span style="font-family: sans-serif;">[% c.config.year %]</span><span> NCAA Basketball Tournament</span>
+</div>
 <div class="user_header">
-    <span>[% c.user.first_name %] [% c.user.last_name %]: </span>
+    <span style="font-style: italic;">[% c.user.first_name %] [% c.user.last_name %]: </span>
     [% IF show_home %]<span><a href="[% c.uri_for('/') %]">Home</a></span> | [% END %]
     <span><a href="[% c.uri_for('/account') %]">Account</a></span>
     |

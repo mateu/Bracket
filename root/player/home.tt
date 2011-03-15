@@ -4,10 +4,9 @@
 
 <div id="player_page_header">
 
-<div style="font-size: 115%;"><strong>Bracket Home Page</strong> for player 
+<div style="font-size: 115%;"><strong>Bracket Home</strong> for player
 <span class="player_name">[% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</span> </div>	
 
-<div style="font-size: 108%;"> Men's Basketball - NCAA Tournament [% c.config.year %]</div>
 <div class="points">Total Points: [% player.points %]</div>
 <div><a href="[% c.uri_for('/all') %]">All Players Home</a></div>
 [% IF (is_admin && player_id != 1);
