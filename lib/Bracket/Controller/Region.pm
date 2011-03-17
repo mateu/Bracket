@@ -136,7 +136,7 @@ sub edit : Local {
 
     # Go to home if edits are attempted after closing time
     # NOTE: Put a player's id on this list and they can make edits after the cut-off.
-    my @open_edit_ids = qw/ 9 /;
+    my @open_edit_ids = qw/ 9 13 /;
     my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
     if (DateTime->now > edit_cutoff_time()
         && (!($c->stash->{is_admin} || $edit_allowed)))
@@ -181,8 +181,8 @@ sub edit_cutoff_time {
         year   => 2011,
         month  => 3,
         day    => 17,
-        hour   => 12,
-        minute => 0,
+        hour   => 16,
+        minute => 15,
         second => 0,
     );
 
