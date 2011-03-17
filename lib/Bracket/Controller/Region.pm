@@ -135,8 +135,11 @@ sub edit : Local {
     $c->go('/error_404') if (($player != $c->user->id) && !('admin' eq any(@user_roles)));
 
     # Go to home if edits are attempted after closing time
+    # NOTE: Put a player's id on this list and they can make edits after the cut-off.
+    my @open_edit_ids = qw/ 9 /;
+    my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
     if (DateTime->now > edit_cutoff_time()
-        && (!$c->stash->{is_admin}))
+        && (!($c->stash->{is_admin} || $edit_allowed)))
     {
         $c->flash->{status_msg} = 'Regional edits are closed';
         $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
