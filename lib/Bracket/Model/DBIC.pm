@@ -35,7 +35,6 @@ sub update_points {
                 )  computed_player_points
                 set player.points = computed_player_points.points
                 where player.id = computed_player_points.player
-                  and player.id <> 1
                 ;'
             );
             $sth->execute();
