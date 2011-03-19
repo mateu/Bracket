@@ -166,7 +166,7 @@ sub edit : Local {
     $c->stash->{region_name} = $region_name;
 
     # Teams
-    $c->stash->{teams} = $c->model('DBIC::Team')->search(region => $region);
+    $c->stash->{teams} = $c->model('DBIC::Team')->search({region => $region});
     
 
     $c->stash->{template} = 'region/edit_region_picks.tt';
