@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use parent 'Catalyst::Controller';
 use Perl6::Junction qw/ any /;
+use DateTime;
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -70,6 +71,9 @@ sub auto : Private {
         if ('admin' eq any(@user_roles)) {
             $c->stash->{is_admin} = 1;
         }
+        
+        # Set cutoff state
+        $c->stash->{is_game_time} = (DateTime->now > edit_cutoff_time());
     }
 
     # User found, so return 1 to continue with processing after this 'auto'
@@ -118,6 +122,21 @@ Attempt to render a view, if needed.
 =cut 
 
 sub end : ActionClass('RenderView') {
+}
+
+# This needs to be edited in future years to reflect the start date/time.
+# TODO: Put into conf
+sub edit_cutoff_time {
+
+    return DateTime->new(
+        year   => 2011,
+        month  => 3,
+        day    => 17,
+        hour   => 16,
+        minute => 15,
+        second => 0,
+    );
+
 }
 
 =head1 AUTHOR

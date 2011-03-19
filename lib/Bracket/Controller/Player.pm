@@ -68,6 +68,10 @@ sub all : Global {
 	# TODO: Could be turned off when games start.
     my $number_of_picks_per_player = $c->model('DBIC')->count_player_picks;
     $c->stash->{picks_per_player} = $number_of_picks_per_player;
+	# Count of correct picks per player
+	# TODO: Should be turned on when games start.
+    my $number_of_correct_picks_per_player = $c->model('DBIC')->count_player_picks_correct;
+    $c->stash->{correct_picks_per_player} = $number_of_correct_picks_per_player;
 
 }
 

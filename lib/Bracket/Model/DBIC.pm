@@ -107,6 +107,42 @@ sub count_player_picks {
     );
 }
 
+=heads2 count_player_picks_correct
+
+Count up how many picks a player has made correct so far.
+Displayed on All Players home page.
+
+=cut
+
+sub count_player_picks_correct {
+    my $self = shift;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('                   
+            select player_picks.player, count(*)
+              from picks player_picks, picks perfect_picks, game game, team team
+             where perfect_picks.pick   = player_picks.pick 
+               and perfect_picks.game   = player_picks.game 
+               and player_picks.game    = game.id
+               and player_picks.pick    = team.id
+               and perfect_picks.player = 1
+          group by player_picks.player
+          ;'
+          );
+          $sth->execute() or die $sth->errstr;
+          my $picks_per_player = {};
+          my $result = $sth->fetchall_arrayref;
+          foreach my $row (@{$result}) {
+              $picks_per_player->{$row->[0]} = $row->[1];
+          }
+          return $picks_per_player;
+        }
+    );
+}
+
 =heads2 count_final4_picks
 
 Count up how many picks a player has made in the final 4 (3 total).

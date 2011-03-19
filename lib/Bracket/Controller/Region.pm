@@ -136,11 +136,9 @@ sub edit : Local {
 
     # Go to home if edits are attempted after closing time
     # NOTE: Put a player's id on this list and they can make edits after the cut-off.
-    my @open_edit_ids = qw/ 9 13 /;
+    my @open_edit_ids = qw/ /;
     my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
-    if (DateTime->now > edit_cutoff_time()
-        && (!($c->stash->{is_admin} || $edit_allowed)))
-    {
+    if ( $c->stash->{is_game_time} && (!($c->stash->{is_admin} || $edit_allowed)) ) {
         $c->flash->{status_msg} = 'Regional edits are closed';
         $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
     }
@@ -172,20 +170,6 @@ sub edit : Local {
     $c->stash->{template} = 'region/edit_region_picks.tt';
 
     return;
-}
-
-# This need to be edited in future years to reflect the start date/time.
-sub edit_cutoff_time {
-
-    return DateTime->new(
-        year   => 2011,
-        month  => 3,
-        day    => 17,
-        hour   => 16,
-        minute => 15,
-        second => 0,
-    );
-
 }
 
 =head1 AUTHOR
