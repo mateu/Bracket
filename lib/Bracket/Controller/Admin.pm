@@ -165,6 +165,8 @@ sub round_out_unmarked_POST {
     foreach my $team (@{$c->stash->{teams}}) {
         $team->update({ round_out => $c->request->body_parameters->{$team->id} });
     }
+    $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;
