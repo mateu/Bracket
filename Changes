@@ -1,9 +1,14 @@
 College Basketball Bracket System 
 
-1.04    2011 Mars 15
+1.04    2011 Mars 21
         Improvements:
         - Counts of picks made (region and final4)
+        - Counts of correct picks made
         - Refined Player home page view
+        - /update_player points works fully and fast (new default)
+        - Refined admin links
+        - created is_game_time function to stash cutoff time
+          used in views
 
 1.03    2011 Mars 13
         - 2011 Data loaded.
@@ -22,41 +27,41 @@ College Basketball Bracket System
           but only tested on MySQL so far.
 		  
 1.01    2010 Mars 19
-		Bug Fix: 
-		* Create BracketTestSchema to support Catalyst::Test tests
-		
-		Improvements:
+        Bug Fix: 
+        * Create BracketTestSchema to support Catalyst::Test tests
+
+        Improvements:
 		* Activate /qa page to help verify that lower seed winners 
 		  have been marked correctly.
 		
 1.00    2010 Mars 18
-		Bug Fix: 
-		* Final 4 matchups (generalize to handle any year)
-		
-		Improvements:
-		* Regional Edits cut-off time added
-		* More cleaning of un-needed parts
-		* View refinements
+        Bug Fix: 
+        * Final 4 matchups (generalize to handle any year)
+
+        Improvements:
+        * Regional Edits cut-off time added
+        * More cleaning of un-needed parts
+        * View refinements
 
 0.99    2010 Mars 17
-		Bug Fix: 
-		* correct deploy dsn reading from conf which recently changed.
-		* change Team result class so SQLite can deploy.
-		
-		Improvements:
-		* Better deploy wording
-		* Clean out un-needed files
-		* Added some POD
-		
+        Bug Fix: 
+        * correct deploy dsn reading from conf which recently changed.
+        * change Team result class so SQLite can deploy.
+
+        Improvements:
+        * Better deploy wording
+        * Clean out un-needed files
+        * Added some POD
+
 0.98    2010 Mars 16
-		- Make a proper MANIFEST.SKIP to keep junk out of distribution.
+        - Make a proper MANIFEST.SKIP to keep junk out of distribution.
 
 0.97    2010 Mars 15
-		- Prepare for general release
+        - Prepare for general release
 
 0.03	2010 February 27
-		- Change project name to "Bracket"
-		- Updated namespace to use new name.
+        - Change project name to "Bracket"
+        - Updated namespace to use new name.
 
 0.02	2009 March 18
         - 2009 NCAA Bracket Edition
