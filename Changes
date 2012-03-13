@@ -1,5 +1,9 @@
 College Basketball Bracket System 
 
+1.05    2012 Mars 12
+        - 2012 data loaded
+        - edit cutoff time configurable in bracket.conf
+
 1.04    2011 Mars 21
         Improvements:
         - Counts of picks made (region and final4)

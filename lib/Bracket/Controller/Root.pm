@@ -73,7 +73,8 @@ sub auto : Private {
         }
         
         # Set cutoff state
-        $c->stash->{is_game_time} = (DateTime->now > edit_cutoff_time());
+        my $cutoff_time = $self->edit_cutoff_time($c);
+        $c->stash->{is_game_time} = (DateTime->now > $cutoff_time);
     }
 
     # User found, so return 1 to continue with processing after this 'auto'
@@ -127,14 +128,17 @@ sub end : ActionClass('RenderView') {
 # This needs to be edited in future years to reflect the start date/time.
 # TODO: Put into conf
 sub edit_cutoff_time {
+    my ($self, $c) = @_;
 
+    my $cutoff = $c->config->{edit_cutoff_time};
     return DateTime->new(
-        year   => 2011,
-        month  => 3,
-        day    => 17,
-        hour   => 16,
-        minute => 15,
-        second => 0,
+        year   => $cutoff->{year},
+        month  => $cutoff->{month},
+        day    => $cutoff->{day},
+        hour   => $cutoff->{hour},
+        minute => $cutoff->{minute},
+        second => $cutoff->{second},
+        time_zone => $cutoff->{time_zone},
     );
 
 }
