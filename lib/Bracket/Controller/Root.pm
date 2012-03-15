@@ -74,7 +74,7 @@ sub auto : Private {
         
         # Set cutoff state
         my $cutoff_time = $self->edit_cutoff_time($c);
-        $c->stash->{is_game_time} = (DateTime->now > $cutoff_time);
+        $c->stash->{is_game_time} = (DateTime->now(time_zone => $cutoff_time->time_zone) > $cutoff_time);
     }
 
     # User found, so return 1 to continue with processing after this 'auto'
