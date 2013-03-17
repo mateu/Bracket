@@ -8,7 +8,7 @@ use warnings;
 
 use base 'DBIx::Class::Schema';
 
-__PACKAGE__->load_namespaces( result_namespace => 'Result', );
+__PACKAGE__->load_namespaces(result_namespace => 'Result',);
 
 # Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-02-28 11:54:30
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9Mvnns/DJ5m0MpQNixu/qQ
@@ -16,7 +16,7 @@ __PACKAGE__->load_namespaces( result_namespace => 'Result', );
 # You can replace this text with custom content, and it will be preserved on regeneration
 
 sub create_initial_data {
-    my ( $schema, $config, $custom_values ) = @_;
+    my ($schema, $config, $custom_values) = @_;
 
     $custom_values ||= {
         admin_first_name => 'Admin',
@@ -40,23 +40,23 @@ sub create_initial_data {
     );
 
     my @roles =
-      $schema->populate( 'Role', [ [qw/ role /], ['admin'], ['basic'] ] );
+      $schema->populate('Role', [ [qw/ role /], ['admin'], ['basic'] ]);
 
     # Set admin account up with admin role.  admins are able to edit the
     # perfect bracket among other things.
     my @player_roles =
-      $schema->populate( 'PlayerRole',
-        [ [qw/role player/], [ $roles[0]->id, $players[1]->id ], ] );
+      $schema->populate('PlayerRole',
+        [ [qw/role player/], [ $roles[0]->id, $players[1]->id ], ]);
 
     # Regions
     my @regions = $schema->populate(
         'Region',
         [
             [qw/ id name /],
-            [ 1, 'South' ],
+            [ 1, 'Midwest' ],
             [ 2, 'West' ],
-            [ 3, 'East' ],
-            [ 4, 'Midwest' ],
+            [ 3, 'South' ],
+            [ 4, 'East' ],
         ]
     );
 
@@ -65,70 +65,73 @@ sub create_initial_data {
         'Team',
         [
             [qw/ id seed name region /],
-            [ 1,  1,  'Kentucky',        1 ],
-            [ 2,  16, 'MVSU / WKU',      1 ],
-            [ 3,  8,  'Iowa St',         1 ],
-            [ 4,  9,  'UCONN',           1 ],
-            [ 5,  5,  'Wichita St',      1 ],
-            [ 6,  12, 'VCU',             1 ],
-            [ 7,  4,  'Indiana',         1 ],
-            [ 8,  13, 'New Mexico St',   1 ],
-            [ 9,  6,  'UNLV',            1 ],
-            [ 10, 11, 'Colorado',        1 ],
-            [ 11, 3,  'Baylor',          1 ],
-            [ 12, 14, 'Souh Dakota St',  1 ],
-            [ 13, 7,  'Notre Dame',      1 ],
-            [ 14, 10, 'Xavier',          1 ],
-            [ 15, 2,  'Duke',            1 ],
-            [ 16, 15, 'Lehigh',          1 ],
-            [ 17, 1,  'Michigan St',     2 ],
-            [ 18, 16, 'Long Island',     2 ],
-            [ 19, 8,  'Memphis',         2 ],
-            [ 20, 9,  'Saint Louis',     2 ],
-            [ 21, 5,  'New Mexico',      2 ],
-            [ 22, 12, 'Long Beach St',   2 ],
-            [ 23, 4,  'Louisville',      2 ],
-            [ 24, 13, 'Davidson',        2 ],
-            [ 25, 6,  'Murray St',       2 ],
-            [ 26, 11, 'Colorado St',     2 ],
-            [ 27, 3,  'Marquette',       2 ],
-            [ 28, 14, 'BYU / Iona',      2 ],
-            [ 29, 7,  'Florida',         2 ],
-            [ 30, 10, 'Virginia',        2 ],
-            [ 31, 2,  'Missouri',        2 ],
-            [ 32, 15, 'Norfolk St',      2 ],   
-            [ 33, 1,  'Syracuse',        3 ],
-            [ 34, 16, 'NC-Asheville',    3 ],
-            [ 35, 8,  'Kansas St',       3 ],
-            [ 36, 9,  'Southern Miss',   3 ],
-            [ 37, 5,  'Vanderbilt',      3 ],
-            [ 38, 12, 'Harvard',         3 ],
-            [ 39, 4,  'Wisconsin',       3 ],
-            [ 40, 13, 'Montana',         3 ],
-            [ 41, 6,  'Cincinnati',      3 ],
-            [ 42, 11, 'Texas',           3 ],
-            [ 43, 3,  'Florida St',      3 ],
-            [ 44, 14, 'St Bonaventure',  3 ],
-            [ 45, 7,  'Gonzaga',         3 ],
-            [ 46, 10, 'West Virginia',   3 ],
-            [ 47, 2,  'Ohio St',         3 ],
-            [ 48, 15, 'Loyola (MD)',     3 ],
-            [ 49, 1,  'North Carolina',  4 ],
-            [ 50, 16, 'Lamar / Vermont', 4 ],
-            [ 51, 8,  'Ceighton',        4 ],
-            [ 52, 9,  'Alabama',         4 ],
-            [ 53, 5,  'Temple',          4 ],
-            [ 54, 12, 'Cal / USF',       4 ],
-            [ 55, 4,  'Michigan',        4 ],
-            [ 56, 13, 'Ohio',            4 ],
-            [ 57, 6,  'San Diego St',    4 ],
-            [ 58, 11, 'NC State',        4 ],
-            [ 59, 3,  'Georgetown',      4 ],
-            [ 60, 14, 'Belmont',         4 ],
-            [ 61, 7,  "Saint Mary's",    4 ],
-            [ 62, 10, 'Purdue',          4 ],
-            [ 63, 2,  'Kansas',          4 ],
-            [ 64, 15, 'Detroit',         4 ],
+            [ 1,  1,  'Louisville',    1 ],
+            [ 2,  16, 'Play-in',       1 ],
+            [ 3,  8,  'Colorado St.',  1 ],
+            [ 4,  9,  'Missouri',      1 ],
+            [ 5,  5,  'Oklahoma St.',  1 ],
+            [ 6,  12, 'Oregon',        1 ],
+            [ 7,  4,  'Saint Louis',   1 ],
+            [ 8,  13, 'New Mexico St', 1 ],
+            [ 9,  6,  'Memphis',       1 ],
+            [ 10, 11, 'Play-in',       1 ],
+            [ 11, 3,  'Michigan St.',  1 ],
+            [ 12, 14, 'Valparaiso',    1 ],
+            [ 13, 7,  'Creighton',     1 ],
+            [ 14, 10, 'Cincinnati',    1 ],
+            [ 15, 2,  'Duke',          1 ],
+            [ 16, 15, 'Albany',        1 ],
+
+            [ 17, 1,  'Gonzaga',     2 ],
+            [ 18, 16, 'Southern U.', 2 ],
+            [ 19, 8,  'Pittsburgh',  2 ],
+            [ 20, 9,  'Wichita St.', 2 ],
+            [ 21, 5,  'Wisconsin',   2 ],
+            [ 22, 12, 'Ole Miss',    2 ],
+            [ 23, 4,  'Kansas St.',  2 ],
+            [ 24, 13, 'Play-in',     2 ],
+            [ 25, 6,  'Arizona',     2 ],
+            [ 26, 11, 'Belmont',     2 ],
+            [ 27, 3,  'New Mexico',  2 ],
+            [ 28, 14, 'Harvard',     2 ],
+            [ 29, 7,  'Notre Dame',  2 ],
+            [ 30, 10, 'Iowa St.',    2 ],
+            [ 31, 2,  'Ohio St.',    2 ],
+            [ 32, 15, 'Iona',        2 ],
+
+            [ 33, 1,  'Kansas',       3 ],
+            [ 34, 16, 'Western Ky.',  3 ],
+            [ 35, 8,  'N. Carolina',  3 ],
+            [ 36, 9,  'Villanova',    3 ],
+            [ 37, 5,  'VCU',          3 ],
+            [ 38, 12, 'Akron',        3 ],
+            [ 39, 4,  'Michigan',     3 ],
+            [ 40, 13, 'S. Dak. St.',  3 ],
+            [ 41, 6,  'UCLA',         3 ],
+            [ 42, 11, 'Minnesota',    3 ],
+            [ 43, 3,  'Florida',      3 ],
+            [ 44, 14, 'Nwestern St.', 3 ],
+            [ 45, 7,  'San Diego St', 3 ],
+            [ 46, 10, 'Oklahoma',     3 ],
+            [ 47, 2,  'Georgetown',   3 ],
+            [ 48, 15, 'FGCU',         3 ],
+
+            [ 49, 1,  'Indiana',      4 ],
+            [ 50, 16, 'Play-in',      4 ],
+            [ 51, 8,  'N.C. State',   4 ],
+            [ 52, 9,  'Temple',       4 ],
+            [ 53, 5,  'UNLV',         4 ],
+            [ 54, 12, 'California',   4 ],
+            [ 55, 4,  'Syracuse',     4 ],
+            [ 56, 13, 'Montana',      4 ],
+            [ 57, 6,  'Butler',       4 ],
+            [ 58, 11, 'Bucknell',     4 ],
+            [ 59, 3,  'Marquette',    4 ],
+            [ 60, 14, 'Davidson',     4 ],
+            [ 61, 7,  "Illinois",     4 ],
+            [ 62, 10, 'Colorado',     4 ],
+            [ 63, 2,  'Miami (Fla.)', 4 ],
+            [ 64, 15, 'Pacific',     4 ],
         ]
     );
 
