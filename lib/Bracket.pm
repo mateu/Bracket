@@ -67,7 +67,7 @@ Player brackets are compared to the perfect bracket for scoring purposes.
 
 =head1 AUTHOR
 
-Mateu X. Hunter 2008-2010
+Mateu X. Hunter 2008-2013
 hunter@missoula.org
 
 =head1 LICENSE
@@ -77,7 +77,7 @@ it under the same terms as Perl itself.
 
 =head1 COPYRIGHT
 
-Mateu X. Hunter 2008
+Mateu X. Hunter 2008-2013
 
 =head1 LIMITATIONS
 
