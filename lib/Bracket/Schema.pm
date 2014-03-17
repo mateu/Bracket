@@ -44,6 +44,12 @@ sub create_initial_data {
   my @player_roles =
     $schema->populate('PlayerRole',
     [ [qw/role player/], [ $roles[0]->id, $players[1]->id ], ]);
+    
+  create_new_year_data($schema);
+}
+
+sub create_new_year_data {
+  my ($schema,) = @_;
 
   # Regions
   my @regions = $schema->populate(
@@ -200,97 +206,6 @@ sub create_initial_data {
       [ 61, 5 ],
       [ 62, 5 ],
       [ 63, 6 ],
-    ]
-  );
-}
-
-sub create_new_year_data {
-  my ($schema,) = @_;
-
-  # Regions
-  my @regions = $schema->populate(
-    'Region',
-    [
-      [qw/ id name /],
-      [ 1, 'Midwest' ],
-      [ 2, 'West' ],
-      [ 3, 'South' ],
-      [ 4, 'East' ],
-    ]
-  );
-
-  # Teams
-  my @teams = $schema->populate(
-    'Team',
-    [
-      [qw/ id seed name region /],
-      [ 1,  1,  'Louisville',    1 ],
-      [ 2,  16, 'Play-in',       1 ],
-      [ 3,  8,  'Colorado St.',  1 ],
-      [ 4,  9,  'Missouri',      1 ],
-      [ 5,  5,  'Oklahoma St.',  1 ],
-      [ 6,  12, 'Oregon',        1 ],
-      [ 7,  4,  'Saint Louis',   1 ],
-      [ 8,  13, 'New Mexico St', 1 ],
-      [ 9,  6,  'Memphis',       1 ],
-      [ 10, 11, 'Play-in',       1 ],
-      [ 11, 3,  'Michigan St.',  1 ],
-      [ 12, 14, 'Valparaiso',    1 ],
-      [ 13, 7,  'Creighton',     1 ],
-      [ 14, 10, 'Cincinnati',    1 ],
-      [ 15, 2,  'Duke',          1 ],
-      [ 16, 15, 'Albany',        1 ],
-
-      [ 17, 1,  'Gonzaga',     2 ],
-      [ 18, 16, 'Southern U.', 2 ],
-      [ 19, 8,  'Pittsburgh',  2 ],
-      [ 20, 9,  'Wichita St.', 2 ],
-      [ 21, 5,  'Wisconsin',   2 ],
-      [ 22, 12, 'Ole Miss',    2 ],
-      [ 23, 4,  'Kansas St.',  2 ],
-      [ 24, 13, 'Play-in',     2 ],
-      [ 25, 6,  'Arizona',     2 ],
-      [ 26, 11, 'Belmont',     2 ],
-      [ 27, 3,  'New Mexico',  2 ],
-      [ 28, 14, 'Harvard',     2 ],
-      [ 29, 7,  'Notre Dame',  2 ],
-      [ 30, 10, 'Iowa St.',    2 ],
-      [ 31, 2,  'Ohio St.',    2 ],
-      [ 32, 15, 'Iona',        2 ],
-
-      [ 33, 1,  'Kansas',       3 ],
-      [ 34, 16, 'Western Ky.',  3 ],
-      [ 35, 8,  'N. Carolina',  3 ],
-      [ 36, 9,  'Villanova',    3 ],
-      [ 37, 5,  'VCU',          3 ],
-      [ 38, 12, 'Akron',        3 ],
-      [ 39, 4,  'Michigan',     3 ],
-      [ 40, 13, 'S. Dak. St.',  3 ],
-      [ 41, 6,  'UCLA',         3 ],
-      [ 42, 11, 'Minnesota',    3 ],
-      [ 43, 3,  'Florida',      3 ],
-      [ 44, 14, 'Nwestern St.', 3 ],
-      [ 45, 7,  'San Diego St', 3 ],
-      [ 46, 10, 'Oklahoma',     3 ],
-      [ 47, 2,  'Georgetown',   3 ],
-      [ 48, 15, 'FGCU',         3 ],
-
-      [ 49, 1,  'Indiana',      4 ],
-      [ 50, 16, 'Play-in',      4 ],
-      [ 51, 8,  'N.C. State',   4 ],
-      [ 52, 9,  'Temple',       4 ],
-      [ 53, 5,  'UNLV',         4 ],
-      [ 54, 12, 'California',   4 ],
-      [ 55, 4,  'Syracuse',     4 ],
-      [ 56, 13, 'Montana',      4 ],
-      [ 57, 6,  'Butler',       4 ],
-      [ 58, 11, 'Bucknell',     4 ],
-      [ 59, 3,  'Marquette',    4 ],
-      [ 60, 14, 'Davidson',     4 ],
-      [ 61, 7,  "Illinois",     4 ],
-      [ 62, 10, 'Colorado',     4 ],
-      [ 63, 2,  'Miami (Fla.)', 4 ],
-      [ 64, 15, 'Pacific',      4 ],
     ]
   );
 }
