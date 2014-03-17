@@ -15,7 +15,7 @@ Bracket::Schema::Result::PlayerRole
 
 =cut
 
-__PACKAGE__->table("player_roles");
+__PACKAGE__->table("player_role");
 
 =head1 ACCESSORS
 

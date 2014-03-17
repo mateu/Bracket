@@ -15,7 +15,7 @@ Bracket::Schema::Result::RegionScore
 
 =cut
 
-__PACKAGE__->table("region_scores");
+__PACKAGE__->table("region_score");
 
 =head1 ACCESSORS
 

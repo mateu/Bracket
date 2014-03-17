@@ -15,7 +15,7 @@ Bracket::Schema::Result::Token
 
 =cut
 
-__PACKAGE__->table("tokens");
+__PACKAGE__->table("token");
 
 =head1 ACCESSORS
 

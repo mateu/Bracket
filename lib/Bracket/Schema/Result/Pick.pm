@@ -15,7 +15,7 @@ Bracket::Schema::Result::Pick
 
 =cut
 
-__PACKAGE__->table("picks");
+__PACKAGE__->table("pick");
 
 =head1 ACCESSORS
 

@@ -11,6 +11,8 @@ SQL update of points that is way faster than player_points action in Admin.
 DRAWBACK: only tested on MySQL, may be MySQL specfic update.
 SOLUTION: Find DBIC way of doing it?  Use sub-query.
 
+Note: sqlite3 does not like the syntax on this update
+
 =cut
 
 sub update_points {
@@ -25,7 +27,7 @@ sub update_points {
                 (
                 select  player_picks.player,
                         sum(game.round*(5 + game.lower_seed*team.seed)) as points
-                  from picks player_picks, picks perfect_picks, game game, team team
+                  from pick player_picks, pick perfect_picks, game game, team team
                  where perfect_picks.pick   = player_picks.pick 
                    and perfect_picks.game   = player_picks.game 
                    and player_picks.game    = game.id
@@ -57,11 +59,11 @@ sub count_region_picks {
             my $self = shift;
             my $dbh  = shift;
             my $sth  = $dbh->prepare('
-            select region.id, count(*) from picks  
-            join team on picks.pick = team.id  
-            join region on team.region = region.id  
-            join game on picks.game = game.id  
-            where game.round < 5 and player = ? 
+            select region.id, count(*) from pick
+            join team on pick.pick = team.id
+            join region on team.region = region.id
+            join game on pick.game = game.id
+            where game.round < 5 and player = ?
             group by region.id
             ;'
             );
@@ -92,7 +94,7 @@ sub count_player_picks {
             my $dbh  = shift;
             my $sth  = $dbh->prepare('
             select player.id, count(*) from player
-            join picks on player.id = picks.player
+            join pick on player.id = pick.player
             group by player.id
             ;'
             );
@@ -123,7 +125,7 @@ sub count_player_picks_correct {
             my $dbh  = shift;
             my $sth  = $dbh->prepare('                   
             select player_picks.player, count(*)
-              from picks player_picks, picks perfect_picks, game game, team team
+              from pick player_picks, pick perfect_picks, game game, team team
              where perfect_picks.pick   = player_picks.pick 
                and perfect_picks.game   = player_picks.game 
                and player_picks.game    = game.id
@@ -159,8 +161,8 @@ sub count_final4_picks {
             my $dbh  = shift;
             my $sth  = $dbh->prepare('
             select count(*) from player
-            join picks on player.id = picks.player
-            where picks.game > 60
+            join pick on player.id = pick.player
+            where pick.game > 60
             and player.id = ?
             ;'
             );
