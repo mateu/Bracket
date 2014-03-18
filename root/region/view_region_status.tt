@@ -7,7 +7,7 @@
 
     <h1>Region picks for player [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</h1>
     <div style="text-align:center;">
-    <div style="font-size: 1.2em;>
+    <div style="font-size: 1.2em;">
     Region Points: <span class="points">[% region_points %]</span> 
     Total Points: <span class="points">[% player.points %]</span>
     </div>
