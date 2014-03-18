@@ -1,4 +1,4 @@
-[% page_title = 'Account for: ' _ c.user.first_name _ ' ' _ c.user.last_name %]
+[% page_title = c.user.first_name _ ' ' _ c.user.last_name _ ' Account' %]
 
 <h1>[% page_title %]</h1>
 

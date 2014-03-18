@@ -1,4 +1,4 @@
-[% page_title = "Men's Basketball - NCAA Tournament " _ c.config.year %]
+[% page_title = "Bracket Leader Board" _ c.config.year %]
 
 
 [% USE Dumper %]

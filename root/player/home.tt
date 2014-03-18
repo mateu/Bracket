@@ -1,4 +1,4 @@
-[% page_title = c.config.name _ " Home Page for player: " _ player.first_name _ ' ' _ player.last_name %]
+[% page_title = player.first_name _ ' ' _ player.last_name _ ' Home ' %]
 
 <div id="player_page">
 
