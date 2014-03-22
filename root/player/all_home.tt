@@ -9,7 +9,8 @@
 
 [% i = 1 %]
 <table id="all_player_home">
-<tr><th>Rank</th><th>Player</th><th>Points</th><th class="secondary">Brackets</th><th>Picks</th></tr>
+<tr><th>Rank</th><th>Player</th><th>Points</th><th class="secondary">Brackets</th>
+<th>Upsets</th></tr>
 [% FOREACH player IN players.nsort('points').reverse %]
 	<tr class="[% i % 2 == 0 ? 'even' : 'odd' %]" >
    [% IF player.active == 1 %]
@@ -43,7 +44,7 @@
         [% ELSE %] 
             [% SET picks_correct = correct_picks_per_player.$player_id || 0 %]
             [% SET picks_upset = upset_picks_per_player.$player_id || 0 %]
-            <span style="color:darkgreen;">[% picks_correct %] correct, [% picks_upset %] upsets</span>
+            <span style="color:darkgreen;">[% picks_upset %] of [% picks_correct %]</span>
         [% END %]
 	</td>
 	</tr>
