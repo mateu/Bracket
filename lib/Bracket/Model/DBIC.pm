@@ -123,7 +123,7 @@ sub count_player_picks_correct {
         sub {
             my $self = shift;
             my $dbh  = shift;
-            my $sth  = $dbh->prepare('                   
+            my $sth  = $dbh->prepare('
             select player_picks.player, count(*)
               from pick player_picks, pick perfect_picks, game game, team team
              where perfect_picks.pick   = player_picks.pick 
@@ -141,6 +141,42 @@ sub count_player_picks_correct {
               $picks_per_player->{$row->[0]} = $row->[1];
           }
           return $picks_per_player;
+        }
+    );
+}
+
+=heads2 count_player_picks_upset
+
+Count up how many upset picks a player has made correct so far.
+
+=cut
+
+sub count_player_picks_upset {
+    my $self = shift;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+            select player_picks.player, count(*)
+              from pick player_picks, pick perfect_picks, game game, team team
+             where perfect_picks.pick   = player_picks.pick
+               and perfect_picks.game   = player_picks.game
+               and player_picks.game    = game.id
+               and player_picks.pick    = team.id
+               and perfect_picks.player = 1
+               and game.lower_seed      = 1
+          group by player_picks.player
+          ;'
+          );
+          $sth->execute() or die $sth->errstr;
+          my $upset_picks_per_player = {};
+          my $result = $sth->fetchall_arrayref;
+          foreach my $row (@{$result}) {
+              $upset_picks_per_player->{$row->[0]} = $row->[1];
+          }
+          return $upset_picks_per_player;
         }
     );
 }
