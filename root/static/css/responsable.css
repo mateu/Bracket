@@ -18,7 +18,7 @@ ul {
 /*header*/
  
 header {
-    background: #1c1c1c;
+    background: darkblue; /* #1c1c1c; */
     padding: 10px 10px;
 }
  
@@ -44,7 +44,7 @@ h1.logo a {
     font-weight: bold;
 /*    text-transform: uppercase; */
     font-size: 20px;
-    line-height: 22px;
+/*    line-height: 22px; */
     float: left;
     letter-spacing: 0.2em;
 }
@@ -76,21 +76,21 @@ a.to_nav:focus {
  
 #primary_nav ul {
     list-style: none;
-    background: #1c1c1c;
-    padding: 5px 0;
+    background: darkblue; /* #1c1c1c; */
+    padding: 3px 3px;
 }
  
 #primary_nav li a {
     display: block;
-    padding: 0 10px;
+    padding: 10px 10px;
     color: #fff;
     text-decoration: none;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     letter-spacing: 0.1em;
-    line-height: 1.5em;
-    height: 1.5em;
+    line-height: 1.66em;
+    height: 1.66em;
     border-bottom: 1px solid #383838;
 }
  
