@@ -24,15 +24,17 @@
 [%- content -%]
 </div>
 
+[% IF c.user_exists %]
 <nav id="primary_nav">
      <ul>
          <li><a href="[% c.uri_for('/all') %]">Leader Board</a></li>
          <li><a href="[% c.uri_for('/') %]">Home</a></li>
          <li><a href="[% c.uri_for('/account') %]">Account</a></li>
      </ul>
- </nav><!--end primary_nav-->
+ </nav>
+ [% END %]
  
- <footer>
+<footer>
     <p></p>
 </footer>
 </div>

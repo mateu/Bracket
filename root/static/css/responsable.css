@@ -73,8 +73,9 @@ a.to_nav:focus {
 }
 
 /*navigation*/ 
- 
+
 #primary_nav ul {
+	  float: left;
     list-style: none;
     background: darkblue; /* #1c1c1c; */
     padding: 3px 3px;

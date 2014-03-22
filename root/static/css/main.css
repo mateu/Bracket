@@ -199,3 +199,14 @@ h1 {
     font-size: 0.72em;
     font-style: italic;
 }
+
+.account_links {
+    float: right;
+    clear: both;
+    margin-left: 2rem;
+    padding: 1rem;
+    list-style: none;
+}
+.account_links li {
+	padding-bottom: 0.75em;
+}
