@@ -9,15 +9,16 @@
    # Put the javascript uri's into the array to be added to <head>
    javascripts  = [ jquery_uri regional_bracket ];   
    
-   # Final four needs differnt javascript
+   # Final four needs different javascript
    IF final_4_javascript;
    javascripts  = [ jquery_uri final_4_bracket ];
    END;
    
    # Define CSS uri's to load
    main_css = static_uri _ '/css/main.css';
-   
-   style_sheets = [ main_css ];
+   reset_css = static_uri _ '/css/reset.css';
+   responsable_css = static_uri _ '/css/responsable.css';
+   style_sheets = [ main_css reset_css responsable_css ];
    
 
  -%]

@@ -1,9 +1,6 @@
 [% page_title = c.user.first_name _ ' ' _ c.user.last_name _ ' Account' %]
 
-<h1>[% page_title %]</h1>
-
 <ul>
-<li>
-<a href="[% c.uri_for('/change_password') %]">Change password</a>
-</li>
+<li><a href="[% c.uri_for('/logout') %]" title="Logout">Logout</a>
+<li><a href="[% c.uri_for('/change_password') %]">Change password</a>
 </ul>

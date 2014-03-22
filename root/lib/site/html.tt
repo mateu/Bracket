@@ -5,14 +5,17 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-<title>[% page_title or template.title or site.title %] : Bracket [% c.config.year %]</title>
+<title>[% page_head_title or page_title or template.title or site.title %] : Bracket [% c.config.year %]</title>
 [%- INCLUDE lib/site/javascripts.tt -%]
 [%- INCLUDE lib/site/style_sheets.tt -%]
 </head>
 
 <body[% body_attributes %]>
 <div id="body">
-[% INCLUDE lib/site/user_header.tt %]
+<header>
+  <h1 class="logo"><a href="">Bracket 2014</a></h1>
+  <a class="to_nav" href="#primary_nav">Menu</a>
+</header>
 
 <span class="message">[% status_msg || c.flash.status_msg %]</span>
 <span class="error">[% error_msg %]</span>
@@ -21,6 +24,18 @@
 [%- content -%]
 </div>
 
+<nav id="primary_nav">
+     <ul>
+         <li><a href="/all">Leader Board</a></li>
+         <li><a href="/">Home</a></li>
+         <li><a href="/account">Account</a></li>
+     </ul>
+ </nav><!--end primary_nav-->
+ 
+ <footer>
+    <p></p>
+</footer>
 </div>
+
 </body>
 </html>

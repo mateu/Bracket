@@ -1,22 +1,24 @@
-[% page_title = "View Regional Picks - Men's Basketball - NCAA Tournament " _ c.config.year %]
+[% site_title = "Bracket  " _ c.config.year %]
+[% page_title = player.first_name _ " " _ player.last_name  _ " " _ region.name _ " Region" %]
+[% page_head_title = page_title _ " - " _ site_title %]
+
 [% SET no_javascript = 1 %]
 
 [% #INCLUDE 'html_head_no_javascript.tt' %]
 [% USE Dumper %]
 <div class="container">
-
-    <h1>Region picks for player [% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</h1>
-    <div style="text-align:center;">
-    <div style="font-size: 1.2em;">
-    Region Points: <span class="points">[% region_points %]</span> 
-    Total Points: <span class="points">[% player.points %]</span>
-    </div>
-    [% #Dumper.dump(show_regions) %]
+ 
+    <div style="text-align:center; clear:right;">
+    <div style="clear:left;">
+    <span style="font-style:italic;">[% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</span>
+    <span style="font-weight:bold;">[% region.name %]</span> - region
+    points: [% region_points %] total: [% player.points %]</div>
+    <div>
     [% WHILE (r = regions.next) %]
 	    <a href="[% c.uri_for('/region/view/') _ r.id _ '/' _ player.id %]">[% r.name %]</a> | 
 	[% END %]
-	<span style="font-style: italic;"><a href="[% c.uri_for('/final4/view/') _ player.id %]">Final 4</a></span> |    
-    <span style="font-size: 0.82em;"><a href="[% c.uri_for('/all') %]">All Players Home</a></span><br />
+	<span style="font-style: italic;"><a href="[% c.uri_for('/final4/view/') _ player.id %]">Final 4</a></span>
+	  </div>  
     </div>
     [% region_multiplier = region.id - 1 %]
    <table summary="Tournament Bracket" class="regional_bracket">  

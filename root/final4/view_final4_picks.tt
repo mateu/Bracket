@@ -1,21 +1,17 @@
 [% page_title = "View Final 4 Picks - Men's Basketball - NCAA Tournament " _ c.config.year %]
 
 <div class="container">
-
-    <h1> <span style="color:green;">Final Four</span> picks for player 
-    <span style="color:green; font-style: italic;">[% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</span></h1>
-
     <div style="font-size: 1.0em; text-align:center; margin-left: -3em;">
-    <div style="font-size: 1.2em;">
-    Total Points: <span class="points">[% player.points %]</span>
-    </div>
+    <div style="clear:left;">
+    <span style="font-style:italic;">[% player.first_name | ucfirst %] [% player.last_name | ucfirst %]</span>
+    Final 4 - 
+    total points: <span class="points">[% player.points %]</span></div>
+    <div>
     [% #Dumper.dump(show_regions) %]
     [% WHILE (r = regions.next) %]
 	    <a href="[% c.uri_for('/region/view/') _ r.id _ '/' _ player.id %]">[% r.name %]</a> | 
 	[% END %]
 	<span style="font-style: italic;"><a href="[% c.uri_for('/final4/view/') _ player.id %]">Final 4</a></span>
-	 |    
-    <a href="[% c.uri_for('/all') %]">All Players Home</a><br />
     </div>
 
 	[% INCLUDE 'final4/bracket.tt' %] 
