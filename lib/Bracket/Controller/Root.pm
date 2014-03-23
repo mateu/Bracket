@@ -75,6 +75,10 @@ sub auto : Private {
         # Set cutoff state
         my $cutoff_time = $self->edit_cutoff_time($c);
         $c->stash->{is_game_time} = (DateTime->now(time_zone => $cutoff_time->time_zone) > $cutoff_time);
+
+        # Note if we have a normal user in game time (used to hide edit links)
+        $c->stash->{is_normal_user_in_game_time} =
+          (!$c->stash->{is_admin} &&  $c->stash->{is_game_time});
     }
 
     # User found, so return 1 to continue with processing after this 'auto'

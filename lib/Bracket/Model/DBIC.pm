@@ -22,21 +22,33 @@ sub update_points {
         sub {
             my $self = shift;
             my $dbh  = shift;
-            my $sth  = $dbh->prepare('
-                update player player, 
+            my $sth  = $dbh->prepare('delete from region_score;');
+            $sth->execute;
+            $sth = $dbh->prepare('
+                insert into region_score
+                (player, region)
+                select player.id, region.id
+                from player, region
+                where player.active = 1;'
+            );
+            $sth->execute;
+            $sth = $dbh->prepare('
+                update region_score region_score,
                 (
                 select  player_picks.player,
-                        sum(game.round*(5 + game.lower_seed*team.seed)) as points
+                        sum(game.round*(5 + game.lower_seed*team.seed)) as points,
+                        team.region as region
                   from pick player_picks, pick perfect_picks, game game, team team
                  where perfect_picks.pick   = player_picks.pick 
                    and perfect_picks.game   = player_picks.game 
                    and player_picks.game    = game.id
                    and player_picks.pick    = team.id
                    and perfect_picks.player = 1
-                   group by player_picks.player
+                   group by player_picks.player, team.region
                 )  computed_player_points
-                set player.points = computed_player_points.points
-                where player.id = computed_player_points.player
+                set region_score.points = computed_player_points.points
+                where region_score.player = computed_player_points.player
+                  and region_score.region = computed_player_points.region
                 ;'
             );
             $sth->execute();
