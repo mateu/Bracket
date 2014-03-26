@@ -51,7 +51,18 @@ sub update_points {
                   and region_score.region = computed_player_points.region
                 ;'
             );
-            $sth->execute();
+            $sth->execute;
+            my $sth  = $dbh->prepare('
+                update player player,
+                (
+                 select player, sum(points) as total_points from region_score
+                 group by player
+                ) region_scores
+                set player.points = region_scores.total_points
+                where player.id = region_scores.player;
+            ');
+            $sth->execute;
+
         }
     );
 }
