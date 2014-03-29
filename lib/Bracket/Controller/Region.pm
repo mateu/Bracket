@@ -4,7 +4,6 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use DateTime;
-use Data::Dumper;
 
 my $PERFECT_BRACKET_MODE = 1;
 
@@ -40,8 +39,6 @@ sub save_picks : Local {
             $pick->update;
         }
         else {
-
-            #my $add_pick = $c->model('DBIC::Pick')->find_or_new( {player => $player, game => $game} );
             my $new_pick =
               $c->model('DBIC::Pick')->new({ player => $player_id, game => $game, pick => $team });
             $new_pick->insert;
@@ -64,7 +61,6 @@ sub view : Local {
     my @perfect_picks = $c->model('DBIC::Pick')->search({ player => 1 });
     my @player_picks  = $c->model('DBIC::Pick')->search({ player => $player_id });
 
-    #warn Dumper @player_picks;
     my %picks;
     my %class_for;
     my $region_points = 0;
@@ -82,16 +78,11 @@ sub view : Local {
                 if ($winning_pick->pick->id == $player_pick->pick->id) {
                     $class_for{ $player_pick->game->id } = 'in';
 
-                    # Add points for region.  Should move this out two control structures.
-                    ### if ($player_pick->pick->region == $region) {
-                    # Compute points for correct pick
-                    # Formula
+                    # Formula to compute points for correct picks
                     my $points_for_pick =
                       (5 + $player_pick->pick->seed * $player_pick->game->lower_seed) *
                       $player_pick->game->round;
                     $region_points += $points_for_pick;
-
-                    #}
                 }
                 else {
                     $class_for{ $player_pick->game->id } = 'out';
