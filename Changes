@@ -3,6 +3,8 @@ College Basketball Bracket System
 1.10    2014 Mars ??
         - sum regional scores to get total score (fix)
         - stay on perfect player pages when editing
+        - fix round > 2 team advancement
+        - update to 2.1.0 of jQuery
 
 1.09    2014 Mars 23
         - (re)build manifest to add new css files

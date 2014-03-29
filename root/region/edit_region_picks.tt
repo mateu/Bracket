@@ -12,37 +12,43 @@ for player: <em>[% player_name %]</em><br />
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 1 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  
-		<td rowspan="4"><p id="w[% game = 9+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  
-		<td rowspan="8"><p id="w[% game = 13+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  
-		<td rowspan="16"><p id="w[% game = 15+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  </tr> 		
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="4"><p id="w[% game = 9+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r2-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="8"><p id="w[% game = 13+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r3-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="16"><p id="w[% game = 15+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r4-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]		
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr> 
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 2 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr> 
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 3 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  
-		<td rowspan="4"><p id="w[% game = 10+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  </tr>  
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="4"><p id="w[% game = 10+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r2-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 4 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>  
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 5 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  
-		<td rowspan="4"><p id="w[% game = 11+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  
-		<td rowspan="8"><p id="w[% game = 14+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  </tr>  
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="4"><p id="w[% game = 11+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r2-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="8"><p id="w[% game = 14+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r3-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
 [% team = teams.next %]		
@@ -54,8 +60,9 @@ for player: <em>[% player_name %]</em><br />
 [% team = teams.next %] 
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  
 		<td rowspan="2"><p id="w[% game = 7 + 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
-		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  
-		<td rowspan="4"><p id="w[% game = 12+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]</p></td>  </tr>  
+		<span id="r1-t[% picks.$game.id %]-rg[% region %]"></span></p></td>
+		<td rowspan="4"><p id="w[% game = 12+ 15*region_multiplier; game; %]">[% picks.$game.seed %]. [% picks.$game.name %]
+		<span id="r2-t[% picks.$game.id %]-rg[% region %]"></span></p></td>  </tr>
 [% team = teams.next %]
 		<tr>  <td><p>[% team.seed %]. [% team.name %]<span id="r0-t[% team.id %]-rg[% region %]"></span></p></td>  </tr>  
 [% team = teams.next %]		
@@ -67,9 +74,4 @@ for player: <em>[% player_name %]</em><br />
 	</table> 
 	<input type="submit" value="Save Picks" />
 	</form>
-<br />
-<hr />
-<strong>Usage Limitation Note: </strong><div style="background:cornsilk; padding:2px; max-width:30em;">If you want to <u>change a pick</u> you must <u>start from the first round</u> 
-and carry it through the round you want to change.</div>
-
 </div>
