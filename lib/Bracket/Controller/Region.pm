@@ -49,7 +49,11 @@ sub save_picks : Local {
     }
 
     $c->stash->{params} = $params;
-    $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
+    my $previous_user_id = $c->session->{previous_user_id};
+    $c->response->redirect(
+        $c->uri_for($c->controller('Player')->action_for('home'))
+        . "/${player_id}"
+    );
 
     return;
 }

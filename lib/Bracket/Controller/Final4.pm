@@ -112,7 +112,10 @@ sub save_picks : Local {
         }
     }
     $c->stash->{params} = $params;
-    $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
+    $c->response->redirect(
+        $c->uri_for($c->controller('Player')->action_for('home'))
+        . "/${player_id}"
+    );
 
     return;
 }
