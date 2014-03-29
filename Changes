@@ -1,5 +1,9 @@
 College Basketball Bracket System
 
+1.10    2014 Mars ??
+        - sum regional scores to get total score (fix)
+        - staying on perfect player pages when editing 
+
 1.09    2014 Mars 23
         - (re)build manifest to add new css files
 
