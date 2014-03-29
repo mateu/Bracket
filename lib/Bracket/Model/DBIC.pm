@@ -52,7 +52,7 @@ sub update_points {
                 ;'
             );
             $sth->execute;
-            my $sth  = $dbh->prepare('
+            $sth  = $dbh->prepare('
                 update player player,
                 (
                  select player, sum(points) as total_points from region_score
