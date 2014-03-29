@@ -65,7 +65,6 @@ has 'reset_password_form' => (
 sub register : Global {
     my ($self, $c) = @_;
 
-    #use Data::Dumper; print Dumper $self->form;
     $c->stash(
         template => 'form/auth/register.tt',
         form     => $self->register_form,
@@ -124,7 +123,6 @@ sub login : Global {
         $c->uri_for($c->controller('Player')->action_for('home')) . "/${user_id}",
     );
 
-    #$c->go( $c->controller('Player')->action_for('home'), [$user_id] );
 }
 
 =head2 logout
@@ -275,13 +273,6 @@ END_MESSAGE
         body => $message,
     );
     my $success = try_to_sendmail($email);
-    use Data::Dumper::Concise;
-#    warn "EMAIL SUCCESS";
-#    warn Dumper $success;
-#    my $transport = Email::Sender::Transport::Test->new();
-#    my $envelope;
-#    my $v = $transport->delivery_failure($email, $envelope);
-#    print "V: $v\n"
 }
 
 sub message : Global {
