@@ -13,7 +13,7 @@
 <body[% body_attributes %]>
 <div id="body">
 <header>
-  <h1 class="logo"><a href="">Bracket 2014</a></h1>
+  <h1 class="logo"><a href="">Bracket [% c.config.year %]</a></h1>
   <a class="to_nav" href="#primary_nav">Menu</a>
 </header>
 

@@ -2,7 +2,7 @@
   git clone http://github.com/mateu/Bracket.git
 
 1. Create a database in MySQL or PostgreSQL (call it bracket_2014 if you like)
-sql> create database bracket_2014
+sql> create database bracket_2015
 
 1b. If your database fu sucks or is lazy then use a SQLite database which will
 create the DB for you and does not require a user or password.

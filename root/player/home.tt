@@ -1,4 +1,4 @@
-[% site_title = 'Bracket 2014' %]
+[% site_title = 'Bracket ' _ c.config.year %]
 [% page_title = player.first_name _ ' ' _ player.last_name _ ' has '
  _ player.points _ ' points' %]
 
