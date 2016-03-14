@@ -10,7 +10,13 @@
 [% i = 1 %]
 <table id="all_player_home">
 <tr><th>Rank</th><th>Player</th><th>Points</th><th class="secondary">Brackets</th>
-<th>Upsets</th></tr>
+<th>
+[% IF !is_game_time %]
+Picks
+[% ELSE %]
+Upsets
+[% END %]
+</th></tr>
 [% FOREACH player IN players.nsort('points').reverse %]
 	<tr class="[% i % 2 == 0 ? 'even' : 'odd' %]" >
    [% IF player.active == 1 %]
