@@ -111,7 +111,7 @@ sub create_new_year_data {
       [ 39, 4,  'Kentucky',    3 ],
       [ 40, 13, 'Stony Brook',  3 ],
       [ 41, 6,  'Notre Dame',           3 ],
-      [ 42, 11, 'Michgian/Tulsa',         3 ],
+      [ 42, 11, 'Michigan/Tulsa',         3 ],
       [ 43, 3,  'West Virginia',        3 ],
       [ 44, 14, 'Stephen F. Austin',    3 ],
       [ 45, 7,  'Wisconsin',           3 ],
