@@ -2,6 +2,9 @@
 [% page_title = "Leader Board" %]
 [% page_head_title = page_title _ " - " _ site_title %]
 
+[% IF (is_admin && player_id != 1);
+    INCLUDE 'admin/links.tt';
+ END %]
 
 [% USE Dumper %]
 <table class="container">

@@ -6,6 +6,11 @@
 
 [% #INCLUDE 'html_head_no_javascript.tt' %]
 [% USE Dumper %]
+
+ [% IF is_admin;
+    INCLUDE 'admin/links.tt';
+ END %]
+
 <div class="container">
  
     <div style="text-align:center; clear:right;">

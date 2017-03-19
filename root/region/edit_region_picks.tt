@@ -1,5 +1,9 @@
 [% page_title = "Edit Regional Picks - Men's Basketball - NCAA Tournament " _  c.config.year  %]
 
+ [% IF is_admin;
+    INCLUDE 'admin/links.tt';
+ END %]
+
 <div class="container">
 <h1>
 <span style="color:darkred;">Edit [% region_name %]</span> Region Picks 
