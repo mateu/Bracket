@@ -26,8 +26,8 @@ sub update_points {
             $sth->execute;
             $sth = $dbh->prepare('
                 insert into region_score
-                (player, region)
-                select player.id, region.id
+                (player, region, points)
+                select player.id, region.id, 0
                 from player, region
                 where player.active = 1;'
             );
