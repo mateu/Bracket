@@ -13,11 +13,11 @@
 [% i = 1 %]
 <table id="all_player_home">
 <tr><th>Rank</th><th>Player</th><th>Points</th><th class="secondary">Brackets</th>
-<th>
+<th style="font-size: 0.72em;">
 [% IF !is_game_time %]
 Picks
 [% ELSE %]
-Upsets
+Upsets/Correct
 [% END %]
 </th></tr>
 [% FOREACH player IN players.nsort('points').reverse %]
