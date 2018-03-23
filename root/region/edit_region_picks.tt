@@ -1,4 +1,4 @@
-[% page_title = "Edit Regional Picks - Men's Basketball - NCAA Tournament " _  c.config.year  %]
+[% page_title = "Edit Regional Picks - Men's Basketball - NCAA Tournament" %]
 
  [% IF is_admin;
     INCLUDE 'admin/links.tt';

@@ -1,3 +1,5 @@
+[% page_title = 'Lower Seed QA' %]
+
  [% IF is_admin;
     INCLUDE 'admin/links.tt';
  END %]
