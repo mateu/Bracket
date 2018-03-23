@@ -50,8 +50,15 @@ Upsets/Correct
             [% END %]
         [% ELSE %] 
             [% SET picks_correct = correct_picks_per_player.$player_id || 0 %]
+            [% IF picks_correct == max_correct %]
+              [% SET picks_correct = '<span style="font-weight:bold;">' _ picks_correct _ '</span>' %]
+            [% END %]
             [% SET picks_upset = upset_picks_per_player.$player_id || 0 %]
-            <span style="color:darkgreen;">[% picks_upset %] of [% picks_correct %]</span>
+            [% IF picks_upset == max_upsets %]
+              [% SET picks_upset = '<span style="font-weight:bold;">' _ picks_upset _ '</span>' %]
+            [% END %]
+
+            <span style="color:darkgreen;">[% picks_upset %] of [% picks_correct  %]</span>
         [% END %]
 	</td>
 	</tr>

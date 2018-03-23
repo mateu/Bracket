@@ -2,6 +2,7 @@ package Bracket::Model::DBIC;
 
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
+use List::Util qw( max );
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -163,7 +164,8 @@ sub count_player_picks_correct {
           foreach my $row (@{$result}) {
               $picks_per_player->{$row->[0]} = $row->[1];
           }
-          return $picks_per_player;
+          my $max_correct = max map { $picks_per_player->{$_} } grep { $_ != 1 } keys %{$picks_per_player};
+          return $picks_per_player, $max_correct;
         }
     );
 }
@@ -199,7 +201,8 @@ sub count_player_picks_upset {
           foreach my $row (@{$result}) {
               $upset_picks_per_player->{$row->[0]} = $row->[1];
           }
-          return $upset_picks_per_player;
+          my $max_upsets = max map { $upset_picks_per_player->{$_} } grep { $_ != 1 } keys %{$upset_picks_per_player};
+          return $upset_picks_per_player, $max_upsets;
         }
     );
 }
