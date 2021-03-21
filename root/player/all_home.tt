@@ -15,7 +15,7 @@
 [% IF !is_game_time %]
 Picks
 [% ELSE %]
-Upsets/Correct
+Upsets, Correct
 [% END %]
 </th></tr>
 [% FOREACH player IN players.nsort('points').reverse %]
@@ -58,7 +58,7 @@ Upsets/Correct
               [% SET picks_upset = '<span style="font-weight:bold;">' _ picks_upset _ '</span>' %]
             [% END %]
 
-            <span style="color:darkgreen;">[% picks_upset %] of [% picks_correct  %]</span>
+            <span style="color:darkgreen;">[% picks_upset %], [% picks_correct  %]</span>
         [% END %]
 	</td>
 	</tr>
