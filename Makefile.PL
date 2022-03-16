@@ -34,7 +34,7 @@ requires(
     'Time::HiRes'                                  => 0,
 );
 
-catalyst;
+#catalyst;
 
 install_script glob('script/*.pl');
 auto_install;
