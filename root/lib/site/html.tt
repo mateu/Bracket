@@ -7,6 +7,7 @@
 <meta name="viewport" content="initial-scale=1.0, width=device-width" />
 [% site_title = c.config.name _ " " _ c.config.year %]
 <title>[% page_head_title or page_title or template.title %] : [% site_title %]</title>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 [%- INCLUDE lib/site/javascripts.tt -%]
 [%- INCLUDE lib/site/style_sheets.tt -%]
 </head>
