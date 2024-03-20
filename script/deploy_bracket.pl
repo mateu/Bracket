@@ -38,10 +38,11 @@ my $schema = Bracket::Schema->connect($dsn, $user, $pass)
   or die "Failed to connect to database";
 
 # Check if database is already deployed by
-# examining if the table Person exists and has a record.
-eval { $schema->resultset('Bracket::Schema::Result::Player')->count };
-if (!$@) {
-    die "You have already deployed your database\n";
+# examining if the table Team exists and has a record.
+print "Team table count: ", $schema->resultset('Bracket::Schema::Result::Team')->count;
+eval { $schema->resultset('Bracket::Schema::Result::Team')->count };
+if ($@) {
+    die "You already have a team table with data in your database: $@\n";
 }
 
 print "\nCreate an admin account..\n\n";

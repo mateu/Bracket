@@ -257,7 +257,7 @@ sub email_link : Private {
     use Email::Sender::Transport::Test;
 
     my $link        = $c->request->base . 'reset_password?reset_password_token=' . $token;
-    my $admin_email = 'hunter@missoula.org';
+    my $admin_email = 'hunter@huntana.com';
     my $subject     = 'Reset password link';
     my $message     = <<"END_MESSAGE";
 Use the following link to reset your password: 
