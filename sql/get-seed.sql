@@ -2,8 +2,8 @@ DELIMITER $$
 DROP FUNCTION IF EXISTS `get_winner_seed`$$
 CREATE FUNCTION `get_winner_seed`(given_game INT) RETURNS INT(11)
 DETERMINISTIC
-BEGIN   
-    SET @teamSeed = 
+BEGIN
+    SET @teamSeed =
     (
     	select team.seed
 	from pick
@@ -11,7 +11,7 @@ BEGIN
 	on pick.pick = team.id
 	where player = 1
 	and game = given_game
-    );   
+    );
     RETURN @teamSeed;
 END$$
 DELIMITER ;
@@ -20,9 +20,9 @@ DELIMITER $$
 DROP FUNCTION IF EXISTS `get_loser_seed`$$
 CREATE FUNCTION `get_loser_seed`(given_game INT) RETURNS INT(11)
 DETERMINISTIC
-BEGIN   
-    SET @teamSeed = 
-    
+BEGIN
+    SET @teamSeed =
+
     (
 select team.seed
 from team
@@ -33,7 +33,7 @@ from team
             and pick.game in (
                 select parent_game
                 from game_graph
-                join pick 
+                join pick
                 on game_graph.game = pick.game
                 where pick.game = given_game
                     and pick.player = 1
@@ -58,8 +58,8 @@ where picks.pick not in (
         where pick.game = given_game
             and pick.player = 1
     )
-    );   
-    
+    );
+
     RETURN @teamSeed;
 END$$
 DELIMITER ;
