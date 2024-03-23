@@ -78,7 +78,8 @@ td p {
 
 .out {
 	text-decoration: line-through; 
-	font-size: smaller;
+	font-size: small;
+	color: #8B0000;
 }
 
 .in {
