@@ -15,11 +15,9 @@ set lower_seed = 1
 where game.id in (select * from lower_seed_games)
 ;
 
---- For rounds 2-4 we'll use the getter functions
+--- For other rounds we'll use the getter functions
 --- to find how who the teams involved are since
 --- we don't know that up front like we for round 1
---- TODO: We could extend this to round 5, just
---- need to input the game_graph rows
 with games_played as (
     select pick.game
     from pick
@@ -27,6 +25,6 @@ with games_played as (
 )
 update game
 set lower_seed = (get_winner_seed(game.id) > get_loser_seed(game.id))
-where game.round in (2, 3, 4)
+where game.round > 1
 and game.id in (select * from games_played)
 ;

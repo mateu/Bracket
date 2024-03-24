@@ -49,7 +49,7 @@ sub update_points {
                 )
                 update game
                 set lower_seed = (get_winner_seed(game.id) > get_loser_seed(game.id))
-                where game.round in (2, 3, 4)
+                where game.round > 1
                 and game.id in (select * from games_played)
                 ;
             ');
