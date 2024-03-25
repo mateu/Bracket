@@ -41,7 +41,7 @@ sub update_points {
                 ;
             ');
             $sth->execute;
-            my $sth = $dbh->prepare('
+            $sth = $dbh->prepare('
                 with games_played as (
                     select pick.game
                     from pick
@@ -57,7 +57,7 @@ sub update_points {
 
 	    # Update round out
 	    # Do for round 1
-            $dbh->prepare('
+            $sth = $dbh->prepare('
               update team
               set round_out = 1
               where team.id in (select get_first_round_loser(game.id) from game where game.round = 1)
@@ -65,7 +65,7 @@ sub update_points {
 	    ');
             $sth->execute;
 	    # Do for other rounds
-            $dbh->prepare('
+            $sth = $dbh->prepare('
               with round_out_info as (
                   select get_loser(game.id) as losing_team, game.round
                   from team
@@ -82,8 +82,7 @@ sub update_points {
 	    ');
             $sth->execute;
 
-
-            $sth  = $dbh->prepare('delete from region_score;');
+            $sth = $dbh->prepare('delete from region_score;');
             $sth->execute;
             $sth = $dbh->prepare('
                 insert into region_score
@@ -123,7 +122,6 @@ sub update_points {
                 where player.id = region_scores.player;
             ');
             $sth->execute;
-
         }
     );
 }
