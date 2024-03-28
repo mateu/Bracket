@@ -3,6 +3,7 @@ package Bracket::Model::DBIC;
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 use List::Util qw( max );
+use Time::HiRes qw/ time /;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -23,6 +24,7 @@ sub update_points {
         sub {
             my $self = shift;
             my $dbh  = shift;
+            my $start = time();
 
 	    # Note lower seeds
             my $sth = $dbh->prepare('
@@ -122,6 +124,8 @@ sub update_points {
                 where player.id = region_scores.player;
             ');
             $sth->execute;
+            my $elapsed = time() - $start;
+            return $elapsed;
         }
     );
 }
