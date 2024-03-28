@@ -5,10 +5,8 @@ DETERMINISTIC
 BEGIN
     SET @teamSeed =
     (
-        select team.id
+        select pick
 	from pick
-	join team
-	on pick.pick = team.id
 	where player = 1
 	and game = given_game
     );
