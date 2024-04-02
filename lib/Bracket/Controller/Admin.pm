@@ -115,8 +115,9 @@ sub qa : Global {
 
 sub update_points : Global {
     my ($self, $c) = @_;
-    my @points = $c->model('DBIC')->update_points;
-    $c->flash->{status_msg} = 'Scores Updated in ' . sprintf("%0.1f milliseconds", $points[0]*1000);
+    my $points = $c->model('DBIC')->update_points;
+    #    $c->flash->{status_msg} = 'Scores Updated in ' . sprintf("%0.1f milliseconds", $points[0]*1000);
+    $c->flash->{status_msg} = $points;
     $c->response->redirect($c->uri_for($c->controller('Player')->action_for('all')));
     return;
 }

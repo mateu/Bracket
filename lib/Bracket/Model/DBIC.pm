@@ -24,9 +24,12 @@ sub update_points {
         sub {
             my $self = shift;
             my $dbh  = shift;
-            my $start = time();
+            my %times;
+            my $current_time = time();
+            my $previous_time = $current_time;
+            my $sth;
 
-            my $sth = $dbh->prepare('
+            $sth = $dbh->prepare('
                 with games_played as (
                     select pick.game, team.seed
                     from pick
@@ -46,6 +49,9 @@ sub update_points {
                 ;
             ');
             $sth->execute;
+            $current_time = time();
+            $times{lower_seed} = $current_time - $previous_time;
+            $previous_time = $current_time;
 
 	    # Update round out
 	    # Do for round 1
@@ -73,6 +79,9 @@ sub update_points {
               ;
 	    ');
             $sth->execute;
+            $current_time = time();
+            $times{round_out} = $current_time - $previous_time;
+            $previous_time = $current_time;
 
             $sth = $dbh->prepare('delete from region_score;');
             $sth->execute;
@@ -84,6 +93,10 @@ sub update_points {
                 where player.active = 1;'
             );
             $sth->execute;
+            $current_time = time();
+            $times{delete_region_score} = $current_time - $previous_time;
+            $previous_time = $current_time;
+
             $sth = $dbh->prepare('
                 update region_score region_score,
                 (
@@ -104,7 +117,11 @@ sub update_points {
                 ;'
             );
             $sth->execute;
-            $sth  = $dbh->prepare('
+            $current_time = time();
+            $times{update_region_score} = $current_time - $previous_time;
+            $previous_time = $current_time;
+
+	    $sth  = $dbh->prepare('
                 update player player,
                 (
                  select player, sum(points) as total_points from region_score
@@ -114,8 +131,13 @@ sub update_points {
                 where player.id = region_scores.player;
             ');
             $sth->execute;
-            my $elapsed = time() - $start;
-            return $elapsed;
+            $current_time = time();
+            $times{update_player_points} = $current_time - $previous_time;
+            $previous_time = $current_time;
+
+            my @stats = map { $_ . ': ' . sprintf("%.1f", 1000*$times{$_}) } sort {$times{$b} <=> $times{$a}}keys %times;
+            my $stats = join('<br>', @stats);
+            return $stats;
         }
     );
 }
