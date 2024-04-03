@@ -39,22 +39,15 @@ DETERMINISTIC
 BEGIN
     SET @teamSeed =
     (
-select team.seed
-from team
-    join (
-        select *
-        from pick
-        where pick.player = 1
-            and pick.game in (
-                select parent_game
-                from game_graph
-                join pick
-                on game_graph.game = pick.game
-                where pick.game = given_game
-                    and pick.player = 1
-            )
-    ) picks on team.id = picks.pick
-where picks.pick <> get_winner(given_game)
+        select seed
+        from pick p
+        join game_graph gg
+        on p.game = gg.parent_game
+        join team t
+        on p.pick = t.id
+        where p.player = 1
+        and gg.game = given_game
+        and p.pick <> get_winner(given_game)
     );
     RETURN @teamSeed;
 END$$
@@ -67,22 +60,13 @@ DETERMINISTIC
 BEGIN
     SET @teamId =
     (
-select team.id
-from team
-    join (
-        select *
-        from pick
-        where pick.player = 1
-            and pick.game in (
-                select parent_game
-                from game_graph
-                join pick
-                on game_graph.game = pick.game
-                where pick.game = given_game
-                    and pick.player = 1
-            )
-    ) picks on team.id = picks.pick
-where picks.pick <> get_winner(given_game)
+        select pick
+        from pick p
+        join game_graph gg
+        on p.game = gg.parent_game
+        where p.player = 1
+        and gg.game = given_game
+        and p.pick <> get_winner(given_game)
     );
     RETURN @teamId;
 END$$
