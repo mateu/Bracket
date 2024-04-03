@@ -29,6 +29,7 @@ sub update_points {
             my $previous_time = $current_time;
             my $sth;
 
+	    # Record lower seed
             $sth = $dbh->prepare('
                 with games_played as (
                     select pick.game, team.seed
@@ -53,7 +54,7 @@ sub update_points {
             $times{lower_seed} = $current_time - $previous_time;
             $previous_time = $current_time;
 
-	    # Update round out
+	    # Record round out
 	    # Do for round 1
             $sth = $dbh->prepare('
               update team
@@ -64,19 +65,20 @@ sub update_points {
             $sth->execute;
 	    # Do for other rounds
             $sth = $dbh->prepare('
-              with round_out_info as (
-                  select get_loser(game.id) as losing_team, game.round
-                  from team
-                      join pick on team.id = pick.pick
-                      join game on pick.game = game.id
-                  where pick.player = 1
-                  and round > 1
-              )
-              update team
-              inner join round_out_info roi on
-                  team.id = roi.losing_team
-              set round_out = roi.round
-              ;
+                with round_out_info as (
+                    select get_loser(game.id) as losing_team
+                    from team
+                        join pick on team.id = pick.pick
+                        join game on pick.game = game.id
+                    where pick.player = 1
+                    and game.round > 1
+                    and game.round = get_current_round()
+                )
+                update team
+                inner join round_out_info roi on
+                    team.id = roi.losing_team
+                set round_out = get_current_round()
+               ;
 	    ');
             $sth->execute;
             $current_time = time();

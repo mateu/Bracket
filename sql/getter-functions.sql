@@ -3,14 +3,14 @@ DROP FUNCTION IF EXISTS `get_winner`$$
 CREATE FUNCTION `get_winner`(given_game INT) RETURNS INT(11)
 DETERMINISTIC
 BEGIN
-    SET @teamSeed =
+    SET @teamID =
     (
         select pick
 	from pick
 	where player = 1
 	and game = given_game
     );
-    RETURN @teamSeed;
+    RETURN @teamId;
 END$$
 DELIMITER ;
 
@@ -19,7 +19,7 @@ DROP FUNCTION IF EXISTS `get_winner_seed`$$
 CREATE FUNCTION `get_winner_seed`(given_game INT) RETURNS INT(11)
 DETERMINISTIC
 BEGIN
-    SET @teamId =
+    SET @teamSeed =
     (
     	select team.seed
 	from pick
@@ -28,7 +28,7 @@ BEGIN
 	where player = 1
 	and game = given_game
     );
-    RETURN @teamID;
+    RETURN @teamSeed;
 END$$
 DELIMITER ;
 
@@ -39,6 +39,9 @@ DETERMINISTIC
 BEGIN
     SET @teamSeed =
     (
+	with winner as (
+		select get_winner(given_game)
+	)
         select seed
         from pick p
         join game_graph gg
@@ -47,7 +50,7 @@ BEGIN
         on p.pick = t.id
         where p.player = 1
         and gg.game = given_game
-        and p.pick <> get_winner(given_game)
+        and p.pick not in (select * from winner)
     );
     RETURN @teamSeed;
 END$$
@@ -60,13 +63,16 @@ DETERMINISTIC
 BEGIN
     SET @teamId =
     (
+	with winner as (
+		select get_winner(given_game)
+	)
         select pick
         from pick p
         join game_graph gg
         on p.game = gg.parent_game
         where p.player = 1
         and gg.game = given_game
-        and p.pick <> get_winner(given_game)
+        and p.pick not in (select * from winner)
     );
     RETURN @teamId;
 END$$
@@ -85,5 +91,22 @@ BEGIN
         and team <> get_winner(given_game)
     );
     RETURN @teamId;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+DROP FUNCTION IF EXISTS `get_current_round`$$
+CREATE FUNCTION `get_current_round`() RETURNS INT(11)
+DETERMINISTIC
+BEGIN
+    SET @round =
+    (
+        select max(round)
+	from game g
+	join pick p
+	on g.id = p.game
+	where player = 1
+    );
+    RETURN @round;
 END$$
 DELIMITER ;
