@@ -34,4 +34,5 @@ set lower_seed = CASE
   ELSE gp.seed > 8
   END
   , game.winner = get_winner(game.id)
+where game.round = get_current_round()
 ;

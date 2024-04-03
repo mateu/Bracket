@@ -47,6 +47,7 @@ sub update_points {
                   ELSE gp.seed > 8
                   END
                   , game.winner = get_winner(game.id)
+                where game.round = get_current_round()
                 ;
             ');
             $sth->execute;
@@ -66,18 +67,18 @@ sub update_points {
 	    # Do for other rounds
             $sth = $dbh->prepare('
                 with round_out_info as (
-                    select get_loser(game.id) as losing_team
+                    select get_loser(game.id) as losing_team, game.round
                     from team
                         join pick on team.id = pick.pick
                         join game on pick.game = game.id
                     where pick.player = 1
-                    and game.round > 1
                     and game.round = get_current_round()
+                    and game.round > 1
                 )
                 update team
-                inner join round_out_info roi on
-                    team.id = roi.losing_team
-                set round_out = get_current_round()
+                inner join round_out_info roi
+                on team.id = roi.losing_team
+                set round_out = roi.round
                ;
 	    ');
             $sth->execute;
@@ -85,37 +86,22 @@ sub update_points {
             $times{round_out} = $current_time - $previous_time;
             $previous_time = $current_time;
 
-            $sth = $dbh->prepare('delete from region_score;');
-            $sth->execute;
             $sth = $dbh->prepare('
                 insert into region_score
-                (player, region, points)
-                select player.id, region.id, 0
-                from player, region
-                where player.active = 1;'
-            );
-            $sth->execute;
-            $current_time = time();
-            $times{delete_region_score} = $current_time - $previous_time;
-            $previous_time = $current_time;
-
-            $sth = $dbh->prepare('
-                update region_score region_score,
-                (
-                select  player_picks.player,
-                        sum(game.round*(5 + game.lower_seed*team.seed)) as points,
-                        team.region as region
-                  from pick player_picks, pick perfect_picks, game game, team team
-                 where perfect_picks.pick   = player_picks.pick 
-                   and perfect_picks.game   = player_picks.game 
-                   and player_picks.game    = game.id
-                   and player_picks.pick    = team.id
-                   and perfect_picks.player = 1
-                   group by player_picks.player, team.region
-                )  computed_player_points
-                set region_score.points = computed_player_points.points
-                where region_score.player = computed_player_points.player
-                  and region_score.region = computed_player_points.region
+                select * from
+                (select
+		    player_picks.player,
+	            team.region as region,
+		    sum(game.round*(5 + game.lower_seed*team.seed)) as points
+	        from pick player_picks, pick perfect_picks, game game, team team
+		where perfect_picks.pick = player_picks.pick
+		and perfect_picks.game   = player_picks.game
+		and player_picks.game    = game.id
+		and player_picks.pick    = team.id
+	        and perfect_picks.player = 1
+                group by player_picks.player, team.region
+	        ) as player_region_points
+	        on duplicate key update points=player_region_points.points
                 ;'
             );
             $sth->execute;
