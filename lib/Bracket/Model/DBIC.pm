@@ -2,7 +2,7 @@ package Bracket::Model::DBIC;
 
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
-use List::Util qw( max );
+use List::Util qw( max sum );
 use Time::HiRes qw/ time /;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
@@ -60,8 +60,9 @@ sub update_points {
             $sth = $dbh->prepare('
               update team
               set round_out = 1
-              where team.id in (select get_first_round_loser(game.id) from game where game.round = 1)
-              ;
+	      where 1 = get_current_round()
+	      and team.id in (select get_first_round_loser(game.id) from game where game.round = 1)
+            ;
 	    ');
             $sth->execute;
 	    # Do for other rounds
@@ -123,7 +124,10 @@ sub update_points {
             $times{update_player_points} = $current_time - $previous_time;
             $previous_time = $current_time;
 
-            my @stats = map { $_ . ': ' . sprintf("%.1f", 1000*$times{$_}) } sort {$times{$b} <=> $times{$a}}keys %times;
+            my $total_time = sum values %times;
+	    $total_time = sprintf("%.1f", 1000*$total_time);
+            my @stats = map { $_ . ': ' . sprintf("%.1f", 1000*$times{$_}) } sort {$times{$b} <=> $times{$a}} keys %times;
+	    unshift(@stats, "<u>total time: $total_time</u>");
             my $stats = join('<br>', @stats);
             return $stats;
         }
