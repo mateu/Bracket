@@ -1,7 +1,7 @@
 package Bracket;
 use Moose;
 
-our $VERSION = '1.16';
+our $VERSION = '1.17';
 use Catalyst::Runtime '5.80';
 
 use Catalyst qw/
@@ -67,7 +67,7 @@ Player brackets are compared to the perfect bracket for scoring purposes.
 
 =head1 AUTHOR
 
-Mateu X. Hunter 2008-2022
+Mateu X. Hunter 2008-2024
 hunter@missoula.org
 
 =head1 LICENSE
@@ -77,7 +77,7 @@ it under the same terms as Perl itself.
 
 =head1 COPYRIGHT
 
-Mateu X. Hunter 2008-2022
+Mateu X. Hunter 2008-2024
 
 =head1 LIMITATIONS
 

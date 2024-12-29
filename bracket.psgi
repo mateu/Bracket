@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use Plack::Builder;
 use Bracket;
 
-Bracket->setup_engine('PSGI');
-my $app = sub { Bracket->run(@_) };
+my $app = Bracket->psgi_app(@_);
 
 
 # START NOTE: One can start this script from the parent directory like so:

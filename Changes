@@ -1,5 +1,11 @@
 College Basketball Bracket System
 
+1.17    2024 Dec
+        - more input automation
+        - tuned queries
+        - updated to jquery 3.7.1
+        - updated psgi app script
+
 1.16    2022 Març
         - 2022 data loaded
 
