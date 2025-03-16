@@ -1,217 +1,218 @@
 package Bracket::Schema;
- 
+
 # Created by DBIx::Class::Schema::Loader
 # DO NOT MODIFY THE FIRST PART OF THIS FILE
- 
+
 use strict;
 use warnings;
- 
+
 use base 'DBIx::Class::Schema';
- 
-__PACKAGE__->load_namespaces(result_namespace => 'Result',);
- 
+
+__PACKAGE__->load_namespaces( result_namespace => 'Result', );
+
 # Created by DBIx::Class::Schema::Loader v0.05003 @ 2010-02-28 11:54:30
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:9Mvnns/DJ5m0MpQNixu/qQ
- 
+
 # You can replace this text with custom content, and it will be preserved on regeneration
- 
+
 sub create_initial_data {
- my ($schema, $config, $custom_values) = @_;
- 
-$custom_values ||= {
- admin_first_name => 'Admin',
- admin_last_name => 'User',
- admin_email => "admin\@localhost.org",
- admin_password => 'admin',
- };
- 
-my @players = $schema->populate(
- 'Player',
- [
- [qw/ email password first_name last_name /],
- [ 'no-reply@huntana.com', 'unknown', 'Perfect', 'Player', ],
- [
- $custom_values->{admin_email}, $custom_values->{admin_password},
- $custom_values->{admin_first_name}, $custom_values->{admin_last_name},
- ],
- ]
- );
- 
-my @roles = $schema->populate('Role', [ [qw/ role /], ['admin'], ['basic'] ]);
- 
-# Set admin account up with admin role. admins are able to edit the
- # perfect bracket among other things.
- my @player_roles =
- $schema->populate('PlayerRole',
- [ [qw/role player/], [ $roles[0]->id, $players[1]->id ], ]);
- 
-create_new_year_data($schema);
+  my ( $schema, $config, $custom_values ) = @_;
+
+  $custom_values ||= {
+    admin_first_name => 'Admin',
+    admin_last_name  => 'User',
+    admin_email      => "admin\@localhost.org",
+    admin_password   => 'admin',
+  };
+
+  my @players = $schema->populate(
+    'Player',
+    [
+      [qw/ email password first_name last_name /],
+      [ 'no-reply@huntana.com', 'unknown', 'Perfect', 'Player', ],
+      [
+        $custom_values->{admin_email},      $custom_values->{admin_password},
+        $custom_values->{admin_first_name}, $custom_values->{admin_last_name},
+      ],
+    ]
+  );
+
+  my @roles =
+    $schema->populate( 'Role', [ [qw/ role /], ['admin'], ['basic'] ] );
+
+  # Set admin account up with admin role. admins are able to edit the
+  # perfect bracket among other things.
+  my @player_roles =
+    $schema->populate( 'PlayerRole',
+    [ [qw/role player/], [ $roles[0]->id, $players[1]->id ], ] );
+
+  create_new_year_data($schema);
 }
- 
+
 sub create_new_year_data {
- my ($schema,) = @_;
- 
-# Regions
- my @regions = $schema->populate(
- 'Region',
- [
- [qw/ id name /],
- [ 1, 'Midwest' ],
- [ 2, 'South' ],
- [ 3, 'West' ],
- [ 4, 'East' ],
- ]
- );
- 
-# Teams
- my @teams = $schema->populate(
- 'Team',
- [
- [qw/ id seed name region /],
- [ 1, 1, 'Purdue', 1 ],
- [ 2, 16, "MTST/GRAM", 1 ],
- [ 3, 8, 'Utah St', 1 ],
- [ 4, 9, 'TCU', 1 ],
- [ 5, 5, 'Gonzaga', 1 ],
- [ 6, 12, 'McNeese', 1 ],
- [ 7, 4, 'Kansas', 1 ],
- [ 8, 13, 'Samford', 1 ],
- [ 9, 6, 'S Caroline', 1 ],
- [ 10, 11, 'Oregon', 1 ],
- [ 11, 3, 'Creighton', 1 ],
- [ 12, 14, 'Akron', 1 ],
- [ 13, 7, 'Texas', 1 ],
- [ 14, 10, 'UVA/COLST', 1 ],
- [ 15, 2, 'Tennessee', 1 ],
- [ 16, 15, 'St Peters', 1 ],
- 
-[ 17, 1, 'Houston', 2 ],
- [ 18, 16, 'Longwood', 2 ],
- [ 19, 8, 'Nebraska', 2 ],
- [ 20, 9, 'Texas A&M', 2 ],
- [ 21, 5, 'Wisconsin', 2 ],
- [ 22, 12, 'James Madison', 2 ],
- [ 23, 4, 'Duke', 2 ],
- [ 24, 13, 'Vermont', 2 ],
- [ 25, 6, 'Texas Tech', 2 ],
- [ 26, 11, 'NC State', 2 ],
- [ 27, 3, 'Kentucky', 2 ],
- [ 28, 14, 'Oakland', 2 ],
- [ 29, 7, "Florida", 2 ],
- [ 30, 10, 'BSU/COLO', 2 ],
- [ 31, 2, 'Marquette', 2 ],
- [ 32, 15, 'W Kentucky', 2 ],
- 
-[ 33, 1, 'N Carolina', 3 ],
- [ 34, 16, 'HOW/WAG', 3 ],
- [ 35, 8, 'Miss St', 3 ],
- [ 36, 9, 'Michigan St', 3 ],
- [ 37, 5, 'Saint Marys', 3 ],
- [ 38, 12, 'Grand Canyon', 3 ],
- [ 39, 4, 'Alabama', 3 ],
- [ 40, 13, 'Charleston', 3 ],
- [ 41, 6, 'Clemson', 3 ],
- [ 42, 11, 'New Mexico', 3 ],
- [ 43, 3, 'Baylor', 3 ],
- [ 44, 14, 'Colgate', 3 ],
- [ 45, 7, 'Dayton', 3 ],
- [ 46, 10, 'Nevada', 3 ],
- [ 47, 2, 'Arizona', 3 ],
- [ 48, 15, 'LBSU', 3 ],
- 
-[ 49, 1, 'UConn', 4 ],
- [ 50, 16, 'Stetson', 4 ],
- [ 51, 8, 'FAU', 4 ],
- [ 52, 9, 'Northwestern', 4 ],
- [ 53, 5, 'San Diego St', 4 ],
- [ 54, 12, 'UAB', 4 ],
- [ 55, 4, 'Auburn', 4 ],
- [ 56, 13, 'Yale', 4 ],
- [ 57, 6, 'BYU', 4 ],
- [ 58, 11, 'Duquesne', 4 ],
- [ 59, 3, 'Illinois', 4 ],
- [ 60, 14, 'Morehead St', 4 ],
- [ 61, 7, 'Wash St', 4 ],
- [ 62, 10, 'Drake', 4 ],
- [ 63, 2, 'Iowa St', 4 ],
- [ 64, 15, 'S Dakota St', 4 ],
- ]
- );
- 
-# Games
- my @games = $schema->populate(
- 'Game',
- [
- [qw/ id round /],
- [ 1, 1 ],
- [ 2, 1 ],
- [ 3, 1 ],
- [ 4, 1 ],
- [ 5, 1 ],
- [ 6, 1 ],
- [ 7, 1 ],
- [ 8, 1 ],
- [ 9, 2 ],
- [ 10, 2 ],
- [ 11, 2 ],
- [ 12, 2 ],
- [ 13, 3 ],
- [ 14, 3 ],
- [ 15, 4 ],
- [ 16, 1 ],
- [ 17, 1 ],
- [ 18, 1 ],
- [ 19, 1 ],
- [ 20, 1 ],
- [ 21, 1 ],
- [ 22, 1 ],
- [ 23, 1 ],
- [ 24, 2 ],
- [ 25, 2 ],
- [ 26, 2 ],
- [ 27, 2 ],
- [ 28, 3 ],
- [ 29, 3 ],
- [ 30, 4 ],
- [ 31, 1 ],
- [ 32, 1 ],
- [ 33, 1 ],
- [ 34, 1 ],
- [ 35, 1 ],
- [ 36, 1 ],
- [ 37, 1 ],
- [ 38, 1 ],
- [ 39, 2 ],
- [ 40, 2 ],
- [ 41, 2 ],
- [ 42, 2 ],
- [ 43, 3 ],
- [ 44, 3 ],
- [ 45, 4 ],
- [ 46, 1 ],
- [ 47, 1 ],
- [ 48, 1 ],
- [ 49, 1 ],
- [ 50, 1 ],
- [ 51, 1 ],
- [ 52, 1 ],
- [ 53, 1 ],
- [ 54, 2 ],
- [ 55, 2 ],
- [ 56, 2 ],
- [ 57, 2 ],
- [ 58, 3 ],
- [ 59, 3 ],
- [ 60, 4 ],
- [ 61, 5 ],
- [ 62, 5 ],
- [ 63, 6 ],
- ]
- );
+  my ( $schema, ) = @_;
+
+  # Regions
+  my @regions = $schema->populate(
+    'Region',
+    [
+      [qw/ id name /],
+      [ 1, 'Midwest' ],
+      [ 2, 'South' ],
+      [ 3, 'West' ],
+      [ 4, 'East' ],
+    ]
+  );
+
+  # Teams
+  my @teams = $schema->populate(
+    'Team',
+    [
+      [qw/ id seed name region /],
+      [ 1,  1,  'Purdue',     1 ],
+      [ 2,  16, "MTST/GRAM",  1 ],
+      [ 3,  8,  'Utah St',    1 ],
+      [ 4,  9,  'TCU',        1 ],
+      [ 5,  5,  'Gonzaga',    1 ],
+      [ 6,  12, 'McNeese',    1 ],
+      [ 7,  4,  'Kansas',     1 ],
+      [ 8,  13, 'Samford',    1 ],
+      [ 9,  6,  'S Caroline', 1 ],
+      [ 10, 11, 'Oregon',     1 ],
+      [ 11, 3,  'Creighton',  1 ],
+      [ 12, 14, 'Akron',      1 ],
+      [ 13, 7,  'Texas',      1 ],
+      [ 14, 10, 'UVA/COLST',  1 ],
+      [ 15, 2,  'Tennessee',  1 ],
+      [ 16, 15, 'St Peters',  1 ],
+
+      [ 17, 1,  'Houston',       2 ],
+      [ 18, 16, 'Longwood',      2 ],
+      [ 19, 8,  'Nebraska',      2 ],
+      [ 20, 9,  'Texas A&M',     2 ],
+      [ 21, 5,  'Wisconsin',     2 ],
+      [ 22, 12, 'James Madison', 2 ],
+      [ 23, 4,  'Duke',          2 ],
+      [ 24, 13, 'Vermont',       2 ],
+      [ 25, 6,  'Texas Tech',    2 ],
+      [ 26, 11, 'NC State',      2 ],
+      [ 27, 3,  'Kentucky',      2 ],
+      [ 28, 14, 'Oakland',       2 ],
+      [ 29, 7,  "Florida",       2 ],
+      [ 30, 10, 'BSU/COLO',      2 ],
+      [ 31, 2,  'Marquette',     2 ],
+      [ 32, 15, 'W Kentucky',    2 ],
+
+      [ 33, 1,  'N Carolina',   3 ],
+      [ 34, 16, 'HOW/WAG',      3 ],
+      [ 35, 8,  'Miss St',      3 ],
+      [ 36, 9,  'Michigan St',  3 ],
+      [ 37, 5,  'Saint Marys',  3 ],
+      [ 38, 12, 'Grand Canyon', 3 ],
+      [ 39, 4,  'Alabama',      3 ],
+      [ 40, 13, 'Charleston',   3 ],
+      [ 41, 6,  'Clemson',      3 ],
+      [ 42, 11, 'New Mexico',   3 ],
+      [ 43, 3,  'Baylor',       3 ],
+      [ 44, 14, 'Colgate',      3 ],
+      [ 45, 7,  'Dayton',       3 ],
+      [ 46, 10, 'Nevada',       3 ],
+      [ 47, 2,  'Arizona',      3 ],
+      [ 48, 15, 'LBSU',         3 ],
+
+      [ 49, 1,  'UConn',        4 ],
+      [ 50, 16, 'Stetson',      4 ],
+      [ 51, 8,  'FAU',          4 ],
+      [ 52, 9,  'Northwestern', 4 ],
+      [ 53, 5,  'San Diego St', 4 ],
+      [ 54, 12, 'UAB',          4 ],
+      [ 55, 4,  'Auburn',       4 ],
+      [ 56, 13, 'Yale',         4 ],
+      [ 57, 6,  'BYU',          4 ],
+      [ 58, 11, 'Duquesne',     4 ],
+      [ 59, 3,  'Illinois',     4 ],
+      [ 60, 14, 'Morehead St',  4 ],
+      [ 61, 7,  'Wash St',      4 ],
+      [ 62, 10, 'Drake',        4 ],
+      [ 63, 2,  'Iowa St',      4 ],
+      [ 64, 15, 'S Dakota St',  4 ],
+    ]
+  );
+
+  # Games
+  my @games = $schema->populate(
+    'Game',
+    [
+      [qw/ id round /],
+      [ 1,  1 ],
+      [ 2,  1 ],
+      [ 3,  1 ],
+      [ 4,  1 ],
+      [ 5,  1 ],
+      [ 6,  1 ],
+      [ 7,  1 ],
+      [ 8,  1 ],
+      [ 9,  2 ],
+      [ 10, 2 ],
+      [ 11, 2 ],
+      [ 12, 2 ],
+      [ 13, 3 ],
+      [ 14, 3 ],
+      [ 15, 4 ],
+      [ 16, 1 ],
+      [ 17, 1 ],
+      [ 18, 1 ],
+      [ 19, 1 ],
+      [ 20, 1 ],
+      [ 21, 1 ],
+      [ 22, 1 ],
+      [ 23, 1 ],
+      [ 24, 2 ],
+      [ 25, 2 ],
+      [ 26, 2 ],
+      [ 27, 2 ],
+      [ 28, 3 ],
+      [ 29, 3 ],
+      [ 30, 4 ],
+      [ 31, 1 ],
+      [ 32, 1 ],
+      [ 33, 1 ],
+      [ 34, 1 ],
+      [ 35, 1 ],
+      [ 36, 1 ],
+      [ 37, 1 ],
+      [ 38, 1 ],
+      [ 39, 2 ],
+      [ 40, 2 ],
+      [ 41, 2 ],
+      [ 42, 2 ],
+      [ 43, 3 ],
+      [ 44, 3 ],
+      [ 45, 4 ],
+      [ 46, 1 ],
+      [ 47, 1 ],
+      [ 48, 1 ],
+      [ 49, 1 ],
+      [ 50, 1 ],
+      [ 51, 1 ],
+      [ 52, 1 ],
+      [ 53, 1 ],
+      [ 54, 2 ],
+      [ 55, 2 ],
+      [ 56, 2 ],
+      [ 57, 2 ],
+      [ 58, 3 ],
+      [ 59, 3 ],
+      [ 60, 4 ],
+      [ 61, 5 ],
+      [ 62, 5 ],
+      [ 63, 6 ],
+    ]
+  );
 }
- 
+
 1
- 
+
 __END__
 # 2014 data
  my @teams = $schema->populate(
