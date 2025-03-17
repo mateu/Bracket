@@ -78,7 +78,7 @@ sub view : Local {
                 if ($winning_pick->pick->id == $player_pick->pick->id) {
                     $class_for{ $player_pick->game->id } = 'in';
 
-                    # Formula to compute points for correct picks
+                    # NOTE:  Formula to compute points for correct picks
                     my $points_for_pick =
                       (5 + $player_pick->pick->seed * $player_pick->game->lower_seed) *
                       $player_pick->game->round;
