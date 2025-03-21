@@ -7,4 +7,5 @@ with players_with_no_picks as (
 update player
 set active = 0
 where player.id in (select * from players_with_no_picks)
+and player.id <> 1
 ;
