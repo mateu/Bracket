@@ -15,7 +15,7 @@
 [% IF !is_game_time %]
 Picks
 [% ELSE %]
-Upsets, Correct, Active
+Upsets, Correct, Active, Final4
 [% END %]
 </th></tr>
 [% FOREACH player IN players.nsort('points').reverse %]
@@ -61,8 +61,12 @@ Upsets, Correct, Active
             [% IF picks_left == max_left %]
               [% SET picks_left = '<span style="font-weight:bold;">' _ picks_left _ '</span>' %]
             [% END %]
+            [% SET f4_picks_left = final4_teams_left_per_player.$player_id || 0 %]
+            [% IF f4_picks_left == max_final4_left %]
+              [% SET f4_picks_left = '<span style="font-weight:bold;">' _ f4_picks_left _ '</span>' %]
+            [% END %]
 
-            <span style="color:darkgreen;">[% picks_upset %], [% picks_correct  %], [% picks_left %]</span>
+            <span style="color:darkgreen;">[% picks_upset %], [% picks_correct  %], [% picks_left %], [% f4_picks_left %]</span>
         [% END %]
 	</td>
 	</tr>

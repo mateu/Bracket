@@ -333,6 +333,67 @@ sub count_player_teams_left {
     );
 }
 
+=heads2 count_player_final4_teams_left
+
+Count how many final 4 teams a player has that are still playing and picked to advance
+in the next game.
+
+=cut
+
+sub count_player_final4_teams_left {
+    my $self = shift;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+                with games_played as (
+                    select p.game, g.round
+                    from pick p
+                    join game g
+                    on p.game = g.id
+                    where p.player = 1
+                ),
+                losing_teams as (
+                    select
+                    CASE
+                        WHEN round > 1 THEN get_loser(game)
+                        ELSE get_first_round_loser(game)
+                        END as team
+                    from games_played
+                ),
+                games_remaining as (
+                    select p.game
+                    from pick p
+                    where p.player = 24
+                    and p.game not in (select game from games_played)
+                ),
+                player_teams_remaining as (
+                    select player, pick
+                    from pick
+                    where game in (select game from games_remaining)
+                    and game in (15, 30, 45, 60, 61, 62, 63)
+                    and pick not in (select team from losing_teams)
+                    group by player, pick
+                )
+                select player, count(*) as teams_left
+                from player_teams_remaining
+                group by player
+          ;'
+          );
+          $sth->execute() or die $sth->errstr;
+          my $final4_teams_left_per_player = {};
+          my $result = $sth->fetchall_arrayref;
+          foreach my $row (@{$result}) {
+              $final4_teams_left_per_player->{$row->[0]} = $row->[1];
+          }
+          my $max_left = max map { $final4_teams_left_per_player->{$_} } grep { $_ != 1 } keys %{$final4_teams_left_per_player};
+          return $final4_teams_left_per_player, $max_left;
+        }
+    );
+}
+
 =heads2 count_final4_picks
 
 Count up how many picks a player has made in the final 4 (3 total).
