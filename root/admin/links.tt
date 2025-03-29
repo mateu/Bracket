@@ -8,13 +8,13 @@
   title="Run after updating Perfect Player's bracket">Update Points</a>
 </td>
 <td>
-  <a href="[% c.uri_for('/round_out_unmarked') %]">Mark Out</a>
+<!--   <a href="[% c.uri_for('/round_out_unmarked') %]">Mark Out</a>
 </td>
 <td>
-<!-- <a href="[% c.uri_for('/round_out') %]">Mark Out Teams (Complete List)</a> -->
+<a href="[% c.uri_for('/round_out') %]">Mark Out Teams (Complete List)</a>
 </td>
 <td>
-<a href="[% c.uri_for('/qa') %]">Lower QA</a>
+<a href="[% c.uri_for('/qa') %]">Lower QA</a> -->
 </td>
 </tr>
 </table>
