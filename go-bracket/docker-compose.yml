@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  bracket-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_DRIVER=postgres
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=bracket
+      - DB_PASSWORD=bracket123
+      - DB_NAME=bracket
+      - DB_SSLMODE=disable
+    depends_on:
+      - postgres
+    volumes:
+      - ./data:/data
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=bracket
+      - POSTGRES_PASSWORD=bracket123
+      - POSTGRES_DB=bracket
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # SQLite version (alternative)
+  bracket-sqlite:
+    build: .
+    ports:
+      - "8081:8080"
+    environment:
+      - DB_DRIVER=sqlite
+      - DB_NAME=/data/bracket.db
+    volumes:
+      - ./data:/data
+    profiles:
+      - sqlite
+
+volumes:
+  postgres_data:
+
