@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  python-bracket-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://bracket:bracket123@postgres:5432/bracket
+      - DEBUG=true
+    depends_on:
+      - postgres
+    volumes:
+      - ./data:/data
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=bracket
+      - POSTGRES_PASSWORD=bracket123
+      - POSTGRES_DB=bracket
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # SQLite version (alternative)
+  python-bracket-sqlite:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=sqlite:///data/bracket.db
+      - DEBUG=true
+    volumes:
+      - ./data:/data
+    profiles:
+      - sqlite
+
+volumes:
+  postgres_data:
+
