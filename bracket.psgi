@@ -6,6 +6,11 @@ use Bracket;
 
 my $app = Bracket->psgi_app(@_);
 
+builder {
+  enable "ReverseProxy";
+  $app;
+};
+
 
 # START NOTE: One can start this script from the parent directory like so:
 # plackup -s Standalone::Prefork script/bracket.psgi
