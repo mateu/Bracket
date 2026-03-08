@@ -32,6 +32,7 @@ requires(
     'SQL::Translator'                              => '0.11005',
     'Term::Prompt'                                 => 0,
     'Time::HiRes'                                  => 0,
+    'YAML'                                         => 0,
 );
 
 #catalyst;
