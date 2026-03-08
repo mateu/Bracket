@@ -2,7 +2,7 @@ package Bracket;
 use Moose;
 
 our $VERSION = '1.18';
-use Catalyst::Runtime '5.80';
+use Catalyst::Runtime 5.80;
 
 use Catalyst qw/
   ConfigLoader
