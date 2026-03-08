@@ -31,15 +31,14 @@ sub update_points {
 
 	    # Record lower seed
             $sth = $dbh->prepare('
-                with games_played as (
+                update game
+                inner join (
                     select pick.game, team.seed
                     from pick
                     join team
                     on pick.pick = team.id
                     where pick.player = 1
-                )
-                update game
-                inner join games_played gp
+                ) gp
                 on game.id = gp.game
                 set lower_seed = CASE
                   WHEN game.round > 1 THEN (get_winner_seed(game.id) > get_loser_seed(game.id))
@@ -67,7 +66,8 @@ sub update_points {
             $sth->execute;
 	    # Do for other rounds
             $sth = $dbh->prepare('
-                with round_out_info as (
+                update team
+                inner join (
                     select get_loser(game.id) as losing_team, game.round
                     from team
                         join pick on team.id = pick.pick
@@ -75,9 +75,7 @@ sub update_points {
                     where pick.player = 1
                     and game.round = get_current_round()
                     and game.round > 1
-                )
-                update team
-                inner join round_out_info roi
+                ) roi
                 on team.id = roi.losing_team
                 set round_out = roi.round
                ;
