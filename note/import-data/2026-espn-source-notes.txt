@@ -1,0 +1,11 @@
+Source URL requested by user: https://www.espn.com/mens-college-basketball/bracket
+
+Access note:
+- Direct bracket page content is JS-rendered / anti-bot constrained in this environment.
+- Team field extracted from ESPN tournament coverage page with explicit region first-round matchups:
+  https://www.espn.com/mens-college-basketball/story/_/id/48217204/march-madness-bracket-predictions-picks-ncaa-tournament-final-four-2026
+- Extract timestamp: 2026-03-16
+
+Region order fixed per app requirement for 2026:
+1 East, 2 South, 3 West, 4 Midwest
+(semifinal pairing: 1v2 and 3v4)

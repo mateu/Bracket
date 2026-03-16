@@ -1,0 +1,65 @@
+team_id,seed,team_name,region_id,region_name
+1,1,Duke,1,East
+2,16,Siena,1,East
+3,8,Ohio State,1,East
+4,9,TCU,1,East
+5,5,St Johns,1,East
+6,12,Northern Iowa,1,East
+7,4,Kansas,1,East
+8,13,California Baptist,1,East
+9,6,Louisville,1,East
+10,11,South Florida,1,East
+11,3,Michigan State,1,East
+12,14,North Dakota State,1,East
+13,7,UCLA,1,East
+14,10,UCF,1,East
+15,2,UConn,1,East
+16,15,Furman,1,East
+17,1,Florida,2,South
+18,16,Prairie View/Lehigh,2,South
+19,8,Clemson,2,South
+20,9,Iowa,2,South
+21,5,Vanderbilt,2,South
+22,12,McNeese,2,South
+23,4,Nebraska,2,South
+24,13,Troy,2,South
+25,6,North Carolina,2,South
+26,11,VCU,2,South
+27,3,Illinois,2,South
+28,14,Pennsylvania,2,South
+29,7,Saint Marys,2,South
+30,10,Texas A&M,2,South
+31,2,Houston,2,South
+32,15,Idaho,2,South
+33,1,Arizona,3,West
+34,16,Long Island University,3,West
+35,8,Villanova,3,West
+36,9,Utah State,3,West
+37,5,Wisconsin,3,West
+38,12,High Point,3,West
+39,4,Arkansas,3,West
+40,13,Hawaii,3,West
+41,6,BYU,3,West
+42,11,NC State/Texas,3,West
+43,3,Gonzaga,3,West
+44,14,Kennesaw State,3,West
+45,7,Miami,3,West
+46,10,Missouri,3,West
+47,2,Purdue,3,West
+48,15,Queens,3,West
+49,1,Michigan,4,Midwest
+50,16,UMBC/Howard,4,Midwest
+51,8,Georgia,4,Midwest
+52,9,Saint Louis,4,Midwest
+53,5,Texas Tech,4,Midwest
+54,12,Akron,4,Midwest
+55,4,Alabama,4,Midwest
+56,13,Hofstra,4,Midwest
+57,6,Tennessee,4,Midwest
+58,11,SMU/Miami (OH),4,Midwest
+59,3,Virginia,4,Midwest
+60,14,Wright State,4,Midwest
+61,7,Kentucky,4,Midwest
+62,10,Santa Clara,4,Midwest
+63,2,Iowa State,4,Midwest
+64,15,Tennessee State,4,Midwest
