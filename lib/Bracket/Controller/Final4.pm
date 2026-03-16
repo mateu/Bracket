@@ -3,6 +3,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use Data::Dumper::Concise;
+use Bracket::Service::BracketValidator;
 
 =head1 NAME
 
@@ -85,33 +86,68 @@ sub save_picks : Local {
     my ($self, $c, $player_id) = @_;
 
     my $player = $c->model('DBIC::Player')->find($player_id);
+    $c->go('/error_404') if !$player;
     $c->stash->{player}    = $player;
     $c->stash->{player_id} = $player_id;
 
-    my $params = $c->request->params;
+    # Restrict saves to user or admin role.
+    my @user_roles = $c->user->roles;
+    $c->go('/error_404') if (($player_id != $c->user->id) && !('admin' eq any(@user_roles)));
 
-    # Do database insert
-    foreach my $pgame (keys %{$params}) {
-        $pgame =~ m{p(\d+)};
-        my $game_id = $1;
-        my $team_id = ${$params}{$pgame};
-        my ($pick) = $c->model('DBIC::Pick')->search({ player => $player_id, game => $game_id });
-        if (defined $pick) {
-            $pick->pick($team_id);
-            $pick->update;
-        }
-        else {
-            my $new_pick = $c->model('DBIC::Pick')->new(
-                {
-                    player => $player_id,
-                    game   => $game_id,
-                    pick   => $team_id
-                }
-            );
-            $new_pick->insert;
-        }
+    # Enforce edit cutoff at save time too.
+    my @open_edit_ids = qw/ /;
+    my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
+    if ( $c->stash->{is_game_time} && (!($c->stash->{is_admin} || $edit_allowed)) ) {
+        $c->flash->{status_msg} = 'Final Four edits are closed';
+        $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')) . "/${player_id}");
+        return;
     }
-    $c->stash->{params} = $params;
+
+    my $params = $c->request->params || {};
+    my $validation = Bracket::Service::BracketValidator->validate_final4_payload(
+        $c->model('DBIC')->schema,
+        $player_id,
+        $params,
+    );
+
+    if (!$validation->{ok}) {
+        my $message = join('; ', @{$validation->{errors}});
+        $c->flash->{status_msg} = "Save rejected: ${message}";
+        $c->response->redirect($c->uri_for($c->controller('Final4')->action_for('make')) . "/${player_id}");
+        return;
+    }
+
+    my $pick_map = $validation->{normalized_picks} || {};
+
+    eval {
+        $c->model('DBIC')->schema->txn_do(sub {
+            foreach my $game_id (keys %{$pick_map}) {
+                my $team_id = $pick_map->{$game_id};
+                my ($pick) = $c->model('DBIC::Pick')->search({ player => $player_id, game => $game_id });
+                if (defined $pick) {
+                    $pick->pick($team_id);
+                    $pick->update;
+                }
+                else {
+                    my $new_pick = $c->model('DBIC::Pick')->new(
+                        {
+                            player => $player_id,
+                            game   => $game_id,
+                            pick   => $team_id
+                        }
+                    );
+                    $new_pick->insert;
+                }
+            }
+        });
+    };
+
+    if ($@) {
+        $c->flash->{status_msg} = 'Save failed due to a database error';
+        $c->response->redirect($c->uri_for($c->controller('Final4')->action_for('make')) . "/${player_id}");
+        return;
+    }
+
     $c->response->redirect(
         $c->uri_for($c->controller('Player')->action_for('home'))
         . "/${player_id}"

@@ -4,6 +4,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use DateTime;
+use Bracket::Service::BracketValidator;
 
 my $PERFECT_BRACKET_MODE = 1;
 
@@ -18,35 +19,62 @@ sub save_picks : Local {
     my ($self, $c, $region, $player_id) = @_;
 
     my $player_object = $c->model('DBIC::Player')->find({ id => $player_id });
-    my $player_name = $player_object->first_name . ' ' . $player_object->last_name;
-    $c->stash->{player_id}   = $player_id;
-    $c->stash->{player_name} = $player_name;
     my $region_object = $c->model('DBIC::Region')->find($region);
-    my $region_name   = $region_object->name;
-    $c->stash->{region}      = $region;
-    $c->stash->{region_name} = $region_name;
+    $c->go('/error_404') if !$player_object || !$region_object;
 
-    my $params = $c->request->params;
+    # Restrict saves to user or admin role.
+    my @user_roles = $c->user->roles;
+    $c->go('/error_404') if (($player_id != $c->user->id) && !('admin' eq any(@user_roles)));
 
-    # Do database insert
-    foreach my $pgame (keys %{$params}) {
-        $pgame =~ m{p(\d+)};
-        my $game = $1;
-        my $team = ${$params}{$pgame};
-        my ($pick) = $c->model('DBIC::Pick')->search({ player => $player_id, game => $game });
-        if (defined $pick) {
-            $pick->pick($team);
-            $pick->update;
-        }
-        else {
-            my $new_pick =
-              $c->model('DBIC::Pick')->new({ player => $player_id, game => $game, pick => $team });
-            $new_pick->insert;
-        }
+    # Enforce edit cutoff at save time too.
+    my @open_edit_ids = qw/ /;
+    my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
+    if ( $c->stash->{is_game_time} && (!($c->stash->{is_admin} || $edit_allowed)) ) {
+        $c->flash->{status_msg} = 'Regional edits are closed';
+        $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')) . "/${player_id}");
+        return;
     }
 
-    $c->stash->{params} = $params;
-    my $previous_user_id = $c->session->{previous_user_id};
+    my $params = $c->request->params || {};
+    my $validation = Bracket::Service::BracketValidator->validate_region_payload(
+        $c->model('DBIC')->schema,
+        $player_id,
+        $region,
+        $params,
+    );
+
+    if (!$validation->{ok}) {
+        my $message = join('; ', @{$validation->{errors}});
+        $c->flash->{status_msg} = "Save rejected: ${message}";
+        $c->response->redirect($c->uri_for($c->controller('Region')->action_for('edit')) . "/${region}/${player_id}");
+        return;
+    }
+
+    my $pick_map = $validation->{normalized_picks} || {};
+
+    eval {
+        $c->model('DBIC')->schema->txn_do(sub {
+            foreach my $game (keys %{$pick_map}) {
+                my $team = $pick_map->{$game};
+                my ($pick) = $c->model('DBIC::Pick')->search({ player => $player_id, game => $game });
+                if (defined $pick) {
+                    $pick->pick($team);
+                    $pick->update;
+                }
+                else {
+                    my $new_pick = $c->model('DBIC::Pick')->new({ player => $player_id, game => $game, pick => $team });
+                    $new_pick->insert;
+                }
+            }
+        });
+    };
+
+    if ($@) {
+        $c->flash->{status_msg} = 'Save failed due to a database error';
+        $c->response->redirect($c->uri_for($c->controller('Region')->action_for('edit')) . "/${region}/${player_id}");
+        return;
+    }
+
     $c->response->redirect(
         $c->uri_for($c->controller('Player')->action_for('home'))
         . "/${player_id}"
