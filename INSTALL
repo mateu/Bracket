@@ -33,3 +33,18 @@ This will make /bracket the URL for the base of the application.
 
 7. Let players know about your bracket.  They can register at /register
 
+8. Running tests in this repo (local dependency setup)
+
+If your shell cannot find modules (for example `DBIx::Class::Schema`), use the
+repo helper that wires `PATH` + `PERL5LIB` to `./local` before running tests:
+
+    script/test-env.sh
+
+By default it runs:
+
+    prove -lv t/bracket_validator.t
+
+You can also pass any command through the same environment, e.g.:
+
+    script/test-env.sh prove -lv t/some_other_test.t
+
