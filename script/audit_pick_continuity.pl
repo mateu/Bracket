@@ -4,11 +4,31 @@ use warnings;
 
 use FindBin;
 use lib "$FindBin::Bin/../lib";
-use Bracket::Schema;
 
-my $dsn  = $ENV{BRACKET_DSN}  || 'dbi:mysql:database=bracket_2026;host=127.0.0.1;port=3306';
-my $user = $ENV{BRACKET_DB_USER} || 'root';
-my $pass = $ENV{BRACKET_DB_PASSWORD} || '';
+use Bracket::Schema;
+use Getopt::Long qw(GetOptions);
+
+my %opt;
+GetOptions(
+    'config=s' => \$opt{config},
+    'dsn=s'    => \$opt{dsn},
+    'user=s'   => \$opt{user},
+    'pass=s'   => \$opt{pass},
+    'help'     => \$opt{help},
+) or die usage();
+
+if ($opt{help}) {
+    print usage();
+    exit 0;
+}
+
+my $config_path = $opt{config} || "$FindBin::Bin/../bracket_local.conf";
+my ($cfg_dsn, $cfg_user, $cfg_pass) = read_db_from_config($config_path);
+
+# Precedence: CLI flags > env vars > bracket_local.conf > hardcoded fallback.
+my $dsn  = defined $opt{dsn}  ? $opt{dsn}  : ($ENV{BRACKET_DSN}         || $cfg_dsn  || 'dbi:mysql:database=bracket_2026;host=127.0.0.1;port=3306');
+my $user = defined $opt{user} ? $opt{user} : ($ENV{BRACKET_DB_USER}     || $cfg_user || 'root');
+my $pass = defined $opt{pass} ? $opt{pass} : (exists $ENV{BRACKET_DB_PASSWORD} ? $ENV{BRACKET_DB_PASSWORD} : (defined $cfg_pass ? $cfg_pass : ''));
 
 my $schema = Bracket::Schema->connect($dsn, $user, $pass);
 
@@ -42,4 +62,58 @@ for my $player (@players) {
 
 if (!$issues) {
     print "OK: no continuity issues found\n";
+}
+
+sub read_db_from_config {
+    my ($path) = @_;
+    return (undef, undef, undef) if !$path || !-f $path;
+
+    open my $fh, '<', $path or return (undef, undef, undef);
+
+    my ($dsn, $user, $pass);
+    while (my $line = <$fh>) {
+        chomp $line;
+        $line =~ s/^\s+|\s+$//g;
+        next if $line eq '' || $line =~ /^#/;
+
+        if (!defined $dsn && $line =~ /^dsn\s+(.+)$/i) {
+            $dsn = $1;
+            $dsn =~ s/\s+$//;
+            next;
+        }
+        if (!defined $user && $line =~ /^user\s+(.+)$/i) {
+            $user = $1;
+            $user =~ s/\s+$//;
+            next;
+        }
+        if (!defined $pass && $line =~ /^password\s+(.+)$/i) {
+            $pass = $1;
+            $pass =~ s/\s+$//;
+            next;
+        }
+    }
+
+    close $fh;
+    return ($dsn, $user, $pass);
+}
+
+sub usage {
+    return <<'USAGE';
+Usage: audit_pick_continuity.pl [options]
+
+Options:
+  --config <path>   Path to bracket_local.conf (default: ../bracket_local.conf)
+  --dsn <dsn>       DBI DSN override
+  --user <user>     DB user override
+  --pass <pass>     DB password override
+  --help            Show this help
+
+Resolution order:
+  CLI flags > environment vars > config file > hardcoded fallback
+
+Environment vars:
+  BRACKET_DSN
+  BRACKET_DB_USER
+  BRACKET_DB_PASSWORD
+USAGE
 }
