@@ -212,7 +212,9 @@ sub _validate_pick_for_game {
           ? join(' or ', @allowed_desc)
           : 'unknown';
 
-        return "${team_label} is not a valid advancement for game ${game_id}. Allowed winners for game ${game_id} are ${allowed_text}";
+        my $round = $game->round;
+        my $round_text = defined $round ? "round ${round}" : 'an unknown round';
+        return "${team_label} is not a valid advancement for game ${game_id} (${round_text}). Allowed winners for game ${game_id} are ${allowed_text}";
     }
 
     return;
