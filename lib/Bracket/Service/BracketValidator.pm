@@ -152,6 +152,16 @@ sub _affected_games_in_scope {
     return \%affected;
 }
 
+sub _team_label {
+    my ($team, $fallback_id) = @_;
+    return "Team ${fallback_id}" if !$team;
+
+    my $name = $team->name || "Team ${fallback_id}";
+    my $seed = $team->seed;
+
+    return defined $seed ? "${name} (seed ${seed})" : $name;
+}
+
 sub _validate_pick_for_game {
     my ($schema, $game_id, $team_id, $region_id, $effective) = @_;
 
@@ -161,17 +171,17 @@ sub _validate_pick_for_game {
     my $team = $schema->resultset('Team')->find({ id => $team_id });
     return "Team ${team_id} not found" if !$team;
 
-    my $team_name = $team->name || "Team ${team_id}";
+    my $team_label = _team_label($team, $team_id);
 
     if (defined $region_id && $team->region->id != $region_id) {
-        return "${team_name} (team ${team_id}) is not in region ${region_id}";
+        return "${team_label} is not in region ${region_id}";
     }
 
     # Round 1 teams are fixed in game_team_graph.
     if ($game->round == 1) {
         my @team_ids = map { $_->team } $schema->resultset('GameTeamGraph')->search({ game => $game_id })->all;
         my %allowed = map { $_ => 1 } @team_ids;
-        return "${team_name} (team ${team_id}) is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
+        return "${team_label} is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
         return;
     }
 
@@ -195,15 +205,14 @@ sub _validate_pick_for_game {
         my %seen;
         my @allowed_desc = map {
             my $allowed_team = $schema->resultset('Team')->find({ id => $_ });
-            my $allowed_name = $allowed_team ? ($allowed_team->name || "Team $_") : "Team $_";
-            "${allowed_name} (team $_)";
+            _team_label($allowed_team, $_);
         } grep { !$seen{$_}++ } @allowed_team_ids;
 
         my $allowed_text = @allowed_desc
           ? join(' or ', @allowed_desc)
           : 'unknown';
 
-        return "${team_name} (team ${team_id}) is not a valid advancement for game ${game_id}. Allowed winners for game ${game_id} are ${allowed_text}";
+        return "${team_label} is not a valid advancement for game ${game_id}. Allowed winners for game ${game_id} are ${allowed_text}";
     }
 
     return;
