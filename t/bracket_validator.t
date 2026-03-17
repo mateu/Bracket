@@ -36,6 +36,52 @@ my $invalid_region = Bracket::Service::BracketValidator->validate_region_payload
 ok(!$invalid_region->{ok}, 'invalid region payload fails');
 like(join(' ', @{$invalid_region->{errors}}), qr/not a valid advancement/, 'invalid region failure is continuity-related');
 
+# Seed a full East path where UConn (team 15) advances deep, then ensure stale
+# downstream picks are rejected when an earlier game changes to Furman (team 16).
+for my $row (
+    [7,  13],
+    [8,  15],
+    [11, 11],
+    [12, 15],
+    [13, 1],
+    [14, 15],
+    [15, 15],
+) {
+    $schema->resultset('Pick')->update_or_create({
+        player => $player_id,
+        game   => $row->[0],
+        pick   => $row->[1],
+    });
+}
+
+my $stale_downstream_region = Bracket::Service::BracketValidator->validate_region_payload(
+    $schema,
+    $player_id,
+    1,
+    {
+        p8 => 16,
+    }
+);
+ok(!$stale_downstream_region->{ok}, 'stale downstream inconsistency fails');
+like(
+    join(' ', @{$stale_downstream_region->{errors}}),
+    qr/game 12/i,
+    'stale downstream error points to affected descendant game'
+);
+
+my $coherent_region_update = Bracket::Service::BracketValidator->validate_region_payload(
+    $schema,
+    $player_id,
+    1,
+    {
+        p8  => 16,
+        p12 => 16,
+        p14 => 16,
+        p15 => 16,
+    }
+);
+ok($coherent_region_update->{ok}, 'coherent region update passes');
+
 # Seed region winners for final4 validation.
 for my $row (
     [15, 1],   # East winner
@@ -60,6 +106,46 @@ my $valid_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
     }
 );
 ok($valid_final4->{ok}, 'valid final4 payload passes');
+
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 61,
+    pick   => 1,
+});
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 62,
+    pick   => 33,
+});
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 63,
+    pick   => 1,
+});
+
+my $stale_downstream_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
+    $schema,
+    $player_id,
+    {
+        p61 => 17,
+    }
+);
+ok(!$stale_downstream_final4->{ok}, 'stale downstream final4 inconsistency fails');
+like(
+    join(' ', @{$stale_downstream_final4->{errors}}),
+    qr/game 63/i,
+    'stale downstream final4 error points to affected descendant game'
+);
+
+my $coherent_final4_update = Bracket::Service::BracketValidator->validate_final4_payload(
+    $schema,
+    $player_id,
+    {
+        p61 => 17,
+        p63 => 17,
+    }
+);
+ok($coherent_final4_update->{ok}, 'coherent final4 update passes');
 
 my $invalid_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
     $schema,

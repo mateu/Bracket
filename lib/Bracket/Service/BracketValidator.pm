@@ -19,16 +19,31 @@ sub validate_region_payload {
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
+    my %effective = (%existing, %{$pick_map});
 
+    my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        my $team_id = $pick_map->{$game_id};
-
         if ($game_id < $min_game || $game_id > $max_game) {
             push @errors, "Game ${game_id} is outside region ${region_id}";
             next;
         }
+        push @changed_games, $game_id;
+    }
 
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $region_id, $pick_map, \%existing);
+    my $games_to_validate = _affected_games_in_scope(
+        $schema,
+        \@changed_games,
+        sub {
+            my ($game_id) = @_;
+            return $game_id >= $min_game && $game_id <= $max_game;
+        }
+    );
+
+    foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
+        next if !exists $effective{$game_id};
+
+        my $team_id = $effective{$game_id};
+        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $region_id, \%effective);
     }
 
     @errors = grep { defined $_ && $_ ne '' } @errors;
@@ -50,16 +65,31 @@ sub validate_final4_payload {
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
+    my %effective = (%existing, %{$pick_map});
 
+    my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        my $team_id = $pick_map->{$game_id};
-
         if (!$allowed_games{$game_id}) {
             push @errors, "Game ${game_id} is not a Final Four game";
             next;
         }
+        push @changed_games, $game_id;
+    }
 
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, undef, $pick_map, \%existing);
+    my $games_to_validate = _affected_games_in_scope(
+        $schema,
+        \@changed_games,
+        sub {
+            my ($game_id) = @_;
+            return $allowed_games{$game_id};
+        }
+    );
+
+    foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
+        next if !exists $effective{$game_id};
+
+        my $team_id = $effective{$game_id};
+        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, undef, \%effective);
     }
 
     @errors = grep { defined $_ && $_ ne '' } @errors;
@@ -93,8 +123,47 @@ sub _extract_pick_map {
     return (\%pick_map, \@errors);
 }
 
+sub _affected_games_in_scope {
+    my ($schema, $changed_games, $is_in_scope) = @_;
+
+    my %children_by_parent;
+    foreach my $edge ($schema->resultset('GameGraph')->search({})->all) {
+        push @{$children_by_parent{$edge->parent_game}}, $edge->game;
+    }
+
+    my %affected = map { $_ => 1 } @{$changed_games};
+    my @queue = @{$changed_games};
+
+    while (@queue) {
+        my $current = shift @queue;
+        foreach my $child (@{$children_by_parent{$current} || []}) {
+            next if !$is_in_scope->($child);
+            next if $affected{$child};
+            $affected{$child} = 1;
+            push @queue, $child;
+        }
+    }
+
+    # Keep only in-scope games.
+    foreach my $game_id (keys %affected) {
+        delete $affected{$game_id} if !$is_in_scope->($game_id);
+    }
+
+    return \%affected;
+}
+
+sub _team_label {
+    my ($team, $fallback_id) = @_;
+    return "Team ${fallback_id}" if !$team;
+
+    my $name = $team->name || "Team ${fallback_id}";
+    my $seed = $team->seed;
+
+    return defined $seed ? "${name} (seed ${seed})" : $name;
+}
+
 sub _validate_pick_for_game {
-    my ($schema, $game_id, $team_id, $region_id, $pick_map, $existing) = @_;
+    my ($schema, $game_id, $team_id, $region_id, $effective) = @_;
 
     my $game = $schema->resultset('Game')->find({ id => $game_id });
     return "Game ${game_id} not found" if !$game;
@@ -102,15 +171,17 @@ sub _validate_pick_for_game {
     my $team = $schema->resultset('Team')->find({ id => $team_id });
     return "Team ${team_id} not found" if !$team;
 
+    my $team_label = _team_label($team, $team_id);
+
     if (defined $region_id && $team->region->id != $region_id) {
-        return "Team ${team_id} is not in region ${region_id}";
+        return "${team_label} is not in region ${region_id}";
     }
 
     # Round 1 teams are fixed in game_team_graph.
     if ($game->round == 1) {
         my @team_ids = map { $_->team } $schema->resultset('GameTeamGraph')->search({ game => $game_id })->all;
         my %allowed = map { $_ => 1 } @team_ids;
-        return "Team ${team_id} is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
+        return "${team_label} is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
         return;
     }
 
@@ -120,9 +191,7 @@ sub _validate_pick_for_game {
 
     my @allowed_team_ids;
     foreach my $parent_game (@parents) {
-        my $winner = exists $pick_map->{$parent_game}
-          ? $pick_map->{$parent_game}
-          : $existing->{$parent_game};
+        my $winner = $effective->{$parent_game};
 
         if (!defined $winner) {
             return "Cannot validate game ${game_id}: missing parent pick for game ${parent_game}";
@@ -132,7 +201,21 @@ sub _validate_pick_for_game {
     }
 
     my %allowed = map { $_ => 1 } @allowed_team_ids;
-    return "Team ${team_id} is not a valid advancement for game ${game_id}" if !$allowed{$team_id};
+    if (!$allowed{$team_id}) {
+        my %seen;
+        my @allowed_desc = map {
+            my $allowed_team = $schema->resultset('Team')->find({ id => $_ });
+            _team_label($allowed_team, $_);
+        } grep { !$seen{$_}++ } @allowed_team_ids;
+
+        my $allowed_text = @allowed_desc
+          ? join(' or ', @allowed_desc)
+          : 'unknown';
+
+        my $round = $game->round;
+        my $round_text = defined $round ? "round ${round}" : 'an unknown round';
+        return "${team_label} is not a valid advancement for game ${game_id} (${round_text}). Allowed winners for game ${game_id} are ${allowed_text}";
+    }
 
     return;
 }
