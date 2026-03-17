@@ -191,7 +191,20 @@ sub _validate_pick_for_game {
     }
 
     my %allowed = map { $_ => 1 } @allowed_team_ids;
-    return "${team_name} (team ${team_id}) is not a valid advancement for game ${game_id}" if !$allowed{$team_id};
+    if (!$allowed{$team_id}) {
+        my %seen;
+        my @allowed_desc = map {
+            my $allowed_team = $schema->resultset('Team')->find({ id => $_ });
+            my $allowed_name = $allowed_team ? ($allowed_team->name || "Team $_") : "Team $_";
+            "${allowed_name} (team $_)";
+        } grep { !$seen{$_}++ } @allowed_team_ids;
+
+        my $allowed_text = @allowed_desc
+          ? join(' or ', @allowed_desc)
+          : 'unknown';
+
+        return "${team_name} (team ${team_id}) is not a valid advancement for game ${game_id}. Allowed winners for game ${game_id} are ${allowed_text}";
+    }
 
     return;
 }
