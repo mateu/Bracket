@@ -107,6 +107,46 @@ my $valid_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
 );
 ok($valid_final4->{ok}, 'valid final4 payload passes');
 
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 61,
+    pick   => 1,
+});
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 62,
+    pick   => 33,
+});
+$schema->resultset('Pick')->update_or_create({
+    player => $player_id,
+    game   => 63,
+    pick   => 1,
+});
+
+my $stale_downstream_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
+    $schema,
+    $player_id,
+    {
+        p61 => 17,
+    }
+);
+ok(!$stale_downstream_final4->{ok}, 'stale downstream final4 inconsistency fails');
+like(
+    join(' ', @{$stale_downstream_final4->{errors}}),
+    qr/game 63/i,
+    'stale downstream final4 error points to affected descendant game'
+);
+
+my $coherent_final4_update = Bracket::Service::BracketValidator->validate_final4_payload(
+    $schema,
+    $player_id,
+    {
+        p61 => 17,
+        p63 => 17,
+    }
+);
+ok($coherent_final4_update->{ok}, 'coherent final4 update passes');
+
 my $invalid_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
     $schema,
     $player_id,
