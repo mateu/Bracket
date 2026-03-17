@@ -161,15 +161,17 @@ sub _validate_pick_for_game {
     my $team = $schema->resultset('Team')->find({ id => $team_id });
     return "Team ${team_id} not found" if !$team;
 
+    my $team_name = $team->name || "Team ${team_id}";
+
     if (defined $region_id && $team->region->id != $region_id) {
-        return "Team ${team_id} is not in region ${region_id}";
+        return "${team_name} (team ${team_id}) is not in region ${region_id}";
     }
 
     # Round 1 teams are fixed in game_team_graph.
     if ($game->round == 1) {
         my @team_ids = map { $_->team } $schema->resultset('GameTeamGraph')->search({ game => $game_id })->all;
         my %allowed = map { $_ => 1 } @team_ids;
-        return "Team ${team_id} is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
+        return "${team_name} (team ${team_id}) is not valid for round-1 game ${game_id}" if !$allowed{$team_id};
         return;
     }
 
@@ -189,7 +191,7 @@ sub _validate_pick_for_game {
     }
 
     my %allowed = map { $_ => 1 } @allowed_team_ids;
-    return "Team ${team_id} is not a valid advancement for game ${game_id}" if !$allowed{$team_id};
+    return "${team_name} (team ${team_id}) is not a valid advancement for game ${game_id}" if !$allowed{$team_id};
 
     return;
 }
