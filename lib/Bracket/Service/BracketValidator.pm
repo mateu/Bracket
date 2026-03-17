@@ -19,16 +19,31 @@ sub validate_region_payload {
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
+    my %effective = (%existing, %{$pick_map});
 
+    my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        my $team_id = $pick_map->{$game_id};
-
         if ($game_id < $min_game || $game_id > $max_game) {
             push @errors, "Game ${game_id} is outside region ${region_id}";
             next;
         }
+        push @changed_games, $game_id;
+    }
 
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $region_id, $pick_map, \%existing);
+    my $games_to_validate = _affected_games_in_scope(
+        $schema,
+        \@changed_games,
+        sub {
+            my ($game_id) = @_;
+            return $game_id >= $min_game && $game_id <= $max_game;
+        }
+    );
+
+    foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
+        next if !exists $effective{$game_id};
+
+        my $team_id = $effective{$game_id};
+        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $region_id, \%effective);
     }
 
     @errors = grep { defined $_ && $_ ne '' } @errors;
@@ -50,16 +65,31 @@ sub validate_final4_payload {
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
+    my %effective = (%existing, %{$pick_map});
 
+    my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        my $team_id = $pick_map->{$game_id};
-
         if (!$allowed_games{$game_id}) {
             push @errors, "Game ${game_id} is not a Final Four game";
             next;
         }
+        push @changed_games, $game_id;
+    }
 
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, undef, $pick_map, \%existing);
+    my $games_to_validate = _affected_games_in_scope(
+        $schema,
+        \@changed_games,
+        sub {
+            my ($game_id) = @_;
+            return $allowed_games{$game_id};
+        }
+    );
+
+    foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
+        next if !exists $effective{$game_id};
+
+        my $team_id = $effective{$game_id};
+        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, undef, \%effective);
     }
 
     @errors = grep { defined $_ && $_ ne '' } @errors;
@@ -93,8 +123,37 @@ sub _extract_pick_map {
     return (\%pick_map, \@errors);
 }
 
+sub _affected_games_in_scope {
+    my ($schema, $changed_games, $is_in_scope) = @_;
+
+    my %children_by_parent;
+    foreach my $edge ($schema->resultset('GameGraph')->search({})->all) {
+        push @{$children_by_parent{$edge->parent_game}}, $edge->game;
+    }
+
+    my %affected = map { $_ => 1 } @{$changed_games};
+    my @queue = @{$changed_games};
+
+    while (@queue) {
+        my $current = shift @queue;
+        foreach my $child (@{$children_by_parent{$current} || []}) {
+            next if !$is_in_scope->($child);
+            next if $affected{$child};
+            $affected{$child} = 1;
+            push @queue, $child;
+        }
+    }
+
+    # Keep only in-scope games.
+    foreach my $game_id (keys %affected) {
+        delete $affected{$game_id} if !$is_in_scope->($game_id);
+    }
+
+    return \%affected;
+}
+
 sub _validate_pick_for_game {
-    my ($schema, $game_id, $team_id, $region_id, $pick_map, $existing) = @_;
+    my ($schema, $game_id, $team_id, $region_id, $effective) = @_;
 
     my $game = $schema->resultset('Game')->find({ id => $game_id });
     return "Game ${game_id} not found" if !$game;
@@ -120,9 +179,7 @@ sub _validate_pick_for_game {
 
     my @allowed_team_ids;
     foreach my $parent_game (@parents) {
-        my $winner = exists $pick_map->{$parent_game}
-          ? $pick_map->{$parent_game}
-          : $existing->{$parent_game};
+        my $winner = $effective->{$parent_game};
 
         if (!defined $winner) {
             return "Cannot validate game ${game_id}: missing parent pick for game ${parent_game}";

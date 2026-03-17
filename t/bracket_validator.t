@@ -36,6 +36,52 @@ my $invalid_region = Bracket::Service::BracketValidator->validate_region_payload
 ok(!$invalid_region->{ok}, 'invalid region payload fails');
 like(join(' ', @{$invalid_region->{errors}}), qr/not a valid advancement/, 'invalid region failure is continuity-related');
 
+# Seed a full East path where UConn (team 15) advances deep, then ensure stale
+# downstream picks are rejected when an earlier game changes to Furman (team 16).
+for my $row (
+    [7,  13],
+    [8,  15],
+    [11, 11],
+    [12, 15],
+    [13, 1],
+    [14, 15],
+    [15, 15],
+) {
+    $schema->resultset('Pick')->update_or_create({
+        player => $player_id,
+        game   => $row->[0],
+        pick   => $row->[1],
+    });
+}
+
+my $stale_downstream_region = Bracket::Service::BracketValidator->validate_region_payload(
+    $schema,
+    $player_id,
+    1,
+    {
+        p8 => 16,
+    }
+);
+ok(!$stale_downstream_region->{ok}, 'stale downstream inconsistency fails');
+like(
+    join(' ', @{$stale_downstream_region->{errors}}),
+    qr/game 12/i,
+    'stale downstream error points to affected descendant game'
+);
+
+my $coherent_region_update = Bracket::Service::BracketValidator->validate_region_payload(
+    $schema,
+    $player_id,
+    1,
+    {
+        p8  => 16,
+        p12 => 16,
+        p14 => 16,
+        p15 => 16,
+    }
+);
+ok($coherent_region_update->{ok}, 'coherent region update passes');
+
 # Seed region winners for final4 validation.
 for my $row (
     [15, 1],   # East winner
