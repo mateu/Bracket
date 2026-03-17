@@ -99,8 +99,8 @@ table#all_player_home {
 #all_player_home a.player-link:hover,
 #all_player_home a.player-link:active,
 #all_player_home a.player-link:focus {
-	color: black;
-	text-decoration: none;
+	color: black !important;
+	text-decoration: none !important;
 }
 
 /* Styles Regional Bracke */
