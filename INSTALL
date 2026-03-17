@@ -48,3 +48,8 @@ You can also pass any command through the same environment, e.g.:
 
     script/test-env.sh prove -lv t/some_other_test.t
 
+`script/test-env.sh` prefers repo-local Perl deps under `./local`. To allow
+fallback to a global user perl tree on hosts that still have one:
+
+    ALLOW_GLOBAL_PERL5=1 script/test-env.sh
+
