@@ -58,8 +58,14 @@ sub all : Global {
 	
 	$c->stash->{template} = 'player/all_home.tt';
 
+	my $sort_by = lc($c->req->params->{sort} || 'points');
+	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks)\z/;
+	$c->stash->{sort_by} = $sort_by;
+
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
-	$c->stash->{players} = \@players;
+	my $picks_per_player = $c->model('DBIC')->count_player_picks;
+	$c->stash->{picks_per_player} = $picks_per_player;
+	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player);
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
 
@@ -70,13 +76,38 @@ sub all : Global {
       ($c->stash->{teams_left_per_player}, $c->stash->{max_left}) = $c->model('DBIC')->count_player_teams_left;
       ($c->stash->{final4_teams_left_per_player}, $c->stash->{max_final4_left}) = $c->model('DBIC')->count_player_final4_teams_left;
 	}
-	else {
-      # Count of picks already made per player
-	    # This is useful to see overall pick status.
-      $c->stash->{picks_per_player} = $c->model('DBIC')->count_player_picks;
-	}
+}
 
+sub _sort_players {
+    my ($players, $sort_by, $picks_per_player) = @_;
+    $players ||= [];
+    $picks_per_player ||= {};
+    $sort_by ||= 'points';
 
+    if ($sort_by eq 'player') {
+        return [ sort {
+            lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+              || $b->points <=> $a->points
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'picks') {
+        return [ sort {
+            my $a_count = $picks_per_player->{$a->id} || 0;
+            my $b_count = $picks_per_player->{$b->id} || 0;
+            my $a_complete = $a_count >= 63 ? 1 : 0;
+            my $b_complete = $b_count >= 63 ? 1 : 0;
+
+            $b_complete <=> $a_complete
+              || $b_count <=> $a_count
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    return [ sort {
+        $b->points <=> $a->points
+          || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+    } @{$players} ];
 }
 
 

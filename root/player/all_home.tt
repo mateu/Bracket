@@ -10,18 +10,19 @@
 
 [% i = 1 %]
 <table id="all_player_home">
-<tr><th>Rank</th><th>Player</th><th>Points</th><th class="secondary">Brackets</th>
+<tr><th>Rank</th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=player' %]">Player</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=points' %]">Points</a></th><th class="secondary">Brackets</th>
 <th style="font-size: 0.67em;">
 [% IF !is_game_time %]
-Picks
+<a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
 [% ELSE %]
+<a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
 <div class="tooltip">Ups,<span class="tooltiptext">Upsets Correct</span></div>
 <div class="tooltip">Cor,<span class="tooltiptext">Total Correct</span></div>
 <div class="tooltip">Act,<span class="tooltiptext">Teams Active</span></div>
 <div class="tooltip">Fi4<span class="tooltiptext">Final 4 Teams Active</span></div>
 [% END %]
 </th></tr>
-[% FOREACH player IN players.nsort('points').reverse %]
+[% FOREACH player IN players %]
 	<tr class="[% i % 2 == 0 ? 'even' : 'odd' %]" >
    [% IF player.active == 1 %]
    <td><span style="font-size:0.88em;">[% i - 1 %]</span></td>
