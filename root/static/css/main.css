@@ -94,6 +94,15 @@ table#all_player_home {
 	padding: 2px;
 } 
 
+#all_player_home a.player-link,
+#all_player_home a.player-link:visited,
+#all_player_home a.player-link:hover,
+#all_player_home a.player-link:active,
+#all_player_home a.player-link:focus {
+	color: black;
+	text-decoration: none;
+}
+
 /* Styles Regional Bracke */
 td p { 
 	border-bottom: solid thin black; 
