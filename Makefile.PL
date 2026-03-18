@@ -1,7 +1,13 @@
+use FindBin;
+use lib $FindBin::Bin;
 use inc::Module::Install;
 
 name 'Bracket';
 all_from 'lib/Bracket.pm';
+repository 'https://github.com/mateu/Bracket.git';
+homepage 'https://github.com/mateu/Bracket';
+bugtracker 'https://github.com/mateu/Bracket/issues';
+perl_version '5.008001';
 
 requires(
     'Catalyst'                                     => '5.8000',
@@ -27,6 +33,7 @@ requires(
     'Email::Valid',                                => 0,
     'HTML::FormHandler'                            => 0,
     'HTML::FormHandler::Model::DBIC'               => 0,
+    'Moose'                                        => 0,
     'Net::SMTP',                                   => 0,
     'Perl6::Junction',                             => 0,
     'SQL::Translator'                              => '0.11005',
@@ -37,6 +44,10 @@ requires(
 
 #catalyst;
 
-install_script glob('script/*.pl');
-auto_install;
-WriteAll;
+# auto_install; # disabled for CPAN/release build flow
+makemaker_args(
+    NO_META   => 0,
+    EXE_FILES => [ glob('script/*.pl') ],
+);
+Makefile->write;
+Meta->write;
