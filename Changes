@@ -1,5 +1,11 @@
 College Basketball Bracket System
 
+1.19_01  2026-03-18
+        - fix Makefile.PL bootstrap so bundled Module::Install loads on modern Perl
+        - add missing Moose runtime prerequisite
+        - add repository/homepage/bugtracker metadata for CPAN clients
+        - generate META.yml/META.json during build (NO_META => 0)
+        - exclude generated build and t/var files from MANIFEST
         - count final four teams left per player
 
 1.18    2025 Març
