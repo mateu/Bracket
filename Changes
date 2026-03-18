@@ -1,6 +1,6 @@
 College Basketball Bracket System
 
-1.19_01  2026-03-18
+1.19  2026-03-18
         - fix Makefile.PL bootstrap so bundled Module::Install loads on modern Perl
         - add missing Moose runtime prerequisite
         - add repository/homepage/bugtracker metadata for CPAN clients
