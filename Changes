@@ -1,6 +1,7 @@
 College Basketball Bracket System
 
         - count final four teams left per player
+        - add completion-state flash signaling for region/final4 save flows
 
 1.18    2025 Març
         - Update to 2024 Field of Teams
