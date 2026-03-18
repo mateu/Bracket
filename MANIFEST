@@ -36,6 +36,7 @@ lib/Bracket/Schema/Result/Session.pm
 lib/Bracket/Schema/Result/Team.pm
 lib/Bracket/Schema/Result/Token.pm
 lib/Bracket/Service/BracketValidator.pm
+lib/Bracket/Service/CompletionSignal.pm
 lib/Bracket/View/TT.pm
 Makefile.PL
 MANIFEST			This list of files
@@ -112,6 +113,7 @@ t/03podcoverage.t
 t/04context.t
 t/bracket_validator.t
 t/BracketTestSchema.t
+t/completion_signal.t
 t/controller_Auth.t
 t/controller_Region.t
 t/deploy_bracket_mysql_postdeploy.t
