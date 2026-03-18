@@ -61,13 +61,22 @@
             "SQL::Translator" : "0.11005",
             "Term::Prompt" : "0",
             "Time::HiRes" : "0",
-            "YAML" : "0"
+            "YAML" : "0",
+            "perl" : "5.008001"
          }
       }
    },
    "release_status" : "unstable",
    "resources" : {
-      "homepage" : "https://github.com/mateu/Bracket"
+      "bugtracker" : {
+         "web" : "https://github.com/mateu/Bracket/issues"
+      },
+      "homepage" : "https://github.com/mateu/Bracket",
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/mateu/Bracket.git",
+         "web" : "https://github.com/mateu/Bracket"
+      }
    },
    "version" : "1.19_01",
    "x_serialization_backend" : "JSON::PP version 4.16"

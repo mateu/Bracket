@@ -7,6 +7,7 @@ all_from 'lib/Bracket.pm';
 repository 'https://github.com/mateu/Bracket.git';
 homepage 'https://github.com/mateu/Bracket';
 bugtracker 'https://github.com/mateu/Bracket/issues';
+perl_version '5.008001';
 
 requires(
     'Catalyst'                                     => '5.8000',
@@ -47,17 +48,6 @@ requires(
 makemaker_args(
     NO_META   => 0,
     EXE_FILES => [ glob('script/*.pl') ],
-    META_MERGE => {
-        resources => {
-            homepage   => 'https://github.com/mateu/Bracket',
-            bugtracker => { web => 'https://github.com/mateu/Bracket/issues' },
-            repository => {
-                type => 'git',
-                url  => 'https://github.com/mateu/Bracket.git',
-                web  => 'https://github.com/mateu/Bracket',
-            },
-        },
-    },
 );
 Makefile->write;
 Meta->write;
