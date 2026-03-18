@@ -24,7 +24,11 @@ sub make : Local {
 
     # Restrict edits to user or admin role.
     my @user_roles = $c->user->roles;
-    $c->go('/error_404') if (($player_id != $c->user->id) && !('admin' eq any(@user_roles)));
+    if (($player_id != $c->user->id) && !('admin' eq any(@user_roles))) {
+        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
+        $c->go('/error_404');
+        return;
+    }
 
     my $player = $c->model('DBIC::Player')->find($player_id);
     $c->stash->{player} = $player;
@@ -87,13 +91,21 @@ sub save_picks : Local {
     my ($self, $c, $player_id) = @_;
 
     my $player = $c->model('DBIC::Player')->find($player_id);
-    $c->go('/error_404') if !$player;
+    if (!$player) {
+        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
+        $c->go('/error_404');
+        return;
+    }
     $c->stash->{player}    = $player;
     $c->stash->{player_id} = $player_id;
 
     # Restrict saves to user or admin role.
     my @user_roles = $c->user->roles;
-    $c->go('/error_404') if (($player_id != $c->user->id) && !('admin' eq any(@user_roles)));
+    if (($player_id != $c->user->id) && !('admin' eq any(@user_roles))) {
+        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
+        $c->go('/error_404');
+        return;
+    }
 
     # Enforce edit cutoff at save time too.
     my @open_edit_ids = qw/ /;

@@ -21,11 +21,19 @@ sub save_picks : Local {
 
     my $player_object = $c->model('DBIC::Player')->find({ id => $player_id });
     my $region_object = $c->model('DBIC::Region')->find($region);
-    $c->go('/error_404') if !$player_object || !$region_object;
+    if (!$player_object || !$region_object) {
+        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
+        $c->go('/error_404');
+        return;
+    }
 
     # Restrict saves to user or admin role.
     my @user_roles = $c->user->roles;
-    $c->go('/error_404') if (($player_id != $c->user->id) && !('admin' eq any(@user_roles)));
+    if (($player_id != $c->user->id) && !('admin' eq any(@user_roles))) {
+        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
+        $c->go('/error_404');
+        return;
+    }
 
     # Enforce edit cutoff at save time too.
     my @open_edit_ids = qw/ /;
