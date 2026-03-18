@@ -1,43 +1,23 @@
-document.addEventListener('DOMContentLoaded', function () {
-  var pattern = /w(\d+)-t(\d+)/;
+// code to execute when the DOM is ready
+$(document).ready(function(){
 
-  document.querySelectorAll('p').forEach(function (p) {
-    p.addEventListener('click', function () {
-      var span = p.querySelector('span');
-      if (!span) return;
-
-      var spanId = span.getAttribute('id') || '';
-      var patternArray = spanId.match(pattern);
-      if (!patternArray) return;
-
-      var gameNumber = parseInt(patternArray[1], 10);
-      var team = patternArray[2];
-      var nextGameNumber;
-
-      if (gameNumber == 15 || gameNumber == 30) {
-        nextGameNumber = 61;
-      } else if (gameNumber == 45 || gameNumber == 60) {
-        nextGameNumber = 62;
-      } else if (gameNumber == 61 || gameNumber == 62) {
-        nextGameNumber = 63;
-      } else {
-        return;
-      }
-
-      var newId = 'w' + nextGameNumber + '-t' + team;
-      var pickGame = 'p' + nextGameNumber;
-      var nextGame = document.querySelector('#w' + nextGameNumber);
-      if (!nextGame) return;
-
-      nextGame.innerHTML =
-        p.textContent +
-        '<span id="' +
-        newId +
-        '"><input type="hidden" name="' +
-        pickGame +
-        '" value="' +
-        team +
-        '" /></span>';
-    });
-  });
+    var pattern = /w(\d+)-t(\d+)/;
+   	pattern_array = new Array();
+    
+	$('p').click(function(e){  
+     	var span_id = $(this).find('span').attr('id');
+     	pattern_array = span_id.match(pattern);
+     	var game_number = parseInt(pattern_array[1]);
+     	var team = pattern_array[2];
+     	var next_game_number;
+     	if (game_number == 15 || game_number == 30) { next_game_number = 61 }
+     	else if (game_number == 45 || game_number == 60) { next_game_number = 62 }
+     	else if (game_number == 61 || game_number == 62) { next_game_number = 63 }
+     	var new_id = 'w' + next_game_number + '-t' + team ;
+		var game = next_game_number;
+		var pick_game = 'p' + game;
+		var pick_string = '<span id="' + new_id + '">' + '<input type="hidden" name="' + pick_game + '" value="' + team + '" /></span>';
+		next_game = '#w' + game;
+		$(next_game).html($(this).text() + pick_string);    
+	}); 
 });
