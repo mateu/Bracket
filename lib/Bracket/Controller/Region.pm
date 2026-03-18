@@ -5,7 +5,6 @@ BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use DateTime;
 use Bracket::Service::BracketValidator;
-use Bracket::Service::CompletionSignal;
 
 my $PERFECT_BRACKET_MODE = 1;
 
@@ -32,7 +31,6 @@ sub save_picks : Local {
     my $edit_allowed = 1 if ($c->user->id eq any(@open_edit_ids));
     if ( $c->stash->{is_game_time} && (!($c->stash->{is_admin} || $edit_allowed)) ) {
         $c->flash->{status_msg} = 'Regional edits are closed';
-        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
         $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')) . "/${player_id}");
         return;
     }
@@ -48,7 +46,6 @@ sub save_picks : Local {
     if (!$validation->{ok}) {
         my $message = join('; ', @{$validation->{errors}});
         $c->flash->{status_msg} = "Save rejected: ${message}";
-        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
         $c->response->redirect($c->uri_for($c->controller('Region')->action_for('edit')) . "/${region}/${player_id}");
         return;
     }
@@ -74,13 +71,10 @@ sub save_picks : Local {
 
     if ($@) {
         $c->flash->{status_msg} = 'Save failed due to a database error';
-        Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
         $c->response->redirect($c->uri_for($c->controller('Region')->action_for('edit')) . "/${region}/${player_id}");
         return;
     }
 
-    $c->flash->{status_msg} = 'Regional picks saved';
-    Bracket::Service::CompletionSignal->mark_terminal($c, worked => 1);
     $c->response->redirect(
         $c->uri_for($c->controller('Player')->action_for('home'))
         . "/${player_id}"

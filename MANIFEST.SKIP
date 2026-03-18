@@ -1,8 +1,1 @@
-^Bracket-[0-9._]+/
-^t/var/
-^blib/
-^Makefile$
-^MANIFEST\.bak$
-^pm_to_blib$
-^MYMETA\.
-^(?!script/|examples/|lib/|root/|inc/|t/|bracket.conf$|Makefile.PL$|README$|INSTALL$|MANIFEST$|Changes$|LICENSE$|META\.yml$|META\.json$)
+^(?!script/|examples/|lib/|root/|inc/|t/|bracket.conf$|Makefile.PL$|README$|INSTALL$|MANIFEST$|Changes$|LICENSE$|META.yml$)
