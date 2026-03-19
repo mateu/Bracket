@@ -62,6 +62,8 @@ UPDATE player SET points = 0;
 ```
 
 ## 4) Validation checks
+See also: note/YEARLY_DB_GETTER_FUNCTIONS_CHECKLIST.md for required MySQL routine checks (get_winner/get_loser) during yearly rollover.
+
 ```sql
 SELECT COUNT(*) AS players FROM player;
 SELECT COUNT(*) AS picks FROM pick;                 -- expect 0
