@@ -3,6 +3,7 @@ package Bracket::Controller::Admin;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use Bracket::Service::ContinuityAudit;
 
 =head1 Name
 
@@ -111,6 +112,17 @@ sub qa : Global {
     my @played_games = $c->model('DBIC::Pick')->search({ player => 1 }, { order_by => 'game' });
     $c->stash->{played_games} = \@played_games;
     $c->stash->{template}     = 'admin/lower_seeds.tt';
+}
+
+sub continuity_audit : Global {
+    my ($self, $c) = @_;
+
+    my $issues = Bracket::Service::ContinuityAudit->issues_for_schema(
+        $c->model('DBIC')->schema
+    );
+
+    $c->stash->{continuity_issues} = $issues;
+    $c->stash->{template}          = 'admin/continuity_audit.tt';
 }
 
 sub update_points : Global {

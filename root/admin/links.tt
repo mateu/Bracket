@@ -16,5 +16,8 @@
 <td>
 <a href="[% c.uri_for('/qa') %]">Lower QA</a> -->
 </td>
+<td>
+  <a href="[% c.uri_for('/continuity_audit') %]">Continuity Audit</a>
+</td>
 </tr>
 </table>

@@ -1,0 +1,33 @@
+[% page_title = 'Continuity Audit' %]
+
+[% IF is_admin;
+    INCLUDE 'admin/links.tt';
+END %]
+
+<div style="font-size: 108%;">Men's Basketball - NCAA Tournament [% c.config.year %]</div>
+<div class="points">Continuity Audit</div>
+<div>
+  <a href="[% c.uri_for('/all') %]">All Players Home</a>
+</div>
+
+[% IF continuity_issues.size %]
+  <p>Found [% continuity_issues.size %] continuity issue(s).</p>
+  <table class="lower_seed_check" summary="continuity audit">
+    <tr>
+      <th>Player</th>
+      <th>Game</th>
+      <th>Invalid Pick</th>
+      <th>Allowed Parent Picks</th>
+    </tr>
+    [% FOREACH issue IN continuity_issues %]
+      <tr>
+        <td>[% issue.player_id %]</td>
+        <td>[% issue.game_id %]</td>
+        <td>[% issue.invalid_pick_id %]</td>
+        <td>[% issue.allowed_pick_ids.join(',') %]</td>
+      </tr>
+    [% END %]
+  </table>
+[% ELSE %]
+  <p>No continuity issues found.</p>
+[% END %]
