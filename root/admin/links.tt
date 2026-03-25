@@ -8,6 +8,10 @@
   title="Run after updating Perfect Player's bracket">Update Points</a>
 </td>
 <td>
+  <a href="[% c.uri_for('/equity_report') %]"
+  title="Projection model for live pool equity">Equity Report</a>
+</td>
+<td>
 <!--   <a href="[% c.uri_for('/round_out_unmarked') %]">Mark Out</a>
 </td>
 <td>

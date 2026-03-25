@@ -3,6 +3,7 @@ package Bracket::Controller::Admin;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use Bracket::Service::EquityProjection;
 
 =head1 Name
 
@@ -168,6 +169,31 @@ sub round_out_unmarked_POST {
     }
     $c->response->redirect($c->uri_for($c->controller('Player')->action_for('home')));
     return;
+}
+
+sub equity_report : Global {
+    my ($self, $c) = @_;
+
+    my $iterations = $c->req->params->{iterations};
+    $iterations = 4000 if !defined $iterations || $iterations !~ /^\d+$/;
+    $iterations = 100 if $iterations < 100;
+    $iterations = 20000 if $iterations > 20000;
+
+    my $seed = $c->req->params->{seed};
+    $seed = 17 if !defined $seed || $seed !~ /^\d+$/;
+
+    my $projection = Bracket::Service::EquityProjection->project(
+        $c->model('DBIC')->schema,
+        {
+            iterations => $iterations,
+            seed       => $seed,
+        }
+    );
+
+    $c->stash->{projection} = $projection;
+    $c->stash->{projection_iterations} = $iterations;
+    $c->stash->{projection_seed} = $seed;
+    $c->stash->{template} = 'admin/equity_report.tt';
 }
 
 __PACKAGE__->meta->make_immutable;

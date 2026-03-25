@@ -1,0 +1,51 @@
+[% page_title = "Equity Projection Report" %]
+
+<h2>Player Equity Projection</h2>
+
+<p style="font-size:0.88em;color:#444;">
+Read-only model output for active players (excluding the Perfect Bracket account).
+This first pass assumes unresolved games are 50/50 between surviving teams.
+</p>
+
+<form method="get" action="[% c.uri_for('/equity_report') %]" style="margin:12px 0;">
+  <label>Iterations:
+    <input type="number" min="100" max="20000" name="iterations" value="[% projection_iterations %]" />
+  </label>
+  <label style="margin-left:12px;">Seed:
+    <input type="number" min="1" name="seed" value="[% projection_seed %]" />
+  </label>
+  <input type="submit" value="Recalculate" />
+</form>
+
+<div style="font-size:0.85em;">
+  Engine: <strong>[% projection.engine %]</strong>,
+  Trials: <strong>[% projection.simulations %]</strong>,
+  Remaining undecided games: <strong>[% projection.unknown_games %]</strong>
+</div>
+
+<ul style="font-size:0.84em;color:#444;">
+[% FOREACH assumption IN projection.assumptions %]
+  <li>[% assumption %]</li>
+[% END %]
+</ul>
+
+<table class="container" id="all_player_home">
+  <tr>
+    <th>Player</th>
+    <th>Current</th>
+    <th>Max</th>
+    <th>Win %</th>
+    <th>Top 3 %</th>
+    <th>Avg Final Score</th>
+  </tr>
+[% FOREACH row IN projection.player_projections %]
+  <tr>
+    <td>[% row.player_name | html %]</td>
+    <td style="text-align:right;">[% row.current_points %]</td>
+    <td style="text-align:right;">[% row.max_possible_points %]</td>
+    <td style="text-align:right;">[% row.projected_first_pct %]</td>
+    <td style="text-align:right;">[% row.projected_podium_pct %]</td>
+    <td style="text-align:right;">[% row.projected_score_avg %]</td>
+  </tr>
+[% END %]
+</table>
