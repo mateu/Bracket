@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 
 use Bracket::Schema;
+use Bracket::Service::BracketValidator;
 use Getopt::Long qw(GetOptions);
 
 my %opt;
@@ -31,6 +32,12 @@ my $user = defined $opt{user} ? $opt{user} : ($ENV{BRACKET_DB_USER}     || $cfg_
 my $pass = defined $opt{pass} ? $opt{pass} : (exists $ENV{BRACKET_DB_PASSWORD} ? $ENV{BRACKET_DB_PASSWORD} : (defined $cfg_pass ? $cfg_pass : ''));
 
 my $schema = Bracket::Schema->connect($dsn, $user, $pass);
+my $structure = Bracket::Service::BracketValidator->validate_graph_invariants($schema);
+if (!$structure->{ok}) {
+    print "ERROR: bracket structure is invalid\n";
+    print " - $_\n" for @{$structure->{errors} || []};
+    exit 2;
+}
 
 my @players = $schema->resultset('Player')->search({ active => 1 })->all;
 my $issues = 0;

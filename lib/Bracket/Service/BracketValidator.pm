@@ -9,6 +9,8 @@ sub validate_region_payload {
     return { ok => 0, errors => ['Missing schema'] } if !$schema;
     return { ok => 0, errors => ['Invalid player id'] } if !$player_id;
     return { ok => 0, errors => ['Invalid region id'] } if !$region_id;
+    my $structure = $class->validate_graph_invariants($schema);
+    return $structure if !$structure->{ok};
 
     my ($pick_map, $parse_errors) = _extract_pick_map($params);
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
@@ -57,6 +59,8 @@ sub validate_final4_payload {
 
     return { ok => 0, errors => ['Missing schema'] } if !$schema;
     return { ok => 0, errors => ['Invalid player id'] } if !$player_id;
+    my $structure = $class->validate_graph_invariants($schema);
+    return $structure if !$structure->{ok};
 
     my ($pick_map, $parse_errors) = _extract_pick_map($params);
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
@@ -121,6 +125,87 @@ sub _extract_pick_map {
     }
 
     return (\%pick_map, \@errors);
+}
+
+sub validate_graph_invariants {
+    my ($class, $schema) = @_;
+
+    return { ok => 0, errors => ['Missing schema'] } if !$schema;
+
+    my %round_by_game;
+    foreach my $game ($schema->resultset('Game')->search({})->all) {
+        $round_by_game{$game->id} = $game->round;
+    }
+
+    my %parents_by_child;
+    my %children_by_parent;
+    foreach my $edge ($schema->resultset('GameGraph')->search({})->all) {
+        push @{$parents_by_child{$edge->game}}, $edge->parent_game;
+        push @{$children_by_parent{$edge->parent_game}}, $edge->game;
+    }
+
+    my %teams_by_game;
+    foreach my $edge ($schema->resultset('GameTeamGraph')->search({})->all) {
+        push @{$teams_by_game{$edge->game}}, $edge->team;
+    }
+
+    my @errors;
+    foreach my $game_id (sort { $a <=> $b } keys %round_by_game) {
+        my $round = $round_by_game{$game_id};
+        my @parents = @{$parents_by_child{$game_id} || []};
+        my @teams = @{$teams_by_game{$game_id} || []};
+
+        if (@parents && @teams) {
+            push @errors, "Game ${game_id} has both parent games and fixed teams";
+        }
+
+        if ($round == 1) {
+            if (@parents) {
+                push @errors, "Round-1 game ${game_id} should not have parent games";
+            }
+            if (@teams != 2) {
+                push @errors, "Round-1 game ${game_id} must have exactly 2 fixed teams";
+            }
+            next;
+        }
+
+        if (@parents != 2) {
+            push @errors, "Game ${game_id} (round ${round}) must have exactly 2 parent games";
+        }
+        if (@teams) {
+            push @errors, "Game ${game_id} (round ${round}) should not have fixed teams";
+        }
+
+        my %seen_parent;
+        foreach my $parent (@parents) {
+            if ($seen_parent{$parent}++) {
+                push @errors, "Game ${game_id} has duplicate parent mapping to game ${parent}";
+                next;
+            }
+
+            if (!exists $round_by_game{$parent}) {
+                push @errors, "Game ${game_id} references missing parent game ${parent}";
+                next;
+            }
+
+            my $parent_round = $round_by_game{$parent};
+            if ($parent_round != $round - 1) {
+                push @errors, "Game ${game_id} (round ${round}) has parent ${parent} from round ${parent_round}";
+            }
+        }
+    }
+
+    foreach my $parent_game (sort { $a <=> $b } keys %children_by_parent) {
+        my %seen_child;
+        my @children = grep { !$seen_child{$_}++ } @{$children_by_parent{$parent_game} || []};
+        if (@children > 1) {
+            push @errors, "Game ${parent_game} feeds multiple child games (" . join(', ', @children) . ")";
+        }
+    }
+
+    return @errors
+      ? { ok => 0, errors => \@errors }
+      : { ok => 1 };
 }
 
 sub _affected_games_in_scope {
