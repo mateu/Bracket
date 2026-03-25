@@ -3,6 +3,7 @@ package Bracket::Controller::Admin;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use Bracket::Service::PickStatus;
 
 =head1 Name
 
@@ -70,36 +71,31 @@ sub player_points : Private {
     my ($self, $c, $player) = @_;
 
     # Determine player total running score.
-    my @player_picks = $c->model('DBIC::Pick')->search({ player => $player });
+    my $schema = $c->model('DBIC')->schema;
+    my $player_picks = Bracket::Service::PickStatus->player_picks($schema, $player);
+    my $class_for = Bracket::Service::PickStatus->classify_pick_rows($schema, $player_picks);
+
     my $total_player_points = 0;
     my $points_for_region;
-    foreach my $player_pick (@player_picks) {
+    foreach my $player_pick (@{$player_picks}) {
+        next if ($class_for->{$player_pick->game->id} || '') ne 'in';
 
-        # Compare player pick to actual winner for the perfect player bracket
-        # Build the css class name accordingly
-        my ($winning_pick) =
-          $c->model('DBIC::Pick')->search({ player => 1, game => $player_pick->game->id });
-        if (defined $winning_pick) {
-            if ($winning_pick->pick->id == $player_pick->pick->id) {
+        # Compute points for correct pick
+        # Formula
+        my $points_for_pick =
+          (5 + $player_pick->pick->seed * $player_pick->game->lower_seed);
 
-                # Compute points for correct pick
-                # Formula
-                my $points_for_pick =
-                  (5 + $player_pick->pick->seed * $player_pick->game->lower_seed);
-
-                # Championship game has round multiplier of 10.
-                if ($player_pick->game->round == 6) {
-                    $points_for_pick *= 10;
-                }
-
-                # All other games have round multiplier of round number.
-                else {
-                    $points_for_pick *= $player_pick->game->round;
-                }
-                $total_player_points                                   += $points_for_pick;
-                $points_for_region->{ $player_pick->pick->region->id } += $points_for_pick;
-            }
+        # Championship game has round multiplier of 10.
+        if ($player_pick->game->round == 6) {
+            $points_for_pick *= 10;
         }
+
+        # All other games have round multiplier of round number.
+        else {
+            $points_for_pick *= $player_pick->game->round;
+        }
+        $total_player_points                                   += $points_for_pick;
+        $points_for_region->{ $player_pick->pick->region->id } += $points_for_pick;
     }
 
     return [ $total_player_points, $points_for_region ];
