@@ -5,6 +5,7 @@ use Test::More;
 use lib qw(t/lib lib);
 use BracketTestSchema;
 use Bracket::Service::BracketValidator;
+use Bracket::Service::BracketStructure;
 
 my $schema = BracketTestSchema->init_schema(populate => 1);
 
@@ -82,58 +83,76 @@ my $coherent_region_update = Bracket::Service::BracketValidator->validate_region
 );
 ok($coherent_region_update->{ok}, 'coherent region update passes');
 
-# Seed region winners for final4 validation.
-for my $row (
-    [15, 1],   # East winner
-    [30, 17],  # South winner
-    [45, 33],  # West winner
-    [60, 49],  # Midwest winner
-) {
+# Seed region winners for final4 validation using graph-derived regional finals.
+my $structure = Bracket::Service::BracketStructure->describe_bracket($schema);
+my $region_winner_games = $structure->{region_winner_games_by_region};
+my @semifinal_games = @{$structure->{semifinal_games}};
+my $championship_game = $structure->{championship_game};
+
+my %winner_by_region = (
+    1 => 1,   # East
+    2 => 17,  # South
+    3 => 33,  # West
+    4 => 49,  # Midwest
+);
+my %winner_by_game;
+foreach my $region_id (keys %{$region_winner_games}) {
+    my $game_id = $region_winner_games->{$region_id};
+    my $team_id = $winner_by_region{$region_id};
+    $winner_by_game{$game_id} = $team_id;
     $schema->resultset('Pick')->update_or_create({
         player => $player_id,
-        game   => $row->[0],
-        pick   => $row->[1],
+        game   => $game_id,
+        pick   => $team_id,
     });
 }
+
+my %semifinal_winner_pick;
+foreach my $semi (@semifinal_games) {
+    my @parents = sort { $a <=> $b }
+      map { $_->parent_game } $schema->resultset('GameGraph')->search({ game => $semi })->all;
+    $semifinal_winner_pick{$semi} = $winner_by_game{$parents[0]};
+}
+
+my $first_semi = $semifinal_games[0];
+my @first_semi_parents = sort { $a <=> $b }
+  map { $_->parent_game } $schema->resultset('GameGraph')->search({ game => $first_semi })->all;
+my $alternate_first_semi_winner = $winner_by_game{$first_semi_parents[1]};
+
+my %valid_final4_payload = map { ('p' . $_ => $semifinal_winner_pick{$_}) } @semifinal_games;
+$valid_final4_payload{'p' . $championship_game} = $semifinal_winner_pick{$first_semi};
 
 my $valid_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
     $schema,
     $player_id,
-    {
-        p61 => 1,
-        p62 => 33,
-        p63 => 1,
-    }
+    \%valid_final4_payload
 );
 ok($valid_final4->{ok}, 'valid final4 payload passes');
 
 $schema->resultset('Pick')->update_or_create({
     player => $player_id,
-    game   => 61,
-    pick   => 1,
+    game   => $championship_game,
+    pick   => $semifinal_winner_pick{$first_semi},
 });
-$schema->resultset('Pick')->update_or_create({
-    player => $player_id,
-    game   => 62,
-    pick   => 33,
-});
-$schema->resultset('Pick')->update_or_create({
-    player => $player_id,
-    game   => 63,
-    pick   => 1,
-});
+foreach my $semi (@semifinal_games) {
+    $schema->resultset('Pick')->update_or_create({
+        player => $player_id,
+        game   => $semi,
+        pick   => $semifinal_winner_pick{$semi},
+    });
+}
 
 my $stale_downstream_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
     $schema,
     $player_id,
     {
-        p61 => 17,
+        ('p' . $first_semi => $alternate_first_semi_winner),
     }
 );
 ok(!$stale_downstream_final4->{ok}, 'stale downstream final4 inconsistency fails');
 like(
     join(' ', @{$stale_downstream_final4->{errors}}),
-    qr/game 63/i,
+    qr/game \Q$championship_game\E/i,
     'stale downstream final4 error points to affected descendant game'
 );
 
@@ -141,8 +160,8 @@ my $coherent_final4_update = Bracket::Service::BracketValidator->validate_final4
     $schema,
     $player_id,
     {
-        p61 => 17,
-        p63 => 17,
+        ('p' . $first_semi        => $alternate_first_semi_winner),
+        ('p' . $championship_game => $alternate_first_semi_winner),
     }
 );
 ok($coherent_final4_update->{ok}, 'coherent final4 update passes');
@@ -151,7 +170,7 @@ my $invalid_final4 = Bracket::Service::BracketValidator->validate_final4_payload
     $schema,
     $player_id,
     {
-        p61 => 49, # not from game 15 or 30 winners
+        ('p' . $first_semi => 64), # unrelated team id
     }
 );
 ok(!$invalid_final4->{ok}, 'invalid final4 payload fails');
