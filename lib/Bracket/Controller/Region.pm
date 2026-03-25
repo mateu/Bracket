@@ -6,6 +6,7 @@ use Perl6::Junction qw/ any /;
 use DateTime;
 use Bracket::Service::BracketValidator;
 use Bracket::Service::CompletionSignal;
+use Bracket::Service::Scoring;
 
 my $PERFECT_BRACKET_MODE = 1;
 
@@ -100,54 +101,17 @@ sub save_picks : Local {
 sub view : Local {
     my ($self, $c, $region_id, $player_id) = @_;
 
-    my @perfect_picks = $c->model('DBIC::Pick')->search({ player => 1 });
-    my @player_picks  = $c->model('DBIC::Pick')->search({ player => $player_id });
+    my $summary = Bracket::Service::Scoring->summarize_player(
+        $c->model('DBIC')->schema,
+        $player_id,
+        region_id => $region_id,
+    );
 
-    my %picks;
-    my %class_for;
-    my $region_points = 0;
+    my %picks = %{ $summary->{picks} || {} };
+    my %class_for = %{ $summary->{class_for} || {} };
+    my $region_points = $summary->{region_points}->{$region_id} || 0;
     my @show_regions;
-    foreach my $player_pick (@player_picks) {
 
-        # Operate only on the current region
-        if ($player_pick->pick->region->id == $region_id) {
-
-            # Compare player pick to actual winner for the perfect player bracket
-            # Build the css class name accordingly
-            my ($winning_pick) =
-              $c->model('DBIC::Pick')->search({ player => 1, game => $player_pick->game->id });
-            if (defined $winning_pick) {
-                if ($winning_pick->pick->id == $player_pick->pick->id) {
-                    $class_for{ $player_pick->game->id } = 'in';
-
-                    # NOTE:  Formula to compute points for correct picks
-                    my $points_for_pick =
-                      (5 + $player_pick->pick->seed * $player_pick->game->lower_seed) *
-                      $player_pick->game->round;
-                    $region_points += $points_for_pick;
-                }
-                else {
-                    $class_for{ $player_pick->game->id } = 'out';
-                }
-            }
-            else {
-
-                # Need to determine if player pick has already been ousted in a
-                # previous round using round_out variable.
-                if ($player_pick->game->round >= $player_pick->pick->round_out) {
-
-                    #                    warn "round greater than round out: ",
-                    #                      $player_pick->game->round, ' and ',
-                    #                      $player_pick->pick->round_out;
-                    $class_for{ $player_pick->game->id } = 'out';
-                }
-                else {
-                    $class_for{ $player_pick->game->id } = 'pending';
-                }
-            }
-            $picks{ $player_pick->game->id } = $player_pick->pick;
-        }
-    }
     $c->stash->{class_for}     = \%class_for;
     $c->stash->{picks}         = \%picks;
     $c->stash->{region_points} = $region_points;
