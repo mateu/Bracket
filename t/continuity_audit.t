@@ -24,10 +24,11 @@ for my $row (
 my $healthy = Bracket::Service::ContinuityAudit->issues_for_schema($schema);
 is(scalar @{$healthy}, 0, 'healthy picks report no continuity issues');
 
-$schema->resultset('Pick')->update_or_create({
+$schema->resultset('Pick')->search({
     player => $player_id,
     game   => 12,
-    pick   => 1,
+})->update({
+    pick => 1,
 });
 
 my $issues = Bracket::Service::ContinuityAudit->issues_for_schema($schema);
