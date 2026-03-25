@@ -4,6 +4,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use Data::Dumper::Concise;
 use Bracket::Service::BracketValidator;
+use Bracket::Service::BracketStructure;
 use Bracket::Service::CompletionSignal;
 use Bracket::Service::PickSaver;
 
@@ -12,13 +13,6 @@ use Bracket::Service::PickSaver;
 Bracket::Controller::Final4 - Edit/View Final 4 Picks
 
 =cut
-
-my %region_winner_picks = (
-    1 => 15,
-    2 => 30,
-    3 => 45,
-    4 => 60,
-);
 
 sub make : Local {
     my ($self, $c, $player_id) = @_;
@@ -36,9 +30,12 @@ sub make : Local {
 
     # Get the player's regional winner picks.  Later we deal w/ whether they actually won or not.
     # region_id => game_id
-    foreach my $region_id (keys %region_winner_picks) {
+    my $region_winner_picks = Bracket::Service::BracketStructure->region_winner_games_by_region(
+        $c->model('DBIC')->schema
+    );
+    foreach my $region_id (sort { $a <=> $b } keys %{$region_winner_picks}) {
         my $region_name = 'region' . "_${region_id}";
-        my $game        = $region_winner_picks{$region_id};
+        my $game        = $region_winner_picks->{$region_id};
         $c->stash->{$region_name} =
           $c->model('DBIC::Pick')->search({ player => $player_id, game => $game })->first;
     }
@@ -164,9 +161,12 @@ sub view : Local {
     $c->stash->{player} = $player;
 
     # Get the player's regional winner picks.
-    foreach my $region_id (keys %region_winner_picks) {
+    my $region_winner_picks = Bracket::Service::BracketStructure->region_winner_games_by_region(
+        $c->model('DBIC')->schema
+    );
+    foreach my $region_id (sort { $a <=> $b } keys %{$region_winner_picks}) {
         my $region_name = 'region' . "_${region_id}";
-        my $game        = $region_winner_picks{$region_id};
+        my $game        = $region_winner_picks->{$region_id};
         $c->stash->{$region_name} =
           $c->model('DBIC::Pick')->search({ player => $player_id, game => $game })->first;
     }

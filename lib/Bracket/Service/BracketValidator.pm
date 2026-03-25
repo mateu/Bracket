@@ -2,6 +2,7 @@ package Bracket::Service::BracketValidator;
 
 use strict;
 use warnings;
+use Bracket::Service::BracketStructure;
 
 sub validate_region_payload {
     my ($class, $schema, $player_id, $region_id, $params) = @_;
@@ -61,7 +62,12 @@ sub validate_final4_payload {
     my ($pick_map, $parse_errors) = _extract_pick_map($params);
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
 
-    my %allowed_games = map { $_ => 1 } (61, 62, 63);
+    my $final4_game_ids = Bracket::Service::BracketStructure->final4_game_ids($schema);
+    if (!@{$final4_game_ids}) {
+        return { ok => 0, errors => ['Could not derive Final Four game structure'] };
+    }
+
+    my %allowed_games = map { $_ => 1 } @{$final4_game_ids};
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
