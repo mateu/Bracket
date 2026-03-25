@@ -7,6 +7,7 @@ use BracketTestSchema;
 use Bracket::Service::PickSaver;
 
 my $schema = BracketTestSchema->init_schema(populate => 1);
+$schema->storage->dbh->do("PRAGMA foreign_keys = ON");
 my $player_id = 2; # admin user from test seed data
 
 my $insert_result = Bracket::Service::PickSaver->persist_pick_map(
@@ -50,5 +51,19 @@ my $bad_player = Bracket::Service::PickSaver->persist_pick_map(
     { 1 => 1 },
 );
 ok(!$bad_player->{ok}, 'invalid player id is rejected');
+
+my $bad_pick_map = Bracket::Service::PickSaver->persist_pick_map(
+    $schema,
+    $player_id,
+    [ 1, 2 ],
+);
+ok(!$bad_pick_map->{ok}, 'non-hashref pick_map is rejected');
+
+my $bad_game = Bracket::Service::PickSaver->persist_pick_map(
+    $schema,
+    $player_id,
+    { 9999 => 1 },
+);
+ok(!$bad_game->{ok}, 'invalid game id is rejected');
 
 done_testing();
