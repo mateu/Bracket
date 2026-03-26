@@ -6,6 +6,7 @@ use Perl6::Junction qw/ any /;
 use DateTime;
 use Bracket::Service::BracketValidator;
 use Bracket::Service::CompletionSignal;
+use Bracket::Service::PickSaver;
 
 my $PERFECT_BRACKET_MODE = 1;
 
@@ -62,25 +63,13 @@ sub save_picks : Local {
     }
 
     my $pick_map = $validation->{normalized_picks} || {};
+    my $save_result = Bracket::Service::PickSaver->persist_pick_map(
+        $c->model('DBIC')->schema,
+        $player_id,
+        $pick_map,
+    );
 
-    eval {
-        $c->model('DBIC')->schema->txn_do(sub {
-            foreach my $game (keys %{$pick_map}) {
-                my $team = $pick_map->{$game};
-                my ($pick) = $c->model('DBIC::Pick')->search({ player => $player_id, game => $game });
-                if (defined $pick) {
-                    $pick->pick($team);
-                    $pick->update;
-                }
-                else {
-                    my $new_pick = $c->model('DBIC::Pick')->new({ player => $player_id, game => $game, pick => $team });
-                    $new_pick->insert;
-                }
-            }
-        });
-    };
-
-    if ($@) {
+    if (!$save_result->{ok}) {
         $c->flash->{status_msg} = 'Save failed due to a database error';
         Bracket::Service::CompletionSignal->mark_terminal($c, worked => 0);
         $c->response->redirect($c->uri_for($c->controller('Region')->action_for('edit')) . "/${region}/${player_id}");
