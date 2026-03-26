@@ -3,6 +3,7 @@ package Bracket::Controller::Player;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use Bracket::Service::EquityProjection;
 
 =head1 NAME
 
@@ -59,15 +60,15 @@ sub all : Global {
 	$c->stash->{template} = 'player/all_home.tt';
 
 	my $sort_by = lc($c->req->params->{sort} || 'points');
-	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks)\z/;
+	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct)\z/;
 	$c->stash->{sort_by} = $sort_by;
 
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
 	my $picks_per_player = $c->model('DBIC')->count_player_picks;
 	$c->stash->{picks_per_player} = $picks_per_player;
-	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player);
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
+    my $win_pct_by_player = {};
 
 	if ($c->stash->{is_game_time}) {
       # Count of correct picks per player
@@ -75,13 +76,37 @@ sub all : Global {
       ($c->stash->{upset_picks_per_player}, $c->stash->{max_upsets}) = $c->model('DBIC')->count_player_picks_upset;
       ($c->stash->{teams_left_per_player}, $c->stash->{max_left}) = $c->model('DBIC')->count_player_teams_left;
       ($c->stash->{final4_teams_left_per_player}, $c->stash->{max_final4_left}) = $c->model('DBIC')->count_player_final4_teams_left;
+
+      my $projection = Bracket::Service::EquityProjection->project(
+          $c->model('DBIC')->schema,
+          {
+              iterations => 2000,
+              seed       => 17,
+          }
+      );
+
+      foreach my $row (@{$projection->{player_projections} || []}) {
+          $win_pct_by_player->{$row->{player_id}} = ($row->{projected_first_pct} || 0) + 0;
+      }
+
+      my $max_win_pct = 0;
+      foreach my $pct (values %{$win_pct_by_player}) {
+          $max_win_pct = $pct if $pct > $max_win_pct;
+      }
+
+      $c->stash->{equity_projection} = $projection;
+      $c->stash->{win_pct_by_player} = $win_pct_by_player;
+      $c->stash->{max_win_pct} = $max_win_pct;
 	}
+
+	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player, $win_pct_by_player);
 }
 
 sub _sort_players {
-    my ($players, $sort_by, $picks_per_player) = @_;
+    my ($players, $sort_by, $picks_per_player, $win_pct_by_player) = @_;
     $players ||= [];
     $picks_per_player ||= {};
+    $win_pct_by_player ||= {};
     $sort_by ||= 'points';
 
     if ($sort_by eq 'player') {
@@ -100,6 +125,16 @@ sub _sort_players {
 
             $b_complete <=> $a_complete
               || $b_count <=> $a_count
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'winpct') {
+        return [ sort {
+            my $a_win = $win_pct_by_player->{$a->id} || 0;
+            my $b_win = $win_pct_by_player->{$b->id} || 0;
+            $b_win <=> $a_win
+              || $b->points <=> $a->points
               || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
         } @{$players} ];
     }

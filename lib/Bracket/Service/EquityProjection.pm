@@ -52,16 +52,10 @@ sub project {
     my @unknown_games = grep { !$known_winner{$_} } @ordered_game_ids;
 
     my %player_pick_by_game;
-    @player_pick_by_game{@player_ids} = map { {} } @player_ids;
-
-    my @all_picks = $schema->resultset('Pick')->search({
-        player => { -in => \@player_ids },
-    })->all;
-    foreach my $pick (@all_picks) {
-        my $player_id = $pick->player->id;
-        my $game_id   = $pick->game->id;
-        my $team_id   = $pick->pick->id;
-        $player_pick_by_game{$player_id}{$game_id} = $team_id;
+    foreach my $player_id (@player_ids) {
+        my %pick_map = map { $_->game->id => $_->pick->id }
+          $schema->resultset('Pick')->search({ player => $player_id })->all;
+        $player_pick_by_game{$player_id} = \%pick_map;
     }
 
     my $current_points = _score_players(

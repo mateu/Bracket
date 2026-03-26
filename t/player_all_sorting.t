@@ -29,6 +29,11 @@ my $picks = {
     20 => 45,
     30 => 63,
 };
+my $win_pct = {
+    10 => 20.5,
+    20 => 20.5,
+    30 => 55.0,
+};
 
 my $points_sorted = Bracket::Controller::Player::_sort_players(\@players, 'points', $picks);
 is_deeply([ map { $_->id } @{$points_sorted} ], [20, 30, 10], 'points sort is default descending');
@@ -41,5 +46,11 @@ is_deeply([ map { $_->id } @{$picks_sorted} ], [30, 10, 20], 'picks sort puts co
 
 my $fallback_sorted = Bracket::Controller::Player::_sort_players(\@players, 'unknown', $picks);
 is_deeply([ map { $_->id } @{$fallback_sorted} ], [20, 30, 10], 'unknown sort falls back to points');
+
+my $winpct_sorted = Bracket::Controller::Player::_sort_players(\@players, 'winpct', $picks, $win_pct);
+is_deeply([ map { $_->id } @{$winpct_sorted} ], [30, 20, 10], 'winpct sort uses projected win percent then points');
+
+my $winpct_without_data = Bracket::Controller::Player::_sort_players(\@players, 'winpct', $picks);
+is_deeply([ map { $_->id } @{$winpct_without_data} ], [20, 30, 10], 'winpct sort falls back to points when no projection data');
 
 done_testing();
