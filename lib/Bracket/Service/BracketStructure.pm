@@ -20,6 +20,12 @@ sub region_winner_games_by_region {
     return $structure->{region_winner_games_by_region};
 }
 
+sub game_routes {
+    my ($class, $schema) = @_;
+    my $structure = $class->describe_bracket($schema);
+    return $structure->{game_routes};
+}
+
 sub _derive_structure {
     my ($schema) = @_;
     return {
@@ -27,6 +33,7 @@ sub _derive_structure {
         semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        game_routes                   => {},
         round_for_game                => {},
     } if !$schema;
 
@@ -36,15 +43,19 @@ sub _derive_structure {
         semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        game_routes                   => {},
         round_for_game                => {},
     } if !@edges;
 
     my (%parents_by_game, %children_by_parent, %game_ids);
     foreach my $edge (@edges) {
-        push @{$parents_by_game{$edge->game}}, $edge->parent_game;
-        push @{$children_by_parent{$edge->parent_game}}, $edge->game;
-        $game_ids{$edge->game} = 1;
-        $game_ids{$edge->parent_game} = 1;
+        my $game_id        = $edge->game;
+        my $parent_game_id = $edge->parent_game;
+        next if !defined $game_id || !defined $parent_game_id;
+        push @{$parents_by_game{$game_id}},           $parent_game_id;
+        push @{$children_by_parent{$parent_game_id}}, $game_id;
+        $game_ids{$game_id}        = 1;
+        $game_ids{$parent_game_id} = 1;
     }
 
     my %game_round = map {
@@ -59,6 +70,7 @@ sub _derive_structure {
         semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        game_routes                   => {},
         round_for_game                => \%game_round,
     } if !@sink_games;
 
@@ -68,6 +80,7 @@ sub _derive_structure {
         semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        game_routes                   => {},
         round_for_game                => \%game_round,
     } if !defined $championship_game_id;
 
@@ -85,11 +98,22 @@ sub _derive_structure {
     my %final4_game_ids = map { $_ => 1 } (@semifinal_game_ids, $championship_game_id);
     my @final4_game_ids = sort { $a <=> $b } keys %final4_game_ids;
 
+    # Build a game-routing map: source_game_id => target_game_id.
+    my %game_routes;
+    foreach my $sf_id (@semifinal_game_ids) {
+        foreach my $rw_game_id (@{$parents_by_game{$sf_id} || []}) {
+            next unless exists $region_final_game_ids{$rw_game_id};
+            $game_routes{$rw_game_id} = $sf_id;
+        }
+        $game_routes{$sf_id} = $championship_game_id if defined $championship_game_id;
+    }
+
     return {
         championship_game_id          => $championship_game_id,
         semifinal_game_ids            => \@semifinal_game_ids,
         final4_game_ids               => \@final4_game_ids,
         region_winner_games_by_region => \%region_winner_games_by_region,
+        game_routes                   => \%game_routes,
         round_for_game                => \%game_round,
     };
 }
@@ -117,13 +141,27 @@ sub _region_for_game {
         game => { -in => \@round1_games },
     })->all;
 
-    my %regions;
+    # Collect team IDs from the seed rows to avoid N+1 Team lookups.
+    my %team_ids;
     foreach my $seed_row (@seed_rows) {
-        my $team = $schema->resultset('Team')->find({ id => $seed_row->team });
-        next if !$team;
-        my $region = $team->region;
-        next if !$region;
-        $regions{$region->id} = 1;
+        my $team_id = $seed_row->team;
+        next if !defined $team_id;
+        $team_ids{$team_id} = 1;
+    }
+
+    my %regions;
+    if (%team_ids) {
+        my @teams = $schema->resultset('Team')->search(
+            { id => { -in => [ keys %team_ids ] } },
+            { prefetch => 'region' },
+        )->all;
+
+        foreach my $team (@teams) {
+            next if !$team;
+            my $region = $team->region;
+            next if !$region;
+            $regions{$region->id} = 1;
+        }
     }
 
     my @region_ids = sort { $a <=> $b } keys %regions;

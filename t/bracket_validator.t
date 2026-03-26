@@ -83,20 +83,14 @@ my $coherent_region_update = Bracket::Service::BracketValidator->validate_region
 );
 ok($coherent_region_update->{ok}, 'coherent region update passes');
 
-my $region_winner_games = Bracket::Service::BracketStructure->region_winner_games_by_region($schema);
-ok(keys %{$region_winner_games} == 4, 'derived region-winner games cover all regions');
-my $final4_games = Bracket::Service::BracketStructure->final4_game_ids($schema);
-ok(@{$final4_games} >= 3, 'derived final4 game structure is available');
+my $structure = Bracket::Service::BracketStructure->describe_bracket($schema);
+ok(keys %{ $structure->{region_winner_games_by_region} } == 4, 'derived region-winner games cover all regions');
+my $region_winner_games = $structure->{region_winner_games_by_region};
+my $final4_games = $structure->{final4_game_ids};
+ok(@{$final4_games} == 3, 'derived final4 game structure has exactly 3 games');
 
-my @final4_game_rows = map {
-    $schema->resultset('Game')->find({ id => $_ })
-} @{$final4_games};
-@final4_game_rows = sort {
-    $a->round <=> $b->round || $a->id <=> $b->id
-} @final4_game_rows;
-
-my $championship_game = $final4_game_rows[-1]->id;
-my @semifinal_games = sort { $a <=> $b } grep { $_ != $championship_game } @{$final4_games};
+my $championship_game = $structure->{championship_game_id};
+my @semifinal_games   = sort { $a <=> $b } @{ $structure->{semifinal_game_ids} };
 
 # Seed region winners for final4 validation.
 for my $row (

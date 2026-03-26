@@ -63,8 +63,8 @@ sub validate_final4_payload {
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
 
     my $final4_game_ids = Bracket::Service::BracketStructure->final4_game_ids($schema);
-    if (!@{$final4_game_ids}) {
-        return { ok => 0, errors => ['Could not derive Final Four game structure'] };
+    if (@{$final4_game_ids} != 3) {
+        return { ok => 0, errors => ['Could not derive complete Final Four game structure'] };
     }
 
     my %allowed_games = map { $_ => 1 } @{$final4_game_ids};

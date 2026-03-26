@@ -30,9 +30,14 @@ sub make : Local {
 
     # Get the player's regional winner picks.  Later we deal w/ whether they actually won or not.
     # region_id => game_id
-    my $region_winner_picks = Bracket::Service::BracketStructure->region_winner_games_by_region(
+    my $structure = Bracket::Service::BracketStructure->describe_bracket(
         $c->model('DBIC')->schema
     );
+    my $region_winner_picks = $structure->{region_winner_games_by_region};
+    $c->stash->{region_winner_game_id_for} = $region_winner_picks;
+    $c->stash->{semifinal_game_ids}        = $structure->{semifinal_game_ids};
+    $c->stash->{championship_game_id}      = $structure->{championship_game_id};
+    $c->stash->{game_routes}               = $structure->{game_routes};
     foreach my $region_id (sort { $a <=> $b } keys %{$region_winner_picks}) {
         my $region_name = 'region' . "_${region_id}";
         my $game        = $region_winner_picks->{$region_id};
@@ -161,9 +166,14 @@ sub view : Local {
     $c->stash->{player} = $player;
 
     # Get the player's regional winner picks.
-    my $region_winner_picks = Bracket::Service::BracketStructure->region_winner_games_by_region(
+    my $structure = Bracket::Service::BracketStructure->describe_bracket(
         $c->model('DBIC')->schema
     );
+    my $region_winner_picks = $structure->{region_winner_games_by_region};
+    $c->stash->{region_winner_game_id_for} = $region_winner_picks;
+    $c->stash->{semifinal_game_ids}        = $structure->{semifinal_game_ids};
+    $c->stash->{championship_game_id}      = $structure->{championship_game_id};
+    $c->stash->{game_routes}               = $structure->{game_routes};
     foreach my $region_id (sort { $a <=> $b } keys %{$region_winner_picks}) {
         my $region_name = 'region' . "_${region_id}";
         my $game        = $region_winner_picks->{$region_id};
