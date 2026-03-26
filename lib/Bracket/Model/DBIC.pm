@@ -10,10 +10,9 @@ __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 =head2 update_points
 
 SQL update of points that is way faster than player_points action in Admin.
-DRAWBACK: only tested on MySQL, may be MySQL specfic update.
-SOLUTION: Find DBIC way of doing it?  Use sub-query.
 
-Note: sqlite3 does not like the syntax on this update
+On MySQL the original raw SQL path is used (fast, uses stored functions).
+On all other drivers (SQLite, etc.) a portable DBIx::Class path is used.
 
 =cut
 
@@ -289,7 +288,7 @@ sub _update_points_portable {
 
 sub _format_update_stats {
     my ($times) = @_;
-    my $total_time = sum values %{$times};
+    my $total_time = sum(values %{$times}) // 0;
     $total_time = sprintf('%.1f', 1000 * $total_time);
     my @stats = map {
         $_ . ': ' . sprintf('%.1f', 1000 * ($times->{$_} || 0))
