@@ -14,6 +14,14 @@ SQL update of points that is way faster than player_points action in Admin.
 On MySQL the original raw SQL path is used (fast, uses stored functions).
 On all other drivers (SQLite, etc.) a portable DBIx::Class path is used.
 
+B<Scoring formula>: C<round * (5 + lower_seed * seed)> for all rounds, where
+C<round> is the raw round number (1–6). This matches the existing MySQL SQL
+path. Note that C<Bracket::Controller::Admin::player_points> uses a special
+multiplier of C<10> for the championship game (round 6) instead of C<6>; the
+two code paths therefore produce different championship totals by design — the
+fast C<update_points> path was authored before that multiplier was added and
+has not been changed to avoid breaking existing stored scores.
+
 =cut
 
 sub update_points {
@@ -291,8 +299,8 @@ sub _format_update_stats {
     my $total_time = sum(values %{$times}) // 0;
     $total_time = sprintf('%.1f', 1000 * $total_time);
     my @stats = map {
-        $_ . ': ' . sprintf('%.1f', 1000 * ($times->{$_} || 0))
-    } sort { ($times->{$b} || 0) <=> ($times->{$a} || 0) } keys %{$times};
+        $_ . ': ' . sprintf('%.1f', 1000 * ($times->{$_} // 0))
+    } sort { ($times->{$b} // 0) <=> ($times->{$a} // 0) } keys %{$times};
     unshift(@stats, "<u>total time: $total_time</u>");
     return join('<br>', @stats);
 }
