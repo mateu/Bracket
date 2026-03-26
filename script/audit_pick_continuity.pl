@@ -6,6 +6,7 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 
 use Bracket::Schema;
+use Bracket::Service::ContinuityAudit;
 use Getopt::Long qw(GetOptions);
 
 my %opt;
@@ -31,36 +32,18 @@ my $user = defined $opt{user} ? $opt{user} : ($ENV{BRACKET_DB_USER}     || $cfg_
 my $pass = defined $opt{pass} ? $opt{pass} : (exists $ENV{BRACKET_DB_PASSWORD} ? $ENV{BRACKET_DB_PASSWORD} : (defined $cfg_pass ? $cfg_pass : ''));
 
 my $schema = Bracket::Schema->connect($dsn, $user, $pass);
+my $issues = Bracket::Service::ContinuityAudit->issues_for_schema($schema);
 
-my @players = $schema->resultset('Player')->search({ active => 1 })->all;
-my $issues = 0;
-
-for my $player (@players) {
-    my %picks = map { $_->game->id => $_->pick->id }
-      $schema->resultset('Pick')->search({ player => $player->id })->all;
-
-    for my $game_id (sort { $a <=> $b } grep { $_ >= 9 } keys %picks) {
-        my @parents = map { $_->parent_game }
-          $schema->resultset('GameGraph')->search({ game => $game_id })->all;
-        next if !@parents;
-
-        my @parent_winners = grep { defined $_ } map { $picks{$_} } @parents;
-        next if @parent_winners < @parents;
-
-        my %allowed = map { $_ => 1 } @parent_winners;
-        if (!$allowed{$picks{$game_id}}) {
-            $issues++;
-            print join("\t",
-                'player=' . $player->id,
-                'game=' . $game_id,
-                'pick=' . $picks{$game_id},
-                'allowed=' . join(',', @parent_winners)
-            ), "\n";
-        }
-    }
+for my $issue (@{$issues}) {
+    print join("\t",
+        'player=' . $issue->{player_id},
+        'game=' . $issue->{game_id},
+        'pick=' . $issue->{invalid_pick_id},
+        'allowed=' . join(',', @{$issue->{allowed_pick_ids}})
+    ), "\n";
 }
 
-if (!$issues) {
+if (!@{$issues}) {
     print "OK: no continuity issues found\n";
 }
 

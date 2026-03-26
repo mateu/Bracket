@@ -9,7 +9,7 @@ sub project {
     my ($class, $schema, $opts) = @_;
     $opts ||= {};
 
-    die 'Missing schema' if !$schema;
+    return { error => 'Missing schema', player_projections => [] } if !$schema;
 
     my $iterations         = $opts->{iterations} || 2000;
     my $seed               = defined $opts->{seed} ? $opts->{seed} : 17;
@@ -118,7 +118,17 @@ sub project {
         );
     }
     else {
-        srand($seed);
+        # Use a local LCG PRNG seeded by $seed rather than reseeding Perl's
+        # global rand(), which would make subsequent rand() calls in other parts
+        # of the app (e.g. password-reset token generation) predictable within
+        # the same worker process.  The LCG constants are the glibc defaults.
+        # For small candidate arrays (typically 2 teams), the negligible modulo
+        # bias is acceptable for this probabilistic simulation.
+        my $prng_state = $seed;
+        my $prng = sub {
+            $prng_state = ($prng_state * 1664525 + 1013904223) % 2**32;
+            return $prng_state;
+        };
         for (1 .. $iterations) {
             my %winner = %known_winner;
             foreach my $game_id (@unknown_games) {
@@ -130,7 +140,7 @@ sub project {
                     \%teams_by_game,
                 );
                 next if !@{$candidates};
-                my $winner = $candidates->[int(rand(@{$candidates}))];
+                my $winner = $candidates->[$prng->() % scalar @{$candidates}];
                 $winner{$game_id} = $winner;
             }
 

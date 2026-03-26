@@ -4,6 +4,7 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use Bracket::Service::EquityProjection;
+use Bracket::Service::ContinuityAudit;
 
 =head1 Name
 
@@ -114,6 +115,17 @@ sub qa : Global {
     $c->stash->{template}     = 'admin/lower_seeds.tt';
 }
 
+sub continuity_audit : Global {
+    my ($self, $c) = @_;
+
+    my $issues = Bracket::Service::ContinuityAudit->issues_for_schema(
+        $c->model('DBIC')->schema
+    );
+
+    $c->stash->{continuity_issues} = $issues;
+    $c->stash->{template}          = 'admin/continuity_audit.tt';
+}
+
 sub update_points : Global {
     my ($self, $c) = @_;
     my $points = $c->model('DBIC')->update_points;
@@ -171,6 +183,8 @@ sub round_out_unmarked_POST {
     return;
 }
 
+use constant MAX_SEED => 2**31 - 1;
+
 sub equity_report : Global {
     my ($self, $c) = @_;
 
@@ -181,6 +195,8 @@ sub equity_report : Global {
 
     my $seed = $c->req->params->{seed};
     $seed = 17 if !defined $seed || $seed !~ /^\d+$/;
+    $seed = 1        if $seed < 1;
+    $seed = MAX_SEED if $seed > MAX_SEED;
 
     my $projection = Bracket::Service::EquityProjection->project(
         $c->model('DBIC')->schema,
