@@ -164,8 +164,6 @@ sub _region_for_game {
         }
     }
 
-    }
-
     my @region_ids = sort { $a <=> $b } keys %regions;
     return @region_ids == 1 ? $region_ids[0] : undef;
 }
