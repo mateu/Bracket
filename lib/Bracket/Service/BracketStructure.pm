@@ -3,29 +3,40 @@ package Bracket::Service::BracketStructure;
 use strict;
 use warnings;
 
+sub describe_bracket {
+    my ($class, $schema) = @_;
+    return _derive_structure($schema);
+}
+
 sub final4_game_ids {
     my ($class, $schema) = @_;
-    my $structure = _derive_structure($schema);
+    my $structure = $class->describe_bracket($schema);
     return $structure->{final4_game_ids};
 }
 
 sub region_winner_games_by_region {
     my ($class, $schema) = @_;
-    my $structure = _derive_structure($schema);
+    my $structure = $class->describe_bracket($schema);
     return $structure->{region_winner_games_by_region};
 }
 
 sub _derive_structure {
     my ($schema) = @_;
     return {
+        championship_game_id          => undef,
+        semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        round_for_game                => {},
     } if !$schema;
 
     my @edges = $schema->resultset('GameGraph')->search({})->all;
     return {
+        championship_game_id          => undef,
+        semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        round_for_game                => {},
     } if !@edges;
 
     my (%parents_by_game, %children_by_parent, %game_ids);
@@ -44,14 +55,20 @@ sub _derive_structure {
 
     my @sink_games = grep { !exists $children_by_parent{$_} } keys %parents_by_game;
     return {
+        championship_game_id          => undef,
+        semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        round_for_game                => \%game_round,
     } if !@sink_games;
 
     my $championship_game_id = _highest_round_game_id(\%game_round, \@sink_games);
     return {
+        championship_game_id          => undef,
+        semifinal_game_ids            => [],
         final4_game_ids               => [],
         region_winner_games_by_region => {},
+        round_for_game                => \%game_round,
     } if !defined $championship_game_id;
 
     my @semifinal_game_ids = sort { $a <=> $b } @{$parents_by_game{$championship_game_id} || []};
@@ -69,8 +86,11 @@ sub _derive_structure {
     my @final4_game_ids = sort { $a <=> $b } keys %final4_game_ids;
 
     return {
+        championship_game_id          => $championship_game_id,
+        semifinal_game_ids            => \@semifinal_game_ids,
         final4_game_ids               => \@final4_game_ids,
         region_winner_games_by_region => \%region_winner_games_by_region,
+        round_for_game                => \%game_round,
     };
 }
 
