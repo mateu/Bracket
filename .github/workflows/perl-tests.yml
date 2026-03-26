@@ -25,6 +25,7 @@ jobs:
             cpanminus \
             libdbi-perl \
             libdbd-mysql-perl \
+            libdbd-sqlite3-perl \
             libexpat1-dev \
             libssl-dev \
             zlib1g-dev \
