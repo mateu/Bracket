@@ -27,17 +27,41 @@ jobs:
             libdbd-mysql-perl \
             libexpat1-dev \
             libssl-dev \
-            zlib1g-dev
+            zlib1g-dev \
+            libcatalyst-perl \
+            libcatalyst-action-renderview-perl \
+            libcatalyst-plugin-configloader-perl \
+            libcatalyst-plugin-static-simple-perl \
+            libcatalyst-plugin-authentication-perl \
+            libcatalyst-authentication-store-dbix-class-perl \
+            libcatalyst-model-dbic-schema-perl \
+            libcatalyst-plugin-session-state-cookie-perl \
+            libcatalyst-plugin-session-store-dbic-perl \
+            libcatalyst-view-tt-perl \
+            libconfig-general-perl \
+            libconfig-jfdi-perl \
+            libcrypt-eksblowfish-perl \
+            libdatetime-perl \
+            libdbix-class-perl \
+            libdbix-class-encodedcolumn-perl \
+            libemail-sender-perl \
+            libemail-simple-perl \
+            libemail-valid-perl \
+            libhtml-formhandler-perl \
+            libhtml-formhandler-model-dbic-perl \
+            libnet-smtp-ssl-perl \
+            libperl6-junction-perl \
+            libsql-translator-perl \
+            libterm-prompt-perl \
+            libyaml-perl \
+            libgetopt-long-descriptive-perl \
+            libmoosex-getopt-perl
 
       - name: Bootstrap repo-local Perl environment
         run: |
           cpanm --notest local::lib
           eval "$(perl -Mlocal::lib=local)"
-          cpanm --notest \
-            Module::Install \
-            Module::Install::Catalyst \
-            Getopt::Long::Descriptive \
-            MooseX::Getopt
+          cpanm --notest Module::Install Module::Install::Catalyst
           cpanm --notest --installdeps .
 
       - name: Run targeted validator test
