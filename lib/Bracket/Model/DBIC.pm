@@ -2,7 +2,7 @@ package Bracket::Model::DBIC;
 
 use strict;
 use base 'Catalyst::Model::DBIC::Schema';
-use List::Util qw( max sum );
+use List::Util qw( first max sum );
 use Time::HiRes qw/ time /;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
@@ -10,16 +10,36 @@ __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 =head2 update_points
 
 SQL update of points that is way faster than player_points action in Admin.
-DRAWBACK: only tested on MySQL, may be MySQL specfic update.
-SOLUTION: Find DBIC way of doing it?  Use sub-query.
 
-Note: sqlite3 does not like the syntax on this update
+On MySQL the original raw SQL path is used (fast, uses stored functions).
+On all other drivers (SQLite, etc.) a portable DBIx::Class path is used.
+
+B<Scoring formula>: C<round * (5 + lower_seed * seed)> for all rounds, where
+C<round> is the raw round number (1–6). This matches the existing MySQL SQL
+path. Note that C<Bracket::Controller::Admin::player_points> uses a special
+multiplier of C<10> for the championship game (round 6) instead of C<6>; the
+two code paths therefore produce different championship totals by design — the
+fast C<update_points> path was authored before that multiplier was added and
+has not been changed to avoid breaking existing stored scores.
 
 =cut
 
 sub update_points {
-    my $self    = shift;
-    my $storage = $self->schema->storage;
+    my $self = shift;
+    return _update_points_for_schema($self->schema);
+}
+
+sub _update_points_for_schema {
+    my ($schema) = @_;
+    my $driver = lc($schema->storage->dbh->{Driver}->{Name} || '');
+    return $driver eq 'mysql'
+      ? _update_points_mysql($schema)
+      : _update_points_portable($schema);
+}
+
+sub _update_points_mysql {
+    my ($schema) = @_;
+    my $storage = $schema->storage;
     return $storage->dbh_do(
         sub {
             my $self = shift;
@@ -29,7 +49,7 @@ sub update_points {
             my $previous_time = $current_time;
             my $sth;
 
-	    # Record lower seed
+            # Record lower seed
             $sth = $dbh->prepare('
                 update game
                 inner join (
@@ -54,17 +74,17 @@ sub update_points {
             $times{lower_seed} = $current_time - $previous_time;
             $previous_time = $current_time;
 
-	    # Record round out
-	    # Do for round 1
+            # Record round out
+            # Do for round 1
             $sth = $dbh->prepare('
               update team
               set round_out = 1
-	      where 1 = get_current_round()
-	      and team.id in (select get_first_round_loser(game.id) from game where game.round = 1)
+              where 1 = get_current_round()
+              and team.id in (select get_first_round_loser(game.id) from game where game.round = 1)
             ;
-	    ');
+            ');
             $sth->execute;
-	    # Do for other rounds
+            # Do for other rounds
             $sth = $dbh->prepare('
                 update team
                 inner join (
@@ -79,7 +99,7 @@ sub update_points {
                 on team.id = roi.losing_team
                 set round_out = roi.round
                ;
-	    ');
+            ');
             $sth->execute;
             $current_time = time();
             $times{round_out} = $current_time - $previous_time;
@@ -89,18 +109,18 @@ sub update_points {
                 insert into region_score
                 select * from
                 (select
-		    player_picks.player,
-	            team.region as region,
-		    sum(game.round*(5 + game.lower_seed*team.seed)) as points
-	        from pick player_picks, pick perfect_picks, game game, team team
-		where perfect_picks.pick = player_picks.pick
-		and perfect_picks.game   = player_picks.game
-		and player_picks.game    = game.id
-		and player_picks.pick    = team.id
-	        and perfect_picks.player = 1
+                    player_picks.player,
+                    team.region as region,
+                    sum(game.round*(5 + game.lower_seed*team.seed)) as points
+                from pick player_picks, pick perfect_picks, game game, team team
+                where perfect_picks.pick = player_picks.pick
+                and perfect_picks.game   = player_picks.game
+                and player_picks.game    = game.id
+                and player_picks.pick    = team.id
+                and perfect_picks.player = 1
                 group by player_picks.player, team.region
-	        ) as player_region_points
-	        on duplicate key update points=player_region_points.points
+                ) as player_region_points
+                on duplicate key update points=player_region_points.points
                 ;'
             );
             $sth->execute;
@@ -108,7 +128,7 @@ sub update_points {
             $times{update_region_score} = $current_time - $previous_time;
             $previous_time = $current_time;
 
-	    $sth  = $dbh->prepare('
+            $sth  = $dbh->prepare('
                 update player player,
                 (
                  select player, sum(points) as total_points from region_score
@@ -120,16 +140,169 @@ sub update_points {
             $sth->execute;
             $current_time = time();
             $times{update_player_points} = $current_time - $previous_time;
-            $previous_time = $current_time;
 
-            my $total_time = sum values %times;
-	    $total_time = sprintf("%.1f", 1000*$total_time);
-            my @stats = map { $_ . ': ' . sprintf("%.1f", 1000*$times{$_}) } sort {$times{$b} <=> $times{$a}} keys %times;
-	    unshift(@stats, "<u>total time: $total_time</u>");
-            my $stats = join('<br>', @stats);
-            return $stats;
+            return _format_update_stats(\%times);
         }
     );
+}
+
+sub _update_points_portable {
+    my ($schema) = @_;
+    my %times;
+    my $current_time  = time();
+    my $previous_time = $current_time;
+
+    my @perfect_picks = $schema->resultset('Pick')->search(
+        { player => 1 },
+        { columns => [qw/game pick/] }
+    )->all;
+    my %perfect_winner_for_game = map {
+        $_->get_column('game') => $_->get_column('pick')
+    } @perfect_picks;
+
+    my %games = map {
+        $_->get_column('id') => $_
+    } $schema->resultset('Game')->search({})->all;
+    my %teams = map {
+        $_->get_column('id') => $_
+    } $schema->resultset('Team')->search({})->all;
+
+    my %parent_games;
+    foreach my $edge ($schema->resultset('GameGraph')->search({}, { order_by => [qw/game parent_game/] })->all) {
+        push @{$parent_games{ $edge->get_column('game') }}, $edge->get_column('parent_game');
+    }
+
+    my %seeded_teams;
+    foreach my $row ($schema->resultset('GameTeamGraph')->search({}, { order_by => [qw/game team/] })->all) {
+        push @{$seeded_teams{ $row->get_column('game') }}, $row->get_column('team');
+    }
+
+    my $current_round = 0;
+    foreach my $game_id (keys %perfect_winner_for_game) {
+        my $game = $games{$game_id};
+        next if !$game;
+        my $round = $game->get_column('round');
+        $current_round = $round if $round > $current_round;
+    }
+
+    if (!$current_round) {
+        return _format_update_stats(\%times);
+    }
+
+    $schema->txn_do(sub {
+        foreach my $game_id (sort { $a <=> $b } keys %games) {
+            my $game = $games{$game_id};
+            next if !$game || $game->get_column('round') != $current_round;
+            my $winner_team_id = $perfect_winner_for_game{$game_id};
+            next if !$winner_team_id;
+
+            my $winner_team = $teams{$winner_team_id};
+            next if !$winner_team;
+
+            my $lower_seed = 0;
+            if ($game->get_column('round') == 1) {
+                $lower_seed = $winner_team->get_column('seed') > 8 ? 1 : 0;
+            }
+            else {
+                my @parents = @{$parent_games{$game_id} || []};
+                my @parent_winners = map { $perfect_winner_for_game{$_} } grep { exists $perfect_winner_for_game{$_} } @parents;
+                my $loser_team_id = first { defined $_ && $_ != $winner_team_id } @parent_winners;
+                if (defined $loser_team_id && $teams{$loser_team_id}) {
+                    $lower_seed = $winner_team->get_column('seed') > $teams{$loser_team_id}->get_column('seed') ? 1 : 0;
+                }
+            }
+
+            $game->update({
+                winner     => $winner_team_id,
+                lower_seed => $lower_seed,
+            });
+        }
+    });
+    $current_time = time();
+    $times{lower_seed} = $current_time - $previous_time;
+    $previous_time = $current_time;
+
+    $schema->txn_do(sub {
+        foreach my $game_id (sort { $a <=> $b } keys %games) {
+            my $game = $games{$game_id};
+            next if !$game || $game->get_column('round') != $current_round;
+            my $winner_team_id = $perfect_winner_for_game{$game_id};
+            next if !$winner_team_id;
+
+            my $loser_team_id;
+            if ($current_round == 1) {
+                my @team_ids = @{$seeded_teams{$game_id} || []};
+                $loser_team_id = first { $_ != $winner_team_id } @team_ids;
+            }
+            else {
+                my @parents = @{$parent_games{$game_id} || []};
+                my @parent_winners = map { $perfect_winner_for_game{$_} } grep { exists $perfect_winner_for_game{$_} } @parents;
+                $loser_team_id = first { defined $_ && $_ != $winner_team_id } @parent_winners;
+            }
+
+            next if !defined $loser_team_id || !$teams{$loser_team_id};
+            $teams{$loser_team_id}->update({ round_out => $current_round });
+        }
+    });
+    $current_time = time();
+    $times{round_out} = $current_time - $previous_time;
+    $previous_time = $current_time;
+
+    my %points_for;
+    foreach my $pick ($schema->resultset('Pick')->search({}, { prefetch => [qw/game pick/] })->all) {
+        my $game_id = $pick->get_column('game');
+        my $winner_team_id = $perfect_winner_for_game{$game_id};
+        next if !defined $winner_team_id || $winner_team_id != $pick->get_column('pick');
+
+        my $game_row = $pick->game;
+        my $team_row = $pick->pick;
+        my $points_for_pick = $game_row->get_column('round') *
+          (5 + $game_row->get_column('lower_seed') * $team_row->get_column('seed'));
+        $points_for{$pick->get_column('player')}{ $team_row->get_column('region') } += $points_for_pick;
+    }
+
+    $schema->txn_do(sub {
+        foreach my $player ($schema->resultset('Player')->search({})->all) {
+            my $player_id = $player->get_column('id');
+            foreach my $region_id (1 .. 4) {
+                my $points = $points_for{$player_id}{$region_id} || 0;
+                $schema->resultset('RegionScore')->update_or_create({
+                    player => $player_id,
+                    region => $region_id,
+                    points => $points,
+                });
+            }
+        }
+    });
+    $current_time = time();
+    $times{update_region_score} = $current_time - $previous_time;
+    $previous_time = $current_time;
+
+    $schema->txn_do(sub {
+        foreach my $player ($schema->resultset('Player')->search({})->all) {
+            my $player_id = $player->get_column('id');
+            my $total_points = 0;
+            foreach my $region_id (1 .. 4) {
+                $total_points += $points_for{$player_id}{$region_id} || 0;
+            }
+            $player->update({ points => $total_points });
+        }
+    });
+    $current_time = time();
+    $times{update_player_points} = $current_time - $previous_time;
+
+    return _format_update_stats(\%times);
+}
+
+sub _format_update_stats {
+    my ($times) = @_;
+    my $total_time = sum(values %{$times}) // 0;
+    $total_time = sprintf('%.1f', 1000 * $total_time);
+    my @stats = map {
+        $_ . ': ' . sprintf('%.1f', 1000 * ($times->{$_} // 0))
+    } sort { ($times->{$b} // 0) <=> ($times->{$a} // 0) } keys %{$times};
+    unshift(@stats, "<u>total time: $total_time</u>");
+    return join('<br>', @stats);
 }
 
 =heads2 count_region_picks
