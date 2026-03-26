@@ -56,12 +56,9 @@ jobs:
             libgetopt-long-descriptive-perl \
             libmoosex-getopt-perl
 
-      - name: Prepare repo-local Perl environment
+      - name: Run targeted validator test against packaged stack
+        env:
+          PERL5LIB: ''
         run: |
-          cpanm --notest local::lib
-          eval "$(perl -Mlocal::lib=local)"
-
-      - name: Run targeted validator test
-        run: |
-          chmod +x script/test-env.sh script/test || true
-          script/test-env.sh prove -lv t/bracket_validator.t
+          export PATH="/usr/bin:$PATH"
+          prove -Ilib -It/lib -lv t/bracket_validator.t
