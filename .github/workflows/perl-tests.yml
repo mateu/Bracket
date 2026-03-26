@@ -1,0 +1,32 @@
+name: Perl tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.36'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cpanminus libdbi-perl libdbd-mysql-perl
+
+      - name: Install Perl dependencies
+        run: |
+          cpanm --notest --installdeps . || true
+
+      - name: Run targeted validator test
+        run: |
+          chmod +x script/test-env.sh script/test || true
+          script/test-env.sh prove -lv t/bracket_validator.t
