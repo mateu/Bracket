@@ -39,7 +39,6 @@ jobs:
             libcatalyst-plugin-session-store-dbic-perl \
             libcatalyst-view-tt-perl \
             libconfig-general-perl \
-            libconfig-jfdi-perl \
             libcrypt-eksblowfish-perl \
             libdatetime-perl \
             libdbix-class-perl \
