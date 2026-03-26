@@ -183,6 +183,8 @@ sub round_out_unmarked_POST {
     return;
 }
 
+use constant MAX_SEED => 2**31 - 1;
+
 sub equity_report : Global {
     my ($self, $c) = @_;
 
@@ -193,6 +195,8 @@ sub equity_report : Global {
 
     my $seed = $c->req->params->{seed};
     $seed = 17 if !defined $seed || $seed !~ /^\d+$/;
+    $seed = 1        if $seed < 1;
+    $seed = MAX_SEED if $seed > MAX_SEED;
 
     my $projection = Bracket::Service::EquityProjection->project(
         $c->model('DBIC')->schema,
