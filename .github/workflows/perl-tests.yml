@@ -31,9 +31,13 @@ jobs:
 
       - name: Bootstrap repo-local Perl environment
         run: |
-          perl -MCPAN -e 'install local::lib' || cpanm local::lib
+          cpanm --notest local::lib
           eval "$(perl -Mlocal::lib=local)"
-          cpanm --notest Module::Install Module::Install::Catalyst
+          cpanm --notest \
+            Module::Install \
+            Module::Install::Catalyst \
+            Getopt::Long::Descriptive \
+            MooseX::Getopt
           cpanm --notest --installdeps .
 
       - name: Run targeted validator test
