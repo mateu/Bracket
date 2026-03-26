@@ -56,12 +56,10 @@ jobs:
             libgetopt-long-descriptive-perl \
             libmoosex-getopt-perl
 
-      - name: Bootstrap repo-local Perl environment
+      - name: Prepare repo-local Perl environment
         run: |
           cpanm --notest local::lib
           eval "$(perl -Mlocal::lib=local)"
-          cpanm --notest Module::Install Module::Install::Catalyst
-          cpanm --notest --installdeps .
 
       - name: Run targeted validator test
         run: |
