@@ -1,0 +1,65 @@
+name: Perl tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.36'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cpanminus \
+            libdbi-perl \
+            libdbd-mysql-perl \
+            libdbd-sqlite3-perl \
+            libexpat1-dev \
+            libssl-dev \
+            zlib1g-dev \
+            libcatalyst-perl \
+            libcatalyst-action-renderview-perl \
+            libcatalyst-plugin-configloader-perl \
+            libcatalyst-plugin-static-simple-perl \
+            libcatalyst-plugin-authentication-perl \
+            libcatalyst-authentication-store-dbix-class-perl \
+            libcatalyst-model-dbic-schema-perl \
+            libcatalyst-plugin-session-state-cookie-perl \
+            libcatalyst-plugin-session-store-dbic-perl \
+            libcatalyst-view-tt-perl \
+            libconfig-general-perl \
+            libcrypt-eksblowfish-perl \
+            libdatetime-perl \
+            libdbix-class-perl \
+            libdbix-class-encodedcolumn-perl \
+            libemail-sender-perl \
+            libemail-simple-perl \
+            libemail-valid-perl \
+            libhtml-formhandler-perl \
+            libhtml-formhandler-model-dbic-perl \
+            libnet-smtp-ssl-perl \
+            libperl6-junction-perl \
+            libsql-translator-perl \
+            libterm-prompt-perl \
+            libyaml-perl \
+            libgetopt-long-descriptive-perl \
+            libmoosex-getopt-perl
+
+      - name: Run targeted validator test against packaged stack
+        env:
+          PERL5LIB: ''
+        run: |
+          export PATH="/usr/bin:$PATH"
+          prove -Ilib -It/lib -lv t/bracket_validator.t

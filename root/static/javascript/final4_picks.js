@@ -10,19 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
       var patternArray = spanId.match(pattern);
       if (!patternArray) return;
 
-      var gameNumber = parseInt(patternArray[1], 10);
       var team = patternArray[2];
-      var nextGameNumber;
+      var routesTo = p.getAttribute('data-routes-to');
+      if (!routesTo) return;
 
-      if (gameNumber == 15 || gameNumber == 30) {
-        nextGameNumber = 61;
-      } else if (gameNumber == 45 || gameNumber == 60) {
-        nextGameNumber = 62;
-      } else if (gameNumber == 61 || gameNumber == 62) {
-        nextGameNumber = 63;
-      } else {
-        return;
-      }
+      var nextGameNumber = parseInt(routesTo, 10);
+      if (!nextGameNumber) return;
 
       var newId = 'w' + nextGameNumber + '-t' + team;
       var pickGame = 'p' + nextGameNumber;
