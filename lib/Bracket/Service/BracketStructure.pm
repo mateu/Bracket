@@ -152,7 +152,7 @@ sub _region_for_game {
     my %regions;
     if (%team_ids) {
         my @teams = $schema->resultset('Team')->search(
-            { id => { -in => [ keys %team_ids ] } },
+            { 'me.id' => { -in => [ sort { $a <=> $b } keys %team_ids ] } },
             { prefetch => 'region' },
         )->all;
 
@@ -162,6 +162,8 @@ sub _region_for_game {
             next if !$region;
             $regions{$region->id} = 1;
         }
+    }
+
     }
 
     my @region_ids = sort { $a <=> $b } keys %regions;
