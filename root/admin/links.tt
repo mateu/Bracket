@@ -23,5 +23,8 @@
 <td>
   <a href="[% c.uri_for('/continuity_audit') %]">Continuity Audit</a>
 </td>
+<td>
+  <a href="[% c.uri_for('/incomplete_submissions') %]">Incomplete Submissions</a>
+</td>
 </tr>
 </table>

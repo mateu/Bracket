@@ -126,6 +126,46 @@ sub continuity_audit : Global {
     $c->stash->{template}          = 'admin/continuity_audit.tt';
 }
 
+sub incomplete_submissions : Global {
+    my ($self, $c) = @_;
+
+    my $expected_total_picks = 63;
+    my $total_picks_by_player = $c->model('DBIC')->count_player_picks || {};
+    my @active_players = $c->model('DBIC::Player')->search(
+        {
+            active => 1,
+            id     => { '!=' => 1 },
+        },
+        {
+            order_by => [qw/last_name first_name id/],
+        }
+    )->all;
+
+    my @incomplete_submissions;
+    foreach my $player (@active_players) {
+        my $player_id = $player->id;
+        my $total_picks = $total_picks_by_player->{$player_id} || 0;
+        next if $total_picks >= $expected_total_picks;
+
+        my $region_counts = $c->model('DBIC')->count_region_picks($player_id) || {};
+        my $final4_count = $c->model('DBIC')->count_final4_picks($player_id) || 0;
+
+        push @incomplete_submissions, {
+            player_id          => $player_id,
+            player_name        => join(' ', grep { defined && length } $player->first_name, $player->last_name),
+            username           => $player->username,
+            total_picks        => $total_picks,
+            missing_total      => $expected_total_picks - $total_picks,
+            region_counts      => $region_counts,
+            final4_picks       => $final4_count,
+        };
+    }
+
+    $c->stash->{expected_total_picks}  = $expected_total_picks;
+    $c->stash->{incomplete_submissions} = \@incomplete_submissions;
+    $c->stash->{template}               = 'admin/incomplete_submissions.tt';
+}
+
 sub update_points : Global {
     my ($self, $c) = @_;
     my $points = $c->model('DBIC')->update_points;
