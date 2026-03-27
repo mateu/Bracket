@@ -66,4 +66,5 @@ jobs:
             t/bracket_validator.t \
             t/continuity_audit.t \
             t/bracket_structure.t \
-            t/controller_Admin.t
+            t/controller_Admin.t \
+            t/model_update_points.t
