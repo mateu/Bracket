@@ -114,8 +114,17 @@ is($admin->stash->{template}, 'admin/continuity_audit.tt', 'audit action sets te
 ok(ref $admin->stash->{continuity_issues} eq 'ARRAY', 'audit action stashes issue list');
 ok(scalar @{$admin->stash->{continuity_issues}} >= 1, 'audit action exposes continuity issues');
 
-$schema->resultset('Player')->search({ id => { -in => [2, 3] } })->update({ active => 1 });
-$schema->resultset('Pick')->search({ player => { -in => [2, 3] } })->delete;
+my $player3 = $schema->resultset('Player')->create({
+    email      => 'player3@test.com',
+    password   => 'test',
+    first_name => 'Full',
+    last_name  => 'Bracket',
+    active     => 1,
+});
+my $player3_id = $player3->id;
+
+$schema->resultset('Player')->search({ id => { -in => [2, $player3_id] } })->update({ active => 1 });
+$schema->resultset('Pick')->search({ player => { -in => [2, $player3_id] } })->delete;
 for my $game_id (1 .. 10) {
     $schema->resultset('Pick')->create({
         player => 2,
@@ -125,7 +134,7 @@ for my $game_id (1 .. 10) {
 }
 for my $game_id (1 .. 63) {
     $schema->resultset('Pick')->create({
-        player => 3,
+        player => $player3_id,
         game   => $game_id,
         pick   => 1,
     });

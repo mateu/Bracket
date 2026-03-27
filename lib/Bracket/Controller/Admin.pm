@@ -158,7 +158,6 @@ sub incomplete_submissions : Global {
             missing_total      => $expected_total_picks - $total_picks,
             region_counts      => $region_counts,
             final4_picks       => $final4_count,
-            final4_missing     => 3 - $final4_count,
         };
     }
 
