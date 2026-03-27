@@ -1,0 +1,43 @@
+[% page_title = 'Incomplete Submissions' %]
+
+[% IF is_admin;
+    INCLUDE 'admin/links.tt';
+END %]
+
+<div style="font-size: 108%;">Men's Basketball - NCAA Tournament [% c.config.year %]</div>
+<div class="points">Incomplete Submissions</div>
+<div>
+  <a href="[% c.uri_for('/all') %]">All Players Home</a>
+</div>
+
+[% IF incomplete_submissions.size %]
+  <p>Found [% incomplete_submissions.size %] incomplete submission(s).</p>
+  <table class="lower_seed_check" summary="incomplete submissions">
+    <tr>
+      <th>Player</th>
+      <th>User</th>
+      <th>Picks</th>
+      <th>Missing</th>
+      <th>R1</th>
+      <th>R2</th>
+      <th>R3</th>
+      <th>R4</th>
+      <th>Final4</th>
+    </tr>
+    [% FOREACH row IN incomplete_submissions %]
+      <tr>
+        <td>[% row.player_name | html %] (# [% row.player_id %])</td>
+        <td>[% row.username | html %]</td>
+        <td>[% row.total_picks %]/[% expected_total_picks %]</td>
+        <td>[% row.missing_total %]</td>
+        <td>[% row.region_counts.1 %]/15</td>
+        <td>[% row.region_counts.2 %]/15</td>
+        <td>[% row.region_counts.3 %]/15</td>
+        <td>[% row.region_counts.4 %]/15</td>
+        <td>[% row.final4_picks %]/3</td>
+      </tr>
+    [% END %]
+  </table>
+[% ELSE %]
+  <p>All active submissions are complete.</p>
+[% END %]
