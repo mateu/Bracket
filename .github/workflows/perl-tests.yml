@@ -57,9 +57,13 @@ jobs:
             libgetopt-long-descriptive-perl \
             libmoosex-getopt-perl
 
-      - name: Run targeted validator test against packaged stack
+      - name: Run safe core Bracket test set against packaged stack
         env:
           PERL5LIB: ''
         run: |
           export PATH="/usr/bin:$PATH"
-          prove -Ilib -It/lib -lv t/bracket_validator.t
+          prove -Ilib -It/lib -lv \
+            t/bracket_validator.t \
+            t/continuity_audit.t \
+            t/bracket_structure.t \
+            t/controller_Admin.t
