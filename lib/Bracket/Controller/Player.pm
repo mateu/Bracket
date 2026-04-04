@@ -60,7 +60,7 @@ sub all : Global {
 	$c->stash->{template} = 'player/all_home.tt';
 
 	my $sort_by = lc($c->req->params->{sort} || 'points');
-	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct)\z/;
+	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct)\z/;
 	$c->stash->{sort_by} = $sort_by;
 
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
@@ -68,7 +68,7 @@ sub all : Global {
 	$c->stash->{picks_per_player} = $picks_per_player;
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
-    my $win_pct_by_player = {};
+    my $projection_metrics = {};
 
 	if ($c->stash->{is_game_time}) {
       # Count of correct picks per player
@@ -86,28 +86,47 @@ sub all : Global {
       );
 
       foreach my $row (@{$projection->{player_projections} || []}) {
-          $win_pct_by_player->{$row->{player_id}} = ($row->{projected_first_pct} || 0) + 0;
+          next if !$row->{player_id};
+          $projection_metrics->{winpct_by_player}{$row->{player_id}} = _numeric($row->{projected_first_pct});
+          $projection_metrics->{podiumpct_by_player}{$row->{player_id}} = _numeric($row->{projected_podium_pct});
+          $projection_metrics->{maxpoints_by_player}{$row->{player_id}} = _numeric($row->{max_possible_points});
+          $projection_metrics->{avgscore_by_player}{$row->{player_id}} = _numeric($row->{projected_score_avg});
       }
 
-      my $max_win_pct = 0;
-      foreach my $pct (values %{$win_pct_by_player}) {
-          $max_win_pct = $pct if $pct > $max_win_pct;
-      }
+      my $max_win_pct = _max_for_map($projection_metrics->{winpct_by_player});
+      my $max_podium_pct = _max_for_map($projection_metrics->{podiumpct_by_player});
+      my $max_possible_points = _max_for_map($projection_metrics->{maxpoints_by_player});
+      my $max_projected_score = _max_for_map($projection_metrics->{avgscore_by_player});
 
       $c->stash->{equity_projection} = $projection;
-      $c->stash->{win_pct_by_player} = $win_pct_by_player;
-      $c->stash->{max_win_pct} = $max_win_pct;
+      $c->stash->{win_pct_by_player} = $projection_metrics->{winpct_by_player} || {};
+      $c->stash->{podium_pct_by_player} = $projection_metrics->{podiumpct_by_player} || {};
+      $c->stash->{max_points_by_player} = $projection_metrics->{maxpoints_by_player} || {};
+      $c->stash->{avg_score_by_player} = $projection_metrics->{avgscore_by_player} || {};
+      $c->stash->{max_win_pct} = $max_win_pct || 0;
+      $c->stash->{max_podium_pct} = $max_podium_pct || 0;
+      $c->stash->{max_possible_points} = $max_possible_points || 0;
+      $c->stash->{max_projected_score} = $max_projected_score || 0;
 	}
 
-	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player, $win_pct_by_player);
+	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player, $projection_metrics);
 }
 
 sub _sort_players {
-    my ($players, $sort_by, $picks_per_player, $win_pct_by_player) = @_;
+    my ($players, $sort_by, $picks_per_player, $projection_metrics) = @_;
     $players ||= [];
     $picks_per_player ||= {};
-    $win_pct_by_player ||= {};
+    $projection_metrics ||= {};
     $sort_by ||= 'points';
+
+    my $win_pct_by_player = $projection_metrics->{winpct_by_player} || {};
+    # Backward compatibility for legacy tests/callers that pass win-pct map directly.
+    if (!exists $projection_metrics->{winpct_by_player}) {
+        $win_pct_by_player = $projection_metrics;
+    }
+    my $podium_pct_by_player = $projection_metrics->{podiumpct_by_player} || {};
+    my $max_points_by_player = $projection_metrics->{maxpoints_by_player} || {};
+    my $avg_score_by_player = $projection_metrics->{avgscore_by_player} || {};
 
     if ($sort_by eq 'player') {
         return [ sort {
@@ -131,9 +150,48 @@ sub _sort_players {
 
     if ($sort_by eq 'winpct') {
         return [ sort {
-            my $a_win = $win_pct_by_player->{$a->id} || 0;
-            my $b_win = $win_pct_by_player->{$b->id} || 0;
+            my $a_win = _numeric($win_pct_by_player->{$a->id});
+            my $b_win = _numeric($win_pct_by_player->{$b->id});
             $b_win <=> $a_win
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'podiumpct') {
+        return [ sort {
+            my $a_podium = _numeric($podium_pct_by_player->{$a->id});
+            my $b_podium = _numeric($podium_pct_by_player->{$b->id});
+            my $a_win = _numeric($win_pct_by_player->{$a->id});
+            my $b_win = _numeric($win_pct_by_player->{$b->id});
+            $b_podium <=> $a_podium
+              || $b_win <=> $a_win
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'maxpoints') {
+        return [ sort {
+            my $a_max = _numeric($max_points_by_player->{$a->id});
+            my $b_max = _numeric($max_points_by_player->{$b->id});
+            my $a_win = _numeric($win_pct_by_player->{$a->id});
+            my $b_win = _numeric($win_pct_by_player->{$b->id});
+            $b_max <=> $a_max
+              || $b_win <=> $a_win
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'avgscore') {
+        return [ sort {
+            my $a_avg = _numeric($avg_score_by_player->{$a->id});
+            my $b_avg = _numeric($avg_score_by_player->{$b->id});
+            my $a_win = _numeric($win_pct_by_player->{$a->id});
+            my $b_win = _numeric($win_pct_by_player->{$b->id});
+            $b_avg <=> $a_avg
+              || $b_win <=> $a_win
               || $b->points <=> $a->points
               || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
         } @{$players} ];
@@ -143,6 +201,23 @@ sub _sort_players {
         $b->points <=> $a->points
           || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
     } @{$players} ];
+}
+
+sub _numeric {
+    my ($value) = @_;
+    return 0 if !defined $value || $value eq '';
+    return $value + 0;
+}
+
+sub _max_for_map {
+    my ($map) = @_;
+    $map ||= {};
+    my $max = 0;
+    foreach my $value (values %{$map}) {
+        my $numeric_value = _numeric($value);
+        $max = $numeric_value if $numeric_value > $max;
+    }
+    return $max;
 }
 
 
