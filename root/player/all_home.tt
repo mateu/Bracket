@@ -10,7 +10,7 @@
 
 [% i = 1 %]
 <table id="all_player_home">
-<tr><th>Rank</th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=player' %]">Player</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=points' %]">Points</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=winpct' %]">Win %</a></th><th class="secondary">Brackets</th>
+<tr><th>Rank</th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=player' %]">Player</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=points' %]">Points</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=winpct' %]">Win %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=podiumpct' %]">Podium %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=maxpoints' %]">Max</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=avgscore' %]">Proj Avg</a></th><th class="secondary">Brackets</th>
 <th style="font-size: 0.67em;">
 [% IF !is_game_time %]
 <a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
@@ -41,6 +41,42 @@
         <span style="font-weight:bold;">[% win_pct %]%</span>
       [% ELSE %]
         [% win_pct %]%
+      [% END %]
+   [% ELSE %]
+      --
+   [% END %]
+   </td>
+   <td style="text-align:center;font-size:0.86em;">
+   [% SET podium_pct = podium_pct_by_player.$row_player_id || 0 %]
+   [% IF is_game_time %]
+      [% IF podium_pct == max_podium_pct %]
+        <span style="font-weight:bold;">[% podium_pct %]%</span>
+      [% ELSE %]
+        [% podium_pct %]%
+      [% END %]
+   [% ELSE %]
+      --
+   [% END %]
+   </td>
+   <td style="text-align:center;font-size:0.86em;">
+   [% SET max_points = max_points_by_player.$row_player_id || 0 %]
+   [% IF is_game_time %]
+      [% IF max_points == max_possible_points %]
+        <span style="font-weight:bold;">[% max_points %]</span>
+      [% ELSE %]
+        [% max_points %]
+      [% END %]
+   [% ELSE %]
+      --
+   [% END %]
+   </td>
+   <td style="text-align:center;font-size:0.86em;">
+   [% SET avg_score = avg_score_by_player.$row_player_id || 0 %]
+   [% IF is_game_time %]
+      [% IF avg_score == max_projected_score %]
+        <span style="font-weight:bold;">[% avg_score %]</span>
+      [% ELSE %]
+        [% avg_score %]
       [% END %]
    [% ELSE %]
       --
