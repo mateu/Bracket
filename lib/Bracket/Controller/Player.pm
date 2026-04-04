@@ -99,14 +99,14 @@ sub all : Global {
       my $max_projected_score = _max_for_map($projection_metrics->{avgscore_by_player});
 
       $c->stash->{equity_projection} = $projection;
-      $c->stash->{win_pct_by_player} = $projection_metrics->{winpct_by_player};
-      $c->stash->{podium_pct_by_player} = $projection_metrics->{podiumpct_by_player};
-      $c->stash->{max_points_by_player} = $projection_metrics->{maxpoints_by_player};
-      $c->stash->{avg_score_by_player} = $projection_metrics->{avgscore_by_player};
-      $c->stash->{max_win_pct} = $max_win_pct;
-      $c->stash->{max_podium_pct} = $max_podium_pct;
-      $c->stash->{max_possible_points} = $max_possible_points;
-      $c->stash->{max_projected_score} = $max_projected_score;
+      $c->stash->{win_pct_by_player} = $projection_metrics->{winpct_by_player} || {};
+      $c->stash->{podium_pct_by_player} = $projection_metrics->{podiumpct_by_player} || {};
+      $c->stash->{max_points_by_player} = $projection_metrics->{maxpoints_by_player} || {};
+      $c->stash->{avg_score_by_player} = $projection_metrics->{avgscore_by_player} || {};
+      $c->stash->{max_win_pct} = $max_win_pct || 0;
+      $c->stash->{max_podium_pct} = $max_podium_pct || 0;
+      $c->stash->{max_possible_points} = $max_possible_points || 0;
+      $c->stash->{max_projected_score} = $max_projected_score || 0;
 	}
 
 	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player, $projection_metrics);

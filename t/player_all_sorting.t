@@ -74,10 +74,19 @@ is_deeply([ map { $_->id } @{$winpct_without_data} ], [20, 30, 10], 'winpct sort
 my $podiumpct_sorted = Bracket::Controller::Player::_sort_players(\@players, 'podiumpct', $picks, $projection_metrics);
 is_deeply([ map { $_->id } @{$podiumpct_sorted} ], [20, 30, 10], 'podiumpct sort uses podium percent then win percent and points');
 
+my $podiumpct_without_data = Bracket::Controller::Player::_sort_players(\@players, 'podiumpct', $picks);
+is_deeply([ map { $_->id } @{$podiumpct_without_data} ], [20, 30, 10], 'podiumpct sort falls back to points when no projection data');
+
 my $maxpoints_sorted = Bracket::Controller::Player::_sort_players(\@players, 'maxpoints', $picks, $projection_metrics);
 is_deeply([ map { $_->id } @{$maxpoints_sorted} ], [30, 20, 10], 'maxpoints sort uses projection ceiling first');
 
+my $maxpoints_without_data = Bracket::Controller::Player::_sort_players(\@players, 'maxpoints', $picks);
+is_deeply([ map { $_->id } @{$maxpoints_without_data} ], [20, 30, 10], 'maxpoints sort falls back to points when no projection data');
+
 my $avgscore_sorted = Bracket::Controller::Player::_sort_players(\@players, 'avgscore', $picks, $projection_metrics);
 is_deeply([ map { $_->id } @{$avgscore_sorted} ], [20, 30, 10], 'avgscore sort uses projected average score');
+
+my $avgscore_without_data = Bracket::Controller::Player::_sort_players(\@players, 'avgscore', $picks);
+is_deeply([ map { $_->id } @{$avgscore_without_data} ], [20, 30, 10], 'avgscore sort falls back to points when no projection data');
 
 done_testing();
