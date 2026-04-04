@@ -57,14 +57,25 @@ jobs:
             libgetopt-long-descriptive-perl \
             libmoosex-getopt-perl
 
-      - name: Run safe core Bracket test set against packaged stack
+      - name: Run core Bracket regression suite against packaged stack
         env:
           PERL5LIB: ''
         run: |
           export PATH="/usr/bin:$PATH"
           prove -Ilib -It/lib -lv \
+            t/01app.t \
+            t/04context.t \
+            t/BracketTestSchema.t \
             t/bracket_validator.t \
-            t/continuity_audit.t \
             t/bracket_structure.t \
+            t/completion_signal.t \
+            t/continuity_audit.t \
             t/controller_Admin.t \
-            t/model_update_points.t
+            t/controller_Auth.t \
+            t/controller_Region.t \
+            t/deploy_bracket_mysql_postdeploy.t \
+            t/equity_projection.t \
+            t/model_update_points.t \
+            t/pick_saver.t \
+            t/player_all_sorting.t \
+            t/view_TT.t
