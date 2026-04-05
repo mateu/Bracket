@@ -16,12 +16,17 @@ use Bracket::Model::DBIC;
     sub schema { return $_[0]->{schema}; }
 }
 
+plan skip_all => 'SQLite-specific test requires sqlite_create_function'
+    unless BracketTestSchema->get_schema->storage->dbh->can('sqlite_create_function');
+
 my $schema = BracketTestSchema->init_schema(populate => 1);
 my $model  = Local::Model->new($schema);
 
+my $dbh = $schema->storage->dbh;
+
 # SQLite test DB does not define these UDFs by default; register test-safe stubs.
-$schema->storage->dbh->sqlite_create_function('get_loser', 1, sub { return -1; });
-$schema->storage->dbh->sqlite_create_function('get_first_round_loser', 1, sub { return -1; });
+$dbh->sqlite_create_function('get_loser', 1, sub { return -1; });
+$dbh->sqlite_create_function('get_first_round_loser', 1, sub { return -1; });
 
 my $player = $schema->resultset('Player')->create({
     email      => 'round-based-final4@example.com',
@@ -57,6 +62,15 @@ $schema->resultset('Team')->create({
     name     => 'RoundBased Team',
     region   => 1,
     round_out => 7,
+});
+
+# Create a player with id 24 to satisfy foreign key constraints on Pick.
+$schema->resultset('Player')->create({
+    id         => 24,
+    email      => 'player-24@example.com',
+    password   => 'secret',
+    first_name => 'Player',
+    last_name  => 'TwentyFour',
 });
 
 # player 24 drives games_remaining in count_player_final4_teams_left.
