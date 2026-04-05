@@ -74,9 +74,12 @@ jobs:
             t/continuity_audit.t \
             t/controller_Admin.t \
             t/controller_Auth.t \
+            t/controller_Auth_email_link.t \
             t/controller_Region.t \
             t/deploy_bracket_mysql_postdeploy.t \
+            t/edit_cutoff_time.t \
             t/equity_projection.t \
+            t/model_round_based_final4_counts.t \
             t/model_update_points.t \
             t/pick_saver.t \
             t/player_all_sorting.t \
