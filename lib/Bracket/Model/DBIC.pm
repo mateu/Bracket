@@ -5,6 +5,7 @@ use base 'Catalyst::Model::DBIC::Schema';
 use List::Util qw( first max sum );
 use Time::HiRes qw/ time /;
 use Bracket::Service::BracketStructure;
+use Bracket::Service::EquityProjection;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -33,9 +34,15 @@ sub update_points {
 sub _update_points_for_schema {
     my ($schema) = @_;
     my $driver = lc($schema->storage->dbh->{Driver}->{Name} || '');
-    return $driver eq 'mysql'
+    my $stats = $driver eq 'mysql'
       ? _update_points_mysql($schema)
       : _update_points_portable($schema);
+
+    my $cache_started = time();
+    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+    my $cache_elapsed = time() - $cache_started;
+
+    return _append_update_stat($stats, equity_cache => $cache_elapsed);
 }
 
 sub _update_points_mysql {
@@ -304,6 +311,19 @@ sub _format_update_stats {
     } sort { ($times->{$b} // 0) <=> ($times->{$a} // 0) } keys %{$times};
     unshift(@stats, "<u>total time: $total_time</u>");
     return join('<br>', @stats);
+}
+
+sub _append_update_stat {
+    my ($stats, $label, $seconds) = @_;
+    $stats ||= _format_update_stats({});
+    $seconds ||= 0;
+
+    my $new_ms = sprintf('%.1f', 1000 * $seconds);
+    if ($stats =~ s{<u>total time: ([0-9.]+)</u>}{'<u>total time: ' . sprintf('%.1f', $1 + $new_ms) . '</u>'}e) {
+        return $stats . '<br>' . $label . ': ' . $new_ms;
+    }
+
+    return $stats . '<br>' . $label . ': ' . $new_ms;
 }
 
 =heads2 count_region_picks

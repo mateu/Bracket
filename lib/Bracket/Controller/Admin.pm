@@ -260,8 +260,16 @@ sub equity_report : Global {
     $seed = 1        if $seed < 1;
     $seed = MAX_SEED if $seed > MAX_SEED;
 
-    my $projection = Bracket::Service::EquityProjection->project(
-        $c->model('DBIC')->schema,
+    my $schema = $c->model('DBIC')->schema;
+    my $use_cached_default = $iterations == Bracket::Service::EquityProjection::DEFAULT_ITERATIONS()
+      && $seed == Bracket::Service::EquityProjection::DEFAULT_SEED();
+
+    my $projection = $use_cached_default
+      ? Bracket::Service::EquityProjection->load_default_cache($schema)
+      : undef;
+
+    $projection ||= Bracket::Service::EquityProjection->project(
+        $schema,
         {
             iterations => $iterations,
             seed       => $seed,
