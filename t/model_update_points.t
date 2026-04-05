@@ -74,4 +74,8 @@ is($all_region_scores, 4, 'portable path maintains all region score rows per pla
 my $player_row = $schema->resultset('Player')->find($player->id);
 is($player_row->get_column('points'), 47, 'player total points updated from region scores');
 
+my $admin_region_scores = $schema->resultset('RegionScore')->search({ player => 2 })->count;
+is($admin_region_scores, 4, 'portable path also creates zeroed region rows for players with no winning picks');
+is($schema->resultset('Player')->find(2)->get_column('points'), 0, 'players without winning picks keep zero total points');
+
 done_testing();
