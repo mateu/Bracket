@@ -177,5 +177,32 @@ my $bad_param = Bracket::Service::BracketValidator->validate_region_payload(
 );
 ok(!$bad_param->{ok}, 'non-numeric team id is rejected');
 
+{
+    no warnings 'redefine';
+    local *Bracket::Service::BracketStructure::region_winner_games_by_region = sub {
+        return { 1 => 30 };
+    };
+
+    my $derived_region_games = Bracket::Service::BracketValidator::_region_game_ids_for_region($schema, 1);
+    ok($derived_region_games->{30}, 'region game scope includes remapped region-winner game');
+    ok($derived_region_games->{16}, 'region game scope follows remapped ancestry');
+    ok(!$derived_region_games->{1}, 'region game scope excludes original range when topology remaps');
+
+    my $remapped_region_validation = Bracket::Service::BracketValidator->validate_region_payload(
+        $schema,
+        $player_id,
+        1,
+        {
+            p30 => 1,
+        }
+    );
+    ok(!$remapped_region_validation->{ok}, 'remapped validation still enforces pick correctness');
+    unlike(
+        join(' ', @{$remapped_region_validation->{errors}}),
+        qr/outside region 1/i,
+        'remapped topology is used instead of fixed 1..15 range'
+    );
+}
+
 
 done_testing();
