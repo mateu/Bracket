@@ -257,8 +257,9 @@ sub email_link : Private {
     use Email::Sender::Transport::Test;
 
     my $link        = $c->request->base . 'reset_password?reset_password_token=' . $token;
-    my $admin_email = 'hunter@huntana.com';
-    my $subject     = 'Reset password link';
+    my $mail_config = $self->password_reset_mail_config($c);
+    my $admin_email = $mail_config->{from};
+    my $subject     = $mail_config->{subject};
     my $message     = <<"END_MESSAGE";
 Use the following link to reset your password: 
 $link
@@ -273,6 +274,16 @@ END_MESSAGE
         body => $message,
     );
     my $success = try_to_sendmail($email);
+}
+
+sub password_reset_mail_config {
+    my ($self, $c) = @_;
+
+    my $config = $c->config->{password_reset_email} || {};
+    return {
+        from    => $config->{from} || 'hunter@huntana.com',
+        subject => $config->{subject} || 'Reset password link',
+    };
 }
 
 sub message : Global {
