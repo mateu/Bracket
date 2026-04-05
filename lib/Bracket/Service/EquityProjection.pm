@@ -510,4 +510,78 @@ sub _dedupe {
     return grep { defined $_ && !$seen{$_}++ } @values;
 }
 
+use constant DEFAULT_CACHE_KEY  => 'default';
+use constant DEFAULT_ITERATIONS => 2000;
+use constant DEFAULT_SEED       => 17;
+
+=head2 refresh_default_cache
+
+    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+
+Runs the default equity projection (iterations=2000, seed=17) and stores the
+per-player results in the C<equity_cache> table under cache_key C<'default'>.
+Any previous rows for that cache_key are replaced atomically.
+
+=cut
+
+sub refresh_default_cache {
+    my ($class, $schema) = @_;
+    return if !$schema;
+
+    my $projection = $class->project($schema, {
+        iterations => DEFAULT_ITERATIONS,
+        seed       => DEFAULT_SEED,
+    });
+
+    $schema->txn_do(sub {
+        $schema->resultset('EquityCache')->search({ cache_key => DEFAULT_CACHE_KEY })->delete;
+        for my $row (@{$projection->{player_projections} || []}) {
+            next if !$row->{player_id};
+            $schema->resultset('EquityCache')->create({
+                player_id            => $row->{player_id},
+                cache_key            => DEFAULT_CACHE_KEY,
+                current_points       => $row->{current_points}       // 0,
+                max_possible_points  => $row->{max_possible_points}  // 0,
+                projected_first_pct  => $row->{projected_first_pct}  // '0.00',
+                projected_podium_pct => $row->{projected_podium_pct} // '0.00',
+                projected_score_avg  => $row->{projected_score_avg}  // '0.00',
+            });
+        }
+    });
+    return;
+}
+
+=head2 load_default_cache
+
+    my $projection = Bracket::Service::EquityProjection->load_default_cache($schema);
+
+Loads the cached default equity projection from the database.  Returns a
+hashref with a C<player_projections> key in the same format as C<project()>,
+or C<undef> if the cache is empty.
+
+=cut
+
+sub load_default_cache {
+    my ($class, $schema) = @_;
+    return undef if !$schema;
+
+    my @rows = $schema->resultset('EquityCache')
+        ->search({ cache_key => DEFAULT_CACHE_KEY })
+        ->all;
+    return undef if !@rows;
+
+    my @player_projections = map {
+        {
+            player_id            => $_->get_column('player_id'),
+            current_points       => $_->get_column('current_points'),
+            max_possible_points  => $_->get_column('max_possible_points'),
+            projected_first_pct  => $_->get_column('projected_first_pct'),
+            projected_podium_pct => $_->get_column('projected_podium_pct'),
+            projected_score_avg  => $_->get_column('projected_score_avg'),
+        }
+    } @rows;
+
+    return { player_projections => \@player_projections };
+}
+
 1;

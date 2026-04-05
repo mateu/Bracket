@@ -5,6 +5,7 @@ use base 'Catalyst::Model::DBIC::Schema';
 use List::Util qw( first max sum );
 use Time::HiRes qw/ time /;
 use Bracket::Service::BracketStructure;
+use Bracket::Service::EquityProjection;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -291,6 +292,10 @@ sub _update_points_portable {
     });
     $current_time = time();
     $times{update_player_points} = $current_time - $previous_time;
+
+    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+    $current_time = time();
+    $times{equity_cache} = $current_time - $previous_time;
 
     return _format_update_stats(\%times);
 }
