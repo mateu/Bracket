@@ -63,6 +63,7 @@ jobs:
         run: |
           export PATH="/usr/bin:$PATH"
           prove -Ilib -It/lib -lv \
+            t/ci_packaged_stack_dependencies.t \
             t/01app.t \
             t/04context.t \
             t/BracketTestSchema.t \
