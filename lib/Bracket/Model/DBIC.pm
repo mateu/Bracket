@@ -544,7 +544,11 @@ sub count_player_final4_teams_left {
                     select player, pick
                     from pick
                     where game in (select game from games_remaining)
-                    and game in (15, 30, 45, 60, 61, 62, 63)
+                    and game in (
+                        select id
+                        from game
+                        where round >= 4
+                    )
                     and pick not in (select team from losing_teams)
                     group by player, pick
                 )
@@ -580,10 +584,11 @@ sub count_final4_picks {
             my $self = shift;
             my $dbh  = shift;
             my $sth  = $dbh->prepare('
-            select count(*) from player
-            join pick on player.id = pick.player
-            where pick.game > 60
-            and player.id = ?
+            select count(*)
+            from pick
+            join game on pick.game = game.id
+            where game.round >= 5
+            and pick.player = ?
             ;'
             );
             $sth->execute($player_id) or die $sth->errstr;
