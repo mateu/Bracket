@@ -141,7 +141,7 @@ my $cache_refresh_schema;
     };
 
     my $stats = Bracket::Model::DBIC::_update_points_for_schema($fake_schema);
-    is($stats, 'mysql stats', 'mysql path returns raw update_points stats');
+    like($stats, qr/^mysql stats(?:<br>)?equity_cache: 0\.0$/, 'mysql path appends equity cache timing to update_points stats');
 }
 
 is($mysql_path_called, 1, 'mysql update_points path invoked exactly once');

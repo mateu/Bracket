@@ -45,6 +45,7 @@ set_pick($player->id, 9, 2);
 
 my $stats = Bracket::Model::DBIC::_update_points_for_schema($schema);
 like($stats, qr/total time:/, 'update_points reports execution stats');
+like($stats, qr/equity_cache:/, 'update_points stats include equity cache refresh time');
 
 my $game1 = $schema->resultset('Game')->find(1);
 my $game2 = $schema->resultset('Game')->find(2);

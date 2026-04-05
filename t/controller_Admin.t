@@ -14,9 +14,35 @@ use Bracket::Service::BracketStructure;
 }
 
 {
+    package TestRequest;
+    sub new { my ($class, $params) = @_; return bless { params => $params || {} }, $class; }
+    sub params { return $_[0]->{params}; }
+}
+
+{
+    package TestResponse;
+    sub new { return bless { redirect_to => undef }, shift; }
+    sub redirect { my ($self, $to) = @_; $self->{redirect_to} = $to; return; }
+    sub redirect_to { return $_[0]->{redirect_to}; }
+}
+
+{
+    package TestAction;
+    sub new { my ($class, $name) = @_; return bless { name => $name }, $class; }
+    sub name { return $_[0]->{name}; }
+}
+
+{
+    package TestControllerRef;
+    sub new { my ($class, $name) = @_; return bless { name => $name }, $class; }
+    sub action_for { my ($self, $name) = @_; return TestAction->new($name); }
+}
+
+{
     package TestDBICModel;
-    sub new { my ($class, $schema) = @_; return bless { schema => $schema }, $class; }
+    sub new { my ($class, $schema) = @_; return bless { schema => $schema, update_points_result => '<u>total time: 1.0</u><br>equity_cache: 0.5' }, $class; }
     sub schema { return $_[0]->{schema}; }
+    sub update_points { return $_[0]->{update_points_result}; }
     sub count_player_picks {
         my ($self) = @_;
         my %counts;
@@ -72,10 +98,13 @@ use Bracket::Service::BracketStructure;
         my ($class, $schema, $roles) = @_;
         return bless {
             stash => {},
+            flash => {},
             go_to => undef,
             dbic  => TestDBICModel->new($schema),
             schema => $schema,
             user  => TestUser->new($roles),
+            req   => TestRequest->new({}),
+            response => TestResponse->new,
         }, $class;
     }
 
@@ -95,6 +124,15 @@ use Bracket::Service::BracketStructure;
 
     sub go_to { return $_[0]->{go_to}; }
     sub user { return $_[0]->{user}; }
+    sub req { return $_[0]->{req}; }
+    sub request { return $_[0]->{req}; }
+    sub response { return $_[0]->{response}; }
+    sub flash { return $_[0]->{flash}; }
+    sub controller { my ($self, $name) = @_; return TestControllerRef->new($name); }
+    sub uri_for {
+        my ($self, @parts) = @_;
+        return join('/', map { ref($_) && $_->can('name') ? $_->name : $_ } @parts);
+    }
 }
 
 my $schema = BracketTestSchema->init_schema(populate => 1);
@@ -157,5 +195,50 @@ is($report_rows->[0]->{player_id}, 2, 'incomplete player id is reported');
 is($report_rows->[0]->{total_picks}, 10, 'total picks count is reported');
 is($report_rows->[0]->{missing_total}, 53, 'missing pick count is reported');
 is($report_rows->[0]->{final4_picks}, 0, 'final4 picks count is reported');
+
+# update_points surfaces timing stats and redirects back to leaderboard
+$controller->update_points($admin);
+like($admin->flash->{status_msg}, qr/equity_cache:/, 'update_points flash includes equity cache timing');
+is($admin->response->redirect_to, 'all', 'update_points redirects to leaderboard');
+
+# equity_report reuses cached default projection only for default cache params
+my $cached_projection = {
+    player_projections => [
+        { player_id => 2, projected_first_pct => '12.34', projected_podium_pct => '56.78', max_possible_points => 123, projected_score_avg => '88.88' },
+    ],
+    source => 'cache',
+};
+my $live_projection = {
+    player_projections => [
+        { player_id => 2, projected_first_pct => '98.76', projected_podium_pct => '54.32', max_possible_points => 321, projected_score_avg => '77.77' },
+    ],
+    source => 'live',
+};
+my ($cache_calls, $project_calls) = (0, 0);
+
+{
+    no warnings 'redefine';
+    local *Bracket::Service::EquityProjection::load_default_cache = sub {
+        my ($class, $schema_arg) = @_;
+        $cache_calls++;
+        return $cached_projection;
+    };
+    local *Bracket::Service::EquityProjection::project = sub {
+        my ($class, $schema_arg, $opts) = @_;
+        $project_calls++;
+        return $live_projection;
+    };
+
+    $admin->{req} = TestRequest->new({ iterations => 2000, seed => 17 });
+    $controller->equity_report($admin);
+    is($admin->stash->{projection}, $cached_projection, 'equity_report uses cached projection for leaderboard-default params');
+    is($cache_calls, 1, 'cached projection loader called once for default-cache params');
+    is($project_calls, 0, 'live projection skipped when default cache is available');
+
+    $admin->{req} = TestRequest->new({ iterations => 4000, seed => 17 });
+    $controller->equity_report($admin);
+    is($admin->stash->{projection}, $live_projection, 'equity_report keeps live projection for non-cached params');
+    is($project_calls, 1, 'live projection called for non-cached params');
+}
 
 done_testing();
