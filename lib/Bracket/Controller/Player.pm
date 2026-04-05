@@ -60,7 +60,7 @@ sub all : Global {
 	$c->stash->{template} = 'player/all_home.tt';
 
 	my $sort_by = lc($c->req->params->{sort} || 'points');
-	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct|ups|cor|act|fi4)\z/;
+	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct|ups|cor|act|fi4|champion)\z/;
 	$c->stash->{sort_by} = $sort_by;
 
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
@@ -76,15 +76,21 @@ sub all : Global {
     $c->stash->{championship_game_id} = $championship_game_id;
 
     my %champion_pick_by_player;
+    my %champion_name_by_player;
     if ($championship_game_id) {
         my @champion_picks = $c->model('DBIC::Pick')->search({ game => $championship_game_id })->all;
         foreach my $pick (@champion_picks) {
-            $champion_pick_by_player{ $pick->player->id } = $pick->pick;
+            my $player_id = $pick->player->id;
+            my $team = $pick->pick;
+            $champion_pick_by_player{$player_id} = $team;
+            $champion_name_by_player{$player_id} = lc($team->name || '');
         }
     }
     $c->stash->{champion_pick_by_player} = \%champion_pick_by_player;
 
-    my $projection_metrics = {};
+    my $projection_metrics = {
+        champion_name_by_player => \%champion_name_by_player,
+    };
 
 	if ($c->stash->{is_game_time}) {
       # Count of correct picks per player
@@ -151,6 +157,7 @@ sub _sort_players {
     my $cor_by_player = $projection_metrics->{cor_by_player} || {};
     my $act_by_player = $projection_metrics->{act_by_player} || {};
     my $fi4_by_player = $projection_metrics->{fi4_by_player} || {};
+    my $champion_name_by_player = $projection_metrics->{champion_name_by_player} || {};
 
     if ($sort_by eq 'player') {
         return [ sort {
@@ -252,6 +259,17 @@ sub _sort_players {
         return [ sort {
             _numeric($fi4_by_player->{$b->id}) <=> _numeric($fi4_by_player->{$a->id})
               || _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'champion') {
+        return [ sort {
+            my $a_name = $champion_name_by_player->{$a->id} || '';
+            my $b_name = $champion_name_by_player->{$b->id} || '';
+            ($a_name eq '') <=> ($b_name eq '')
+              || $a_name cmp $b_name
               || $b->points <=> $a->points
               || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
         } @{$players} ];
