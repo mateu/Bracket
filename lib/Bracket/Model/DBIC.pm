@@ -581,12 +581,22 @@ sub count_final4_picks {
     my ($self, $player_id) = @_;
     return 0 if !defined $player_id;
     my $final4_game_ids = Bracket::Service::BracketStructure->final4_game_ids($self->schema) || [];
-    return 0 if !@{$final4_game_ids};
+    if (@{$final4_game_ids}) {
+        return $self->schema->resultset('Pick')->search({
+            player => $player_id,
+            game   => { -in => $final4_game_ids },
+        })->count;
+    }
 
-    return $self->schema->resultset('Pick')->search({
-        player => $player_id,
-        game   => { -in => $final4_game_ids },
-    })->count;
+    return $self->schema->resultset('Pick')->search(
+        {
+            'me.player'  => $player_id,
+            'game.round' => { '>=' => 5 },
+        },
+        {
+            join => 'game',
+        }
+    )->count;
 }
 
 =head1 NAME

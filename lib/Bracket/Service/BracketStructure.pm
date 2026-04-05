@@ -32,10 +32,12 @@ sub pick_targets {
         total_picks             => 0,
         final4_picks            => 0,
         region_picks_by_region  => {},
+        topology_available      => 0,
     } if !$schema;
 
     my $structure = $class->describe_bracket($schema);
     my $parents_by_game = $structure->{parents_by_game} || {};
+    my $topology_available = scalar(keys %{$parents_by_game}) ? 1 : 0;
 
     my %round_for_game = %{$structure->{round_for_game} || {}};
     foreach my $game ($schema->resultset('Game')->search({})->all) {
@@ -53,17 +55,12 @@ sub pick_targets {
         $region_picks_by_region{$region_id}++;
     }
 
-    foreach my $region ($schema->resultset('Region')->search({})->all) {
-        my $region_id = $region->id;
-        next if !defined $region_id;
-        $region_picks_by_region{$region_id} = 0 if !exists $region_picks_by_region{$region_id};
-    }
-
     my @final4_game_ids = @{$structure->{final4_game_ids} || []};
     return {
         total_picks             => scalar(keys %round_for_game),
         final4_picks            => scalar(@final4_game_ids),
-        region_picks_by_region  => \%region_picks_by_region,
+        region_picks_by_region  => $topology_available ? \%region_picks_by_region : {},
+        topology_available      => $topology_available,
     };
 }
 
