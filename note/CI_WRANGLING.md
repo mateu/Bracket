@@ -1,8 +1,8 @@
 # CI wrangling notes
 
-## Current lightweight PR CI target
+## Current PR CI target
 - Workflow: `.github/workflows/perl-tests.yml`
-- Goal: establish one trustworthy PR test signal, starting with `t/bracket_validator.t`
+- Goal: keep one trustworthy PR signal that exercises the full deterministic non-POD suite.
 
 ## What we learned
 1. Running old Bracket Perl/Catalyst dependencies via full CPAN recursion in GitHub Actions is brittle and noisy.
@@ -12,9 +12,8 @@
 
 ## Current strategy
 - Install packaged Catalyst/DBIx/FormHandler/etc. modules with `apt-get`
-- Run targeted validator test directly:
-  - `prove -Ilib -It/lib -lv t/bracket_validator.t`
-- Expand only as needed based on the next concrete failure.
+- Run explicit non-POD regression tests directly with `prove -Ilib -It/lib -lv`.
+- Keep the test list explicit in workflow YAML to avoid accidental drift from optional POD checks.
 
 ## Rule of thumb
 When CI fails, prefer the next smallest deterministic fix over broad dependency magic.
