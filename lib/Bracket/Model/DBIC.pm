@@ -581,21 +581,26 @@ sub count_final4_picks {
     my ($self, $player_id) = @_;
     return 0 if !defined $player_id;
     my $final4_game_ids = Bracket::Service::BracketStructure->final4_game_ids($self->schema) || [];
+    my $where = {
+        'me.player'  => $player_id,
+        'game.round' => { '>=' => 5 },
+    };
+
     if (@{$final4_game_ids}) {
-        return $self->schema->resultset('Pick')->search({
-            player => $player_id,
-            game   => { -in => $final4_game_ids },
-        })->count;
+        # Keep structure-derived IDs, but also allow round-derived final4 games
+        # so this count remains correct when game IDs/topology drift.
+        $where = {
+            'me.player' => $player_id,
+            -or => [
+                'me.game'    => { -in => $final4_game_ids },
+                'game.round' => { '>=' => 5 },
+            ],
+        };
     }
 
     return $self->schema->resultset('Pick')->search(
-        {
-            'me.player'  => $player_id,
-            'game.round' => { '>=' => 5 },
-        },
-        {
-            join => 'game',
-        }
+        $where,
+        { join => 'game' }
     )->count;
 }
 
