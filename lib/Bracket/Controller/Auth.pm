@@ -281,7 +281,7 @@ sub password_reset_mail_config {
 
     my $config = $c->config->{password_reset_email} || {};
     return {
-        from    => $config->{from} || $c->config->{admin_email} || 'hunter@huntana.com',
+        from    => $config->{from} || 'hunter@huntana.com',
         subject => $config->{subject} || 'Reset password link',
     };
 }
