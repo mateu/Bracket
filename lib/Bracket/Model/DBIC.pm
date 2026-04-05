@@ -249,45 +249,51 @@ sub _update_points_portable {
     $times{round_out} = $current_time - $previous_time;
     $previous_time = $current_time;
 
-    my %points_for;
-    foreach my $pick ($schema->resultset('Pick')->search({}, { prefetch => [qw/game pick/] })->all) {
-        my $game_id = $pick->get_column('game');
-        my $winner_team_id = $perfect_winner_for_game{$game_id};
-        next if !defined $winner_team_id || $winner_team_id != $pick->get_column('pick');
-
-        my $game_row = $pick->game;
-        my $team_row = $pick->pick;
-        my $points_for_pick = $game_row->get_column('round') *
-          (5 + $game_row->get_column('lower_seed') * $team_row->get_column('seed'));
-        $points_for{$pick->get_column('player')}{ $team_row->get_column('region') } += $points_for_pick;
-    }
-
-    $schema->txn_do(sub {
-        foreach my $player ($schema->resultset('Player')->search({})->all) {
-            my $player_id = $player->get_column('id');
-            foreach my $region_id (1 .. 4) {
-                my $points = $points_for{$player_id}{$region_id} || 0;
-                $schema->resultset('RegionScore')->update_or_create({
-                    player => $player_id,
-                    region => $region_id,
-                    points => $points,
-                });
-            }
-        }
+    my $storage = $schema->storage;
+    $storage->dbh_do(sub {
+        my ($storage_self, $dbh) = @_;
+        $dbh->do('delete from region_score');
+        $dbh->do(q{
+            insert into region_score (player, region, points)
+            select
+                player.id as player,
+                region.id as region,
+                coalesce(player_region_points.points, 0) as points
+            from player
+            cross join region
+            left join (
+                select
+                    player_picks.player as player,
+                    team.region as region,
+                    sum(game.round * (5 + game.lower_seed * team.seed)) as points
+                from pick player_picks
+                join pick perfect_picks
+                  on perfect_picks.player = 1
+                 and perfect_picks.game = player_picks.game
+                 and perfect_picks.pick = player_picks.pick
+                join game
+                  on game.id = player_picks.game
+                join team
+                  on team.id = player_picks.pick
+                group by player_picks.player, team.region
+            ) as player_region_points
+              on player_region_points.player = player.id
+             and player_region_points.region = region.id
+        });
     });
     $current_time = time();
     $times{update_region_score} = $current_time - $previous_time;
     $previous_time = $current_time;
 
-    $schema->txn_do(sub {
-        foreach my $player ($schema->resultset('Player')->search({})->all) {
-            my $player_id = $player->get_column('id');
-            my $total_points = 0;
-            foreach my $region_id (1 .. 4) {
-                $total_points += $points_for{$player_id}{$region_id} || 0;
-            }
-            $player->update({ points => $total_points });
-        }
+    $storage->dbh_do(sub {
+        my ($storage_self, $dbh) = @_;
+        $dbh->do(q{
+            update player
+            set points = coalesce(
+                (select sum(points) from region_score where region_score.player = player.id),
+                0
+            )
+        });
     });
     $current_time = time();
     $times{update_player_points} = $current_time - $previous_time;

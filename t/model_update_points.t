@@ -15,6 +15,12 @@ my $player = $schema->resultset('Player')->create({
     first_name => 'Portable',
     last_name  => 'Points',
 });
+my $zero_player = $schema->resultset('Player')->create({
+    email      => 'portable-zero@example.com',
+    password   => 'secret',
+    first_name => 'Zero',
+    last_name  => 'Points',
+});
 
 sub set_pick {
     my ($player_id, $game_id, $team_id) = @_;
@@ -42,6 +48,9 @@ set_pick(1, 9, 2);  # winner from game 1 advances
 set_pick($player->id, 1, 2);
 set_pick($player->id, 2, 4);
 set_pick($player->id, 9, 2);
+set_pick($zero_player->id, 1, 1);
+set_pick($zero_player->id, 2, 4);
+set_pick($zero_player->id, 9, 3);
 
 my $stats = Bracket::Model::DBIC::_update_points_for_schema($schema);
 like($stats, qr/total time:/, 'update_points reports execution stats');
@@ -73,5 +82,18 @@ is($all_region_scores, 4, 'portable path maintains all region score rows per pla
 
 my $player_row = $schema->resultset('Player')->find($player->id);
 is($player_row->get_column('points'), 47, 'player total points updated from region scores');
+
+my $zero_region_scores = $schema->resultset('RegionScore')->search({ player => $zero_player->id });
+is($zero_region_scores->count, 4, 'player with no winning picks still has all region score rows');
+is(
+    $zero_region_scores->get_column('points')->sum,
+    0,
+    'player with no winning picks has zero total region points'
+);
+is(
+    $schema->resultset('Player')->find($zero_player->id)->get_column('points'),
+    0,
+    'player total points zeroed when they have no correct picks'
+);
 
 done_testing();
