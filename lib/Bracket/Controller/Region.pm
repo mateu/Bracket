@@ -94,6 +94,7 @@ sub view : Local {
 
     my %picks;
     my %class_for;
+    my %actual_winner_for;
     my $region_points = 0;
     my @show_regions;
     foreach my $player_pick (@player_picks) {
@@ -106,6 +107,7 @@ sub view : Local {
             my ($winning_pick) =
               $c->model('DBIC::Pick')->search({ player => 1, game => $player_pick->game->id });
             if (defined $winning_pick) {
+                $actual_winner_for{ $player_pick->game->id } = $winning_pick->pick;
                 if ($winning_pick->pick->id == $player_pick->pick->id) {
                     $class_for{ $player_pick->game->id } = 'in';
 
@@ -137,9 +139,10 @@ sub view : Local {
             $picks{ $player_pick->game->id } = $player_pick->pick;
         }
     }
-    $c->stash->{class_for}     = \%class_for;
-    $c->stash->{picks}         = \%picks;
-    $c->stash->{region_points} = $region_points;
+    $c->stash->{class_for}          = \%class_for;
+    $c->stash->{actual_winner_for}  = \%actual_winner_for;
+    $c->stash->{picks}              = \%picks;
+    $c->stash->{region_points}      = $region_points;
 
     my $player = $c->model('DBIC::Player')->find($player_id);
     $c->stash->{player} = $player;

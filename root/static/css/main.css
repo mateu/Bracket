@@ -122,6 +122,12 @@ td p {
 	color: green;
 }
 
+.actual_winner {
+	color: black;
+	font-size: smaller;
+	font-style: italic;
+}
+
 .pending {}
 
 .points {
