@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use Bracket::Service::EquityProjection;
 use Bracket::Service::ContinuityAudit;
+use Bracket::Service::BracketStructure;
 
 =head1 Name
 
@@ -129,7 +130,24 @@ sub continuity_audit : Global {
 sub incomplete_submissions : Global {
     my ($self, $c) = @_;
 
-    my $expected_total_picks = 63;
+    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
+        $c->model('DBIC')->schema
+    );
+    my $expected_total_picks = $pick_targets->{total_picks} || 63;
+    my $expected_final4_picks = $pick_targets->{final4_picks} || 3;
+    my $expected_region_picks_by_region = $pick_targets->{region_picks_by_region} || {};
+    my @region_ids = sort { $a <=> $b } keys %{$expected_region_picks_by_region};
+    if (!@region_ids) {
+        @region_ids = (1 .. 4);
+        $expected_region_picks_by_region = {
+            map { $_ => 15 } @region_ids
+        };
+    }
+
+    my %region_name_for_id = map {
+        $_->id => $_->name
+    } $c->model('DBIC')->schema->resultset('Region')->search({})->all;
+
     my $total_picks_by_player = $c->model('DBIC')->count_player_picks || {};
     my @active_players = $c->model('DBIC::Player')->search(
         {
@@ -162,6 +180,10 @@ sub incomplete_submissions : Global {
     }
 
     $c->stash->{expected_total_picks}  = $expected_total_picks;
+    $c->stash->{expected_final4_picks} = $expected_final4_picks;
+    $c->stash->{expected_region_picks_by_region} = $expected_region_picks_by_region;
+    $c->stash->{region_ids} = \@region_ids;
+    $c->stash->{region_name_for_id} = \%region_name_for_id;
     $c->stash->{incomplete_submissions} = \@incomplete_submissions;
     $c->stash->{template}               = 'admin/incomplete_submissions.tt';
 }

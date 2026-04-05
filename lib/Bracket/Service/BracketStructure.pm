@@ -26,6 +26,47 @@ sub game_routes {
     return $structure->{game_routes};
 }
 
+sub pick_targets {
+    my ($class, $schema) = @_;
+    return {
+        total_picks             => 0,
+        final4_picks            => 0,
+        region_picks_by_region  => {},
+    } if !$schema;
+
+    my $structure = $class->describe_bracket($schema);
+    my $parents_by_game = $structure->{parents_by_game} || {};
+
+    my %round_for_game = %{$structure->{round_for_game} || {}};
+    foreach my $game ($schema->resultset('Game')->search({})->all) {
+        my $game_id = $game->id;
+        next if !defined $game_id;
+        $round_for_game{$game_id} = $game->round;
+    }
+
+    my %region_picks_by_region;
+    foreach my $game_id (sort { $a <=> $b } keys %round_for_game) {
+        my $round = $round_for_game{$game_id};
+        next if !defined $round || $round >= 5;
+        my $region_id = _region_for_game($schema, $game_id, $parents_by_game, \%round_for_game);
+        next if !defined $region_id;
+        $region_picks_by_region{$region_id}++;
+    }
+
+    foreach my $region ($schema->resultset('Region')->search({})->all) {
+        my $region_id = $region->id;
+        next if !defined $region_id;
+        $region_picks_by_region{$region_id} = 0 if !exists $region_picks_by_region{$region_id};
+    }
+
+    my @final4_game_ids = @{$structure->{final4_game_ids} || []};
+    return {
+        total_picks             => scalar(keys %round_for_game),
+        final4_picks            => scalar(@final4_game_ids),
+        region_picks_by_region  => \%region_picks_by_region,
+    };
+}
+
 sub _derive_structure {
     my ($schema) = @_;
     return {
@@ -35,6 +76,7 @@ sub _derive_structure {
         region_winner_games_by_region => {},
         game_routes                   => {},
         round_for_game                => {},
+        parents_by_game               => {},
     } if !$schema;
 
     my @edges = $schema->resultset('GameGraph')->search({})->all;
@@ -45,6 +87,7 @@ sub _derive_structure {
         region_winner_games_by_region => {},
         game_routes                   => {},
         round_for_game                => {},
+        parents_by_game               => {},
     } if !@edges;
 
     my (%parents_by_game, %children_by_parent, %game_ids);
@@ -72,6 +115,7 @@ sub _derive_structure {
         region_winner_games_by_region => {},
         game_routes                   => {},
         round_for_game                => \%game_round,
+        parents_by_game               => \%parents_by_game,
     } if !@sink_games;
 
     my $championship_game_id = _highest_round_game_id(\%game_round, \@sink_games);
@@ -82,6 +126,7 @@ sub _derive_structure {
         region_winner_games_by_region => {},
         game_routes                   => {},
         round_for_game                => \%game_round,
+        parents_by_game               => \%parents_by_game,
     } if !defined $championship_game_id;
 
     my @semifinal_game_ids = sort { $a <=> $b } @{$parents_by_game{$championship_game_id} || []};
@@ -115,6 +160,7 @@ sub _derive_structure {
         region_winner_games_by_region => \%region_winner_games_by_region,
         game_routes                   => \%game_routes,
         round_for_game                => \%game_round,
+        parents_by_game               => \%parents_by_game,
     };
 }
 

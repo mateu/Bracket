@@ -4,6 +4,7 @@ use strict;
 use base 'Catalyst::Model::DBIC::Schema';
 use List::Util qw( first max sum );
 use Time::HiRes qw/ time /;
+use Bracket::Service::BracketStructure;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -571,31 +572,21 @@ sub count_player_final4_teams_left {
 
 =heads2 count_final4_picks
 
-Count up how many picks a player has made in the final 4 (3 total).
+Count up how many picks a player has made in the final 4.
 Displayed on Players home page.
 
 =cut
 
 sub count_final4_picks {
     my ($self, $player_id) = @_;
-    my $storage = $self->schema->storage;
-    return $storage->dbh_do(
-        sub {
-            my $self = shift;
-            my $dbh  = shift;
-            my $sth  = $dbh->prepare('
-            select count(*)
-            from pick
-            join game on pick.game = game.id
-            where game.round >= 5
-            and pick.player = ?
-            ;'
-            );
-            $sth->execute($player_id) or die $sth->errstr;
-            
-            return $sth->fetchall_arrayref->[0]->[0];
-        }
-    );
+    return 0 if !defined $player_id;
+    my $final4_game_ids = Bracket::Service::BracketStructure->final4_game_ids($self->schema) || [];
+    return 0 if !@{$final4_game_ids};
+
+    return $self->schema->resultset('Pick')->search({
+        player => $player_id,
+        game   => { -in => $final4_game_ids },
+    })->count;
 }
 
 =head1 NAME

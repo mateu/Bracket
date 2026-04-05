@@ -5,6 +5,7 @@ BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
 use Bracket::Service::BracketStructure;
 use Bracket::Service::EquityProjection;
+use Bracket::Service::BracketStructure;
 
 =head1 NAME
 
@@ -33,6 +34,25 @@ sub home : Path('/player') {
 	# Get regions 
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
+
+    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
+        $c->model('DBIC')->schema
+    );
+    my $expected_total_picks = $pick_targets->{total_picks} || 63;
+    my $expected_final4_picks = $pick_targets->{final4_picks} || 3;
+    my $expected_region_picks_by_region = $pick_targets->{region_picks_by_region} || {};
+    my %region_targets = map {
+        my $region_id = $_->id;
+        $region_id => (
+            exists $expected_region_picks_by_region->{$region_id}
+            ? $expected_region_picks_by_region->{$region_id}
+            : 15
+        )
+    } @regions;
+    $c->stash->{expected_total_picks} = $expected_total_picks;
+    $c->stash->{expected_final4_picks} = $expected_final4_picks;
+    $c->stash->{expected_region_picks_by_region} = \%region_targets;
+
     # Picks made per region
     my $number_of_picks_per_region = $c->model('DBIC')->count_region_picks($player_id);
     $c->stash->{picks_per_region} = $number_of_picks_per_region;	
@@ -67,6 +87,11 @@ sub all : Global {
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
 	my $picks_per_player = $c->model('DBIC')->count_player_picks;
 	$c->stash->{picks_per_player} = $picks_per_player;
+    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
+        $c->model('DBIC')->schema
+    );
+    my $expected_total_picks = $pick_targets->{total_picks} || 63;
+    $c->stash->{expected_total_picks} = $expected_total_picks;
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
 
@@ -136,15 +161,22 @@ sub all : Global {
       $c->stash->{max_projected_score} = $max_projected_score || 0;
 	}
 
-	$c->stash->{players} = _sort_players(\@players, $sort_by, $picks_per_player, $projection_metrics);
+	$c->stash->{players} = _sort_players(
+        \@players,
+        $sort_by,
+        $picks_per_player,
+        $projection_metrics,
+        $expected_total_picks,
+    );
 }
 
 sub _sort_players {
-    my ($players, $sort_by, $picks_per_player, $projection_metrics) = @_;
+    my ($players, $sort_by, $picks_per_player, $projection_metrics, $expected_total_picks) = @_;
     $players ||= [];
     $picks_per_player ||= {};
     $projection_metrics ||= {};
     $sort_by ||= 'points';
+    $expected_total_picks = 63 if !defined $expected_total_picks || $expected_total_picks !~ /^\d+$/ || $expected_total_picks < 1;
 
     my $win_pct_by_player = $projection_metrics->{winpct_by_player} || {};
     # Backward compatibility for legacy tests/callers that pass win-pct map directly.
@@ -171,8 +203,8 @@ sub _sort_players {
         return [ sort {
             my $a_count = $picks_per_player->{$a->id} || 0;
             my $b_count = $picks_per_player->{$b->id} || 0;
-            my $a_complete = $a_count >= 63 ? 1 : 0;
-            my $b_complete = $b_count >= 63 ? 1 : 0;
+            my $a_complete = $a_count >= $expected_total_picks ? 1 : 0;
+            my $b_complete = $b_count >= $expected_total_picks ? 1 : 0;
 
             $b_complete <=> $a_complete
               || $b_count <=> $a_count
