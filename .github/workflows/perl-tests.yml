@@ -30,6 +30,7 @@ jobs:
             libssl-dev \
             zlib1g-dev \
             libcatalyst-perl \
+            libcatalyst-action-rest-perl \
             libcatalyst-action-renderview-perl \
             libcatalyst-plugin-configloader-perl \
             libcatalyst-plugin-static-simple-perl \
