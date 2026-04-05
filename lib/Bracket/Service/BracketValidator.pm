@@ -137,7 +137,11 @@ sub _region_game_ids_for_region {
 
     my %parents_by_game;
     foreach my $edge ($schema->resultset('GameGraph')->search({})->all) {
-        push @{$parents_by_game{$edge->game}}, $edge->parent_game;
+        my $game_id = $edge->game;
+        my $parent_game_id = $edge->parent_game;
+        next if !defined $game_id || !defined $parent_game_id;
+
+        push @{$parents_by_game{$game_id}}, $parent_game_id;
     }
 
     my %allowed_games;
