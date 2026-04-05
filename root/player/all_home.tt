@@ -10,7 +10,7 @@
 
 [% i = 1 %]
 <table id="all_player_home">
-<tr><th>Rank</th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=player' %]">Player</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=points' %]">Points</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=winpct' %]">Win %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=podiumpct' %]">Podium %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=maxpoints' %]">Max</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=avgscore' %]">Proj Avg</a></th><th class="secondary">Brackets</th>
+<tr><th>Rank</th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=player' %]">Player</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=points' %]">Points</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=winpct' %]">Win %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=podiumpct' %]">Podium %</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=maxpoints' %]">Max</a></th><th><a class="player-link" href="[% c.uri_for('/all') _ '?sort=avgscore' %]">Proj Avg</a></th><th class="secondary">Brackets</th><th>Champion</th>
 <th style="font-size: 0.67em;">
 [% IF !is_game_time %]
 <a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
@@ -96,6 +96,14 @@
   <span class="separator"> | </span>
 <br />
 	</td>
+    <td style="font-size:0.85em; text-align:center; white-space:nowrap;">
+      [% SET champion_pick = champion_pick_by_player.$row_player_id %]
+      [% IF champion_pick %]
+        <a class="player-link" href="[% c.uri_for("/final4/view/$player.id") %]">[% champion_pick.name %]</a>
+      [% ELSE %]
+        --
+      [% END %]
+    </td>
     <td style="font-size: 0.72em;">
     <span class="separator"></span>
         [% SET player_id = player.id %]

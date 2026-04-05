@@ -68,6 +68,22 @@ sub all : Global {
 	$c->stash->{picks_per_player} = $picks_per_player;
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
+
+    my $structure = Bracket::Service::BracketStructure->describe_bracket(
+        $c->model('DBIC')->schema
+    );
+    my $championship_game_id = $structure->{championship_game_id};
+    $c->stash->{championship_game_id} = $championship_game_id;
+
+    my %champion_pick_by_player;
+    if ($championship_game_id) {
+        my @champion_picks = $c->model('DBIC::Pick')->search({ game => $championship_game_id })->all;
+        foreach my $pick (@champion_picks) {
+            $champion_pick_by_player{ $pick->player->id } = $pick->pick;
+        }
+    }
+    $c->stash->{champion_pick_by_player} = \%champion_pick_by_player;
+
     my $projection_metrics = {};
 
 	if ($c->stash->{is_game_time}) {
