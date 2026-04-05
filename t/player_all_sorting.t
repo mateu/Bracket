@@ -51,6 +51,31 @@ my $projection_metrics = {
         20 => 120.9,
         30 => 119.4,
     },
+    ups_by_player => {
+        10 => 2,
+        20 => 5,
+        30 => 5,
+    },
+    cor_by_player => {
+        10 => 11,
+        20 => 9,
+        30 => 9,
+    },
+    act_by_player => {
+        10 => 2,
+        20 => 1,
+        30 => 3,
+    },
+    fi4_by_player => {
+        10 => 1,
+        20 => 1,
+        30 => 2,
+    },
+    champion_name_by_player => {
+        10 => 'duke',
+        20 => '',
+        30 => 'alabama',
+    },
 };
 
 my $points_sorted = Bracket::Controller::Player::_sort_players(\@players, 'points', $picks);
@@ -96,5 +121,24 @@ is_deeply([ map { $_->id } @{$avgscore_sorted} ], [20, 30, 10], 'avgscore sort u
 
 my $avgscore_without_data = Bracket::Controller::Player::_sort_players(\@players, 'avgscore', $picks);
 is_deeply([ map { $_->id } @{$avgscore_without_data} ], [20, 30, 10], 'avgscore sort falls back to points when no projection data');
+
+my $ups_sorted = Bracket::Controller::Player::_sort_players(\@players, 'ups', $picks, $projection_metrics);
+is_deeply([ map { $_->id } @{$ups_sorted} ], [20, 30, 10], 'ups sort uses upsets then correct then points');
+
+my $cor_sorted = Bracket::Controller::Player::_sort_players(\@players, 'cor', $picks, $projection_metrics);
+is_deeply([ map { $_->id } @{$cor_sorted} ], [10, 20, 30], 'cor sort uses correct then upsets then points');
+
+my $act_sorted = Bracket::Controller::Player::_sort_players(\@players, 'act', $picks, $projection_metrics);
+is_deeply([ map { $_->id } @{$act_sorted} ], [30, 10, 20], 'act sort uses active teams then correct then points');
+
+my $fi4_sorted = Bracket::Controller::Player::_sort_players(\@players, 'fi4', $picks, $projection_metrics);
+is_deeply([ map { $_->id } @{$fi4_sorted} ], [30, 10, 20], 'fi4 sort uses final4 active then active teams then points');
+
+my $champion_sorted = Bracket::Controller::Player::_sort_players(\@players, 'champion', $picks, $projection_metrics);
+is_deeply([ map { $_->id } @{$champion_sorted} ], [30, 10, 20], 'champion sort uses picked team name with blanks last');
+
+is(Bracket::Controller::Player::_normalize_sort_by('WINPCT'), 'winpct', 'normalize accepts known sort case-insensitively');
+is(Bracket::Controller::Player::_normalize_sort_by('bogus'), 'points', 'normalize falls back to points for unknown sort');
+is(Bracket::Controller::Player::_normalize_sort_by(undef), 'points', 'normalize defaults to points');
 
 done_testing();
