@@ -62,6 +62,14 @@ is_deeply([ map { $_->id } @{$player_sorted} ], [20, 30, 10], 'player sort is al
 my $picks_sorted = Bracket::Controller::Player::_sort_players(\@players, 'picks', $picks);
 is_deeply([ map { $_->id } @{$picks_sorted} ], [30, 10, 20], 'picks sort puts complete first then completed count desc');
 
+my $dynamic_picks = {
+    10 => 8,
+    20 => 10,
+    30 => 9,
+};
+my $dynamic_target_sorted = Bracket::Controller::Player::_sort_players(\@players, 'picks', $dynamic_picks, undef, 10);
+is_deeply([ map { $_->id } @{$dynamic_target_sorted} ], [20, 30, 10], 'picks sort honors structure-derived completion target');
+
 my $fallback_sorted = Bracket::Controller::Player::_sort_players(\@players, 'unknown', $picks);
 is_deeply([ map { $_->id } @{$fallback_sorted} ], [20, 30, 10], 'unknown sort falls back to points');
 

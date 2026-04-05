@@ -31,4 +31,18 @@ is_deeply($region_winner_games, $structure->{region_winner_games_by_region}, 're
 my $final4_games = Bracket::Service::BracketStructure->final4_game_ids($schema);
 is_deeply($final4_games, $structure->{final4_game_ids}, 'final4 helper matches described structure');
 
+my $pick_targets = Bracket::Service::BracketStructure->pick_targets($schema);
+is($pick_targets->{total_picks}, 63, 'pick targets derive total expected picks from game topology');
+is($pick_targets->{final4_picks}, 3, 'pick targets derive expected final4 picks from graph topology');
+is_deeply(
+    $pick_targets->{region_picks_by_region},
+    {
+        1 => 15,
+        2 => 15,
+        3 => 15,
+        4 => 15,
+    },
+    'pick targets derive expected region pick counts from topology',
+);
+
 done_testing();

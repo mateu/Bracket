@@ -18,10 +18,9 @@ END %]
       <th>User</th>
       <th>Picks</th>
       <th>Missing</th>
-      <th>R1</th>
-      <th>R2</th>
-      <th>R3</th>
-      <th>R4</th>
+      [% FOREACH region_id IN region_ids %]
+      <th>[% region_name_for_id.$region_id || ('R' _ region_id) %]</th>
+      [% END %]
       <th>Final4</th>
     </tr>
     [% FOREACH row IN incomplete_submissions %]
@@ -30,11 +29,10 @@ END %]
         <td>[% row.username | html %]</td>
         <td>[% row.total_picks %]/[% expected_total_picks %]</td>
         <td>[% row.missing_total %]</td>
-        <td>[% row.region_counts.1 %]/15</td>
-        <td>[% row.region_counts.2 %]/15</td>
-        <td>[% row.region_counts.3 %]/15</td>
-        <td>[% row.region_counts.4 %]/15</td>
-        <td>[% row.final4_picks %]/3</td>
+        [% FOREACH region_id IN region_ids %]
+        <td>[% row.region_counts.$region_id || 0 %]/[% expected_region_picks_by_region.$region_id || 0 %]</td>
+        [% END %]
+        <td>[% row.final4_picks %]/[% expected_final4_picks %]</td>
       </tr>
     [% END %]
   </table>

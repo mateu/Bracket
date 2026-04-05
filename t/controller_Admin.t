@@ -5,6 +5,7 @@ use Test::More;
 use lib qw(t/lib lib);
 use BracketTestSchema;
 use Bracket::Controller::Admin;
+use Bracket::Service::BracketStructure;
 
 {
     package TestUser;
@@ -56,9 +57,11 @@ use Bracket::Controller::Admin;
 
     sub count_final4_picks {
         my ($self, $player_id) = @_;
+        my $final4_ids = Bracket::Service::BracketStructure->final4_game_ids($self->{schema}) || [];
+        return 0 if !@{$final4_ids};
         return $self->{schema}->resultset('Pick')->search({
             player => $player_id,
-            game   => { '>' => 60 },
+            game   => { -in => $final4_ids },
         })->count;
     }
 }
@@ -142,6 +145,9 @@ for my $game_id (1 .. 63) {
 
 $controller->incomplete_submissions($admin);
 is($admin->stash->{template}, 'admin/incomplete_submissions.tt', 'incomplete submissions action sets template');
+is($admin->stash->{expected_total_picks}, 63, 'incomplete submissions uses structure-derived total picks');
+is($admin->stash->{expected_final4_picks}, 3, 'incomplete submissions uses structure-derived final4 picks');
+is_deeply($admin->stash->{region_ids}, [1,2,3,4], 'incomplete submissions stashes dynamic region id list');
 
 my $report_rows = $admin->stash->{incomplete_submissions};
 ok(ref $report_rows eq 'ARRAY', 'incomplete submissions are stashed as an array');
