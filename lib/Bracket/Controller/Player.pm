@@ -3,6 +3,7 @@ package Bracket::Controller::Player;
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Perl6::Junction qw/ any /;
+use Bracket::Service::BracketStructure;
 use Bracket::Service::EquityProjection;
 
 =head1 NAME

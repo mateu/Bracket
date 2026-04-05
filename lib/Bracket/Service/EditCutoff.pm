@@ -8,7 +8,9 @@ use DateTime;
 sub cutoff_time {
     my ($class, $config) = @_;
 
-    my $cutoff = (ref($config) eq 'HASH') ? ($config->{edit_cutoff_time} || {}) : {};
+    $config = {} if ref($config) ne 'HASH';
+
+    my $cutoff = $config->{edit_cutoff_time} || {};
     my $year = _int_or_default($cutoff->{year}, _int_or_default($config->{year}, DateTime->now(time_zone => 'UTC')->year));
     my $month = _int_or_default($cutoff->{month}, 3);
     my $day = _int_or_default($cutoff->{day}, 15);
