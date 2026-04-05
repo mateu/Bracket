@@ -73,7 +73,8 @@
    <td style="text-align:center;font-size:0.86em;">
    [% IF is_game_time %]
       [% SET avg_score = avg_score_by_player.$row_player_id || 0 %]
-      [% IF avg_score == max_projected_score %]
+      [% avg_score = avg_score.replace('\\..*$', '') %]
+      [% IF avg_score == max_projected_score.replace('\\..*$', '') %]
         <span style="font-weight:bold;">[% avg_score %]</span>
       [% ELSE %]
         [% avg_score %]
