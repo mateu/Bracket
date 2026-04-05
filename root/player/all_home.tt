@@ -17,10 +17,11 @@
 [% ELSE %]
 <table style="display:inline-table; border-collapse:collapse; border-spacing:0; white-space:nowrap;">
   <tr>
-    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.45em;"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=ups' %]">Ups</a><span class="tooltiptext">Upsets Correct</span></td>
-    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.75em;"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=cor' %]">Cor</a><span class="tooltiptext">Total Correct</span></td>
-    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.35em;"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=act' %]">Act</a><span class="tooltiptext">Teams Active</span></td>
-    <td class="tooltip" style="padding:0; text-align:right; min-width:1.2em;"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=fi4' %]">Fi4</a><span class="tooltiptext">Final 4 Teams Active</span></td>
+    <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.45em;"><span class="tooltip"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=ups' %]">Ups</a><span class="tooltiptext">Upsets Correct</span></span></td>
+    <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.75em;"><span class="tooltip"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=cor' %]">Cor</a><span class="tooltiptext">Total Correct</span></span></td>
+    <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.35em;"><span class="tooltip"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=act' %]">Act</a><span class="tooltiptext">Teams Active</span></span></td>
+    <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.2em;"><span class="tooltip"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=fi4' %]">Fi4</a><span class="tooltiptext">Final 4 Teams Active</span></span></td>
+    <td style="padding:0; text-align:right;"><span class="tooltip"><a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a><span class="tooltiptext">Picks Made</span></span></td>
   </tr>
 </table>
 [% END %]

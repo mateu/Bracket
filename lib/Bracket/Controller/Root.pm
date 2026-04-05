@@ -5,6 +5,7 @@ use warnings;
 use parent 'Catalyst::Controller';
 use Perl6::Junction qw/ any /;
 use DateTime;
+use Bracket::Service::EditCutoff;
 
 #
 # Sets the actions in this controller to be registered with no prefix
@@ -74,7 +75,7 @@ sub auto : Private {
         
         # Set cutoff state
         my $cutoff_time = $self->edit_cutoff_time($c);
-        $c->stash->{is_game_time} = (DateTime->now(time_zone => $cutoff_time->time_zone) > $cutoff_time);
+        $c->stash->{is_game_time} = Bracket::Service::EditCutoff->is_game_time($c->config, DateTime->now(time_zone => $cutoff_time->time_zone));
 
         # Note if we have a normal user in game time (used to hide edit links)
         $c->stash->{is_normal_user_in_game_time} =
@@ -129,21 +130,10 @@ Attempt to render a view, if needed.
 sub end : ActionClass('RenderView') {
 }
 
-# This needs to be edited in future years to reflect the start date/time.
-# TODO: Put into conf
 sub edit_cutoff_time {
     my ($self, $c) = @_;
 
-    my $cutoff = $c->config->{edit_cutoff_time};
-    return DateTime->new(
-        year   => $cutoff->{year},
-        month  => $cutoff->{month},
-        day    => $cutoff->{day},
-        hour   => $cutoff->{hour},
-        minute => $cutoff->{minute},
-        second => $cutoff->{second},
-        time_zone => $cutoff->{time_zone},
-    );
+    return Bracket::Service::EditCutoff->cutoff_time($c->config);
 
 }
 
