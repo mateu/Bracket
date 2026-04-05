@@ -2,7 +2,6 @@ package Bracket::Controller::Player;
 
 use Moose;
 BEGIN { extends 'Catalyst::Controller' }
-use Perl6::Junction qw/ any /;
 use Bracket::Service::BracketStructure;
 use Bracket::Service::EquityProjection;
 use Bracket::Service::BracketStructure;
@@ -80,8 +79,7 @@ sub all : Global {
 	
 	$c->stash->{template} = 'player/all_home.tt';
 
-	my $sort_by = lc($c->req->params->{sort} || 'points');
-	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct|ups|cor|act|fi4|champion)\z/;
+	my $sort_by = _normalize_sort_by($c->req->params->{sort});
 	$c->stash->{sort_by} = $sort_by;
 
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
@@ -175,7 +173,7 @@ sub _sort_players {
     $players ||= [];
     $picks_per_player ||= {};
     $projection_metrics ||= {};
-    $sort_by ||= 'points';
+    $sort_by = _normalize_sort_by($sort_by);
     $expected_total_picks = 63 if !defined $expected_total_picks || $expected_total_picks !~ /^\d+$/ || $expected_total_picks < 1;
 
     my $win_pct_by_player = $projection_metrics->{winpct_by_player} || {};
@@ -192,126 +190,137 @@ sub _sort_players {
     my $fi4_by_player = $projection_metrics->{fi4_by_player} || {};
     my $champion_name_by_player = $projection_metrics->{champion_name_by_player} || {};
 
-    if ($sort_by eq 'player') {
-        return [ sort {
-            lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-              || $b->points <=> $a->points
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'picks') {
-        return [ sort {
+    my %comparators = (
+        points => sub {
+            my ($a, $b) = @_;
+            return $b->points <=> $a->points || _player_name_key($a) cmp _player_name_key($b);
+        },
+        player => sub {
+            my ($a, $b) = @_;
+            return _player_name_key($a) cmp _player_name_key($b) || $b->points <=> $a->points;
+        },
+        picks => sub {
+            my ($a, $b) = @_;
             my $a_count = $picks_per_player->{$a->id} || 0;
             my $b_count = $picks_per_player->{$b->id} || 0;
             my $a_complete = $a_count >= $expected_total_picks ? 1 : 0;
             my $b_complete = $b_count >= $expected_total_picks ? 1 : 0;
 
-            $b_complete <=> $a_complete
+            return $b_complete <=> $a_complete
               || $b_count <=> $a_count
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'winpct') {
-        return [ sort {
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        winpct => sub {
+            my ($a, $b) = @_;
             my $a_win = _numeric($win_pct_by_player->{$a->id});
             my $b_win = _numeric($win_pct_by_player->{$b->id});
-            $b_win <=> $a_win
+            return $b_win <=> $a_win
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'podiumpct') {
-        return [ sort {
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        podiumpct => sub {
+            my ($a, $b) = @_;
             my $a_podium = _numeric($podium_pct_by_player->{$a->id});
             my $b_podium = _numeric($podium_pct_by_player->{$b->id});
             my $a_win = _numeric($win_pct_by_player->{$a->id});
             my $b_win = _numeric($win_pct_by_player->{$b->id});
-            $b_podium <=> $a_podium
+            return $b_podium <=> $a_podium
               || $b_win <=> $a_win
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'maxpoints') {
-        return [ sort {
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        maxpoints => sub {
+            my ($a, $b) = @_;
             my $a_max = _numeric($max_points_by_player->{$a->id});
             my $b_max = _numeric($max_points_by_player->{$b->id});
             my $a_win = _numeric($win_pct_by_player->{$a->id});
             my $b_win = _numeric($win_pct_by_player->{$b->id});
-            $b_max <=> $a_max
+            return $b_max <=> $a_max
               || $b_win <=> $a_win
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'avgscore') {
-        return [ sort {
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        avgscore => sub {
+            my ($a, $b) = @_;
             my $a_avg = _numeric($avg_score_by_player->{$a->id});
             my $b_avg = _numeric($avg_score_by_player->{$b->id});
             my $a_win = _numeric($win_pct_by_player->{$a->id});
             my $b_win = _numeric($win_pct_by_player->{$b->id});
-            $b_avg <=> $a_avg
+            return $b_avg <=> $a_avg
               || $b_win <=> $a_win
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'ups') {
-        return [ sort {
-            _numeric($ups_by_player->{$b->id}) <=> _numeric($ups_by_player->{$a->id})
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        ups => sub {
+            my ($a, $b) = @_;
+            return _numeric($ups_by_player->{$b->id}) <=> _numeric($ups_by_player->{$a->id})
               || _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'cor') {
-        return [ sort {
-            _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        cor => sub {
+            my ($a, $b) = @_;
+            return _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
               || _numeric($ups_by_player->{$b->id}) <=> _numeric($ups_by_player->{$a->id})
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'act') {
-        return [ sort {
-            _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        act => sub {
+            my ($a, $b) = @_;
+            return _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
               || _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'fi4') {
-        return [ sort {
-            _numeric($fi4_by_player->{$b->id}) <=> _numeric($fi4_by_player->{$a->id})
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        fi4 => sub {
+            my ($a, $b) = @_;
+            return _numeric($fi4_by_player->{$b->id}) <=> _numeric($fi4_by_player->{$a->id})
               || _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
-
-    if ($sort_by eq 'champion') {
-        return [ sort {
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+        champion => sub {
+            my ($a, $b) = @_;
             my $a_name = $champion_name_by_player->{$a->id} || '';
             my $b_name = $champion_name_by_player->{$b->id} || '';
-            ($a_name eq '') <=> ($b_name eq '')
+            return ($a_name eq '') <=> ($b_name eq '')
               || $a_name cmp $b_name
               || $b->points <=> $a->points
-              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-        } @{$players} ];
-    }
+              || _player_name_key($a) cmp _player_name_key($b);
+        },
+    );
 
-    return [ sort {
-        $b->points <=> $a->points
-          || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
-    } @{$players} ];
+    my $comparator = $comparators{$sort_by} || $comparators{points};
+    return [ sort { $comparator->($a, $b) } @{$players} ];
+}
+
+sub _normalize_sort_by {
+    my ($sort_by) = @_;
+    $sort_by = lc($sort_by || 'points');
+    return $sort_by if _sort_keys()->{$sort_by};
+    return 'points';
+}
+
+sub _sort_keys {
+    return {
+        points    => 1,
+        player    => 1,
+        picks     => 1,
+        winpct    => 1,
+        maxpoints => 1,
+        avgscore  => 1,
+        podiumpct => 1,
+        ups       => 1,
+        cor       => 1,
+        act       => 1,
+        fi4       => 1,
+        champion  => 1,
+    };
+}
+
+sub _player_name_key {
+    my ($player) = @_;
+    return lc($player->first_name . q{ } . $player->last_name);
 }
 
 sub _numeric {
