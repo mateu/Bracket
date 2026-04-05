@@ -15,13 +15,17 @@
 [% IF !is_game_time %]
 <a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
 [% ELSE %]
-<a class="player-link" href="[% c.uri_for('/all') _ '?sort=picks' %]">Picks</a>
-<div class="tooltip">Ups,<span class="tooltiptext">Upsets Correct</span></div>
-<div class="tooltip">Cor,<span class="tooltiptext">Total Correct</span></div>
-<div class="tooltip">Act,<span class="tooltiptext">Teams Active</span></div>
-<div class="tooltip">Fi4<span class="tooltiptext">Final 4 Teams Active</span></div>
+<table style="display:inline-table; border-collapse:collapse; border-spacing:0; white-space:nowrap;">
+  <tr>
+    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.45em;">Ups<span class="tooltiptext">Upsets Correct</span></td>
+    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.75em;">Cor<span class="tooltiptext">Total Correct</span></td>
+    <td class="tooltip" style="padding:0 0.22em 0 0; text-align:right; min-width:1.35em;">Act<span class="tooltiptext">Teams Active</span></td>
+    <td class="tooltip" style="padding:0; text-align:right; min-width:1.2em;">Fi4<span class="tooltiptext">Final 4 Teams Active</span></td>
+  </tr>
+</table>
 [% END %]
-</th></tr>
+</th>
+</tr>
 [% FOREACH player IN players %]
 	<tr class="[% i % 2 == 0 ? 'even' : 'odd' %]" >
    [% IF player.active == 1 %]
@@ -120,7 +124,14 @@
               [% SET f4_picks_left = '<span style="font-weight:bold;">' _ f4_picks_left _ '</span>' %]
             [% END %]
 
-            <span style="color:darkgreen;">[% picks_upset %], [% picks_correct  %], [% picks_left %], [% f4_picks_left %]</span>
+            <table style="display:inline-table; border-collapse:collapse; border-spacing:0; white-space:nowrap; color:darkgreen;">
+              <tr>
+                <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.45em;">[% picks_upset %]</td>
+                <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.75em;">[% picks_correct %]</td>
+                <td style="padding:0 0.22em 0 0; text-align:right; min-width:1.35em;">[% picks_left %]</td>
+                <td style="padding:0; text-align:right; min-width:1.2em;">[% f4_picks_left %]</td>
+              </tr>
+            </table>
         [% END %]
 	</td>
 	</tr>
