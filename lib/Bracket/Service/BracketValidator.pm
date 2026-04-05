@@ -14,8 +14,7 @@ sub validate_region_payload {
     my ($pick_map, $parse_errors) = _extract_pick_map($params);
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
 
-    my $min_game = 1 + 15 * ($region_id - 1);
-    my $max_game = 15 + 15 * ($region_id - 1);
+    my $region_game_ids = _region_game_ids_for_region($schema, $region_id);
 
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
@@ -24,7 +23,7 @@ sub validate_region_payload {
 
     my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        if ($game_id < $min_game || $game_id > $max_game) {
+        if (!$region_game_ids->{$game_id}) {
             push @errors, "Game ${game_id} is outside region ${region_id}";
             next;
         }
@@ -36,7 +35,7 @@ sub validate_region_payload {
         \@changed_games,
         sub {
             my ($game_id) = @_;
-            return $game_id >= $min_game && $game_id <= $max_game;
+            return $region_game_ids->{$game_id};
         }
     );
 
@@ -127,6 +126,41 @@ sub _extract_pick_map {
     }
 
     return (\%pick_map, \@errors);
+}
+
+sub _region_game_ids_for_region {
+    my ($schema, $region_id) = @_;
+
+    my $region_winner_games = Bracket::Service::BracketStructure->region_winner_games_by_region($schema);
+    my $region_winner_game_id = $region_winner_games->{$region_id};
+    return _fallback_region_game_ids($region_id) if !$region_winner_game_id;
+
+    my %parents_by_game;
+    foreach my $edge ($schema->resultset('GameGraph')->search({})->all) {
+        my $game_id = $edge->game;
+        my $parent_game_id = $edge->parent_game;
+        next if !defined $game_id || !defined $parent_game_id;
+
+        push @{$parents_by_game{$game_id}}, $parent_game_id;
+    }
+
+    my %allowed_games;
+    my @queue = ($region_winner_game_id);
+    while (@queue) {
+        my $game_id = shift @queue;
+        next if $allowed_games{$game_id}++;
+        push @queue, @{$parents_by_game{$game_id} || []};
+    }
+
+    return \%allowed_games;
+}
+
+sub _fallback_region_game_ids {
+    my ($region_id) = @_;
+
+    my $min_game = 1 + 15 * ($region_id - 1);
+    my $max_game = 15 + 15 * ($region_id - 1);
+    return { map { $_ => 1 } ($min_game .. $max_game) };
 }
 
 sub _affected_games_in_scope {
