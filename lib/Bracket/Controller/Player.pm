@@ -60,7 +60,7 @@ sub all : Global {
 	$c->stash->{template} = 'player/all_home.tt';
 
 	my $sort_by = lc($c->req->params->{sort} || 'points');
-	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct)\z/;
+	$sort_by = 'points' if $sort_by !~ /\A(?:points|player|picks|winpct|maxpoints|avgscore|podiumpct|ups|cor|act|fi4)\z/;
 	$c->stash->{sort_by} = $sort_by;
 
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
@@ -76,6 +76,10 @@ sub all : Global {
       ($c->stash->{upset_picks_per_player}, $c->stash->{max_upsets}) = $c->model('DBIC')->count_player_picks_upset;
       ($c->stash->{teams_left_per_player}, $c->stash->{max_left}) = $c->model('DBIC')->count_player_teams_left;
       ($c->stash->{final4_teams_left_per_player}, $c->stash->{max_final4_left}) = $c->model('DBIC')->count_player_final4_teams_left;
+      $projection_metrics->{cor_by_player} = $c->stash->{correct_picks_per_player} || {};
+      $projection_metrics->{ups_by_player} = $c->stash->{upset_picks_per_player} || {};
+      $projection_metrics->{act_by_player} = $c->stash->{teams_left_per_player} || {};
+      $projection_metrics->{fi4_by_player} = $c->stash->{final4_teams_left_per_player} || {};
 
       my $projection = Bracket::Service::EquityProjection->project(
           $c->model('DBIC')->schema,
@@ -127,6 +131,10 @@ sub _sort_players {
     my $podium_pct_by_player = $projection_metrics->{podiumpct_by_player} || {};
     my $max_points_by_player = $projection_metrics->{maxpoints_by_player} || {};
     my $avg_score_by_player = $projection_metrics->{avgscore_by_player} || {};
+    my $ups_by_player = $projection_metrics->{ups_by_player} || {};
+    my $cor_by_player = $projection_metrics->{cor_by_player} || {};
+    my $act_by_player = $projection_metrics->{act_by_player} || {};
+    my $fi4_by_player = $projection_metrics->{fi4_by_player} || {};
 
     if ($sort_by eq 'player') {
         return [ sort {
@@ -192,6 +200,42 @@ sub _sort_players {
             my $b_win = _numeric($win_pct_by_player->{$b->id});
             $b_avg <=> $a_avg
               || $b_win <=> $a_win
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'ups') {
+        return [ sort {
+            _numeric($ups_by_player->{$b->id}) <=> _numeric($ups_by_player->{$a->id})
+              || _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'cor') {
+        return [ sort {
+            _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
+              || _numeric($ups_by_player->{$b->id}) <=> _numeric($ups_by_player->{$a->id})
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'act') {
+        return [ sort {
+            _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
+              || _numeric($cor_by_player->{$b->id}) <=> _numeric($cor_by_player->{$a->id})
+              || $b->points <=> $a->points
+              || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
+        } @{$players} ];
+    }
+
+    if ($sort_by eq 'fi4') {
+        return [ sort {
+            _numeric($fi4_by_player->{$b->id}) <=> _numeric($fi4_by_player->{$a->id})
+              || _numeric($act_by_player->{$b->id}) <=> _numeric($act_by_player->{$a->id})
               || $b->points <=> $a->points
               || lc($a->first_name . ' ' . $a->last_name) cmp lc($b->first_name . ' ' . $b->last_name)
         } @{$players} ];
