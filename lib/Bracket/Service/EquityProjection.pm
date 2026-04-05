@@ -528,6 +528,8 @@ sub refresh_default_cache {
     my ($class, $schema) = @_;
     return if !$schema;
 
+    _ensure_cache_table($schema);
+
     my $projection = $class->project($schema, {
         iterations => DEFAULT_ITERATIONS,
         seed       => DEFAULT_SEED,
@@ -565,6 +567,8 @@ sub load_default_cache {
     my ($class, $schema) = @_;
     return undef if !$schema;
 
+    _ensure_cache_table($schema);
+
     my @rows = $schema->resultset('EquityCache')
         ->search({ cache_key => DEFAULT_CACHE_KEY })
         ->all;
@@ -582,6 +586,54 @@ sub load_default_cache {
     } @rows;
 
     return { player_projections => \@player_projections };
+}
+
+sub _ensure_cache_table {
+    my ($schema) = @_;
+    return if !$schema;
+
+    my $storage = $schema->storage;
+    my $dbh = $storage->dbh;
+    my $driver = lc($dbh->{Driver}{Name} || '');
+
+    if ($driver eq 'mysql') {
+        $dbh->do(q{
+            create table if not exists equity_cache (
+                player_id int not null,
+                cache_key varchar(32) not null default 'default',
+                current_points int not null default 0,
+                max_possible_points int not null default 0,
+                projected_first_pct varchar(16) not null default '0.00',
+                projected_podium_pct varchar(16) not null default '0.00',
+                projected_score_avg varchar(16) not null default '0.00',
+                primary key (player_id, cache_key)
+            )
+        });
+        return;
+    }
+
+    if ($driver eq 'sqlite') {
+        $dbh->do(q{
+            create table if not exists equity_cache (
+                player_id integer not null,
+                cache_key varchar(32) not null default 'default',
+                current_points integer not null default 0,
+                max_possible_points integer not null default 0,
+                projected_first_pct varchar(16) not null default '0.00',
+                projected_podium_pct varchar(16) not null default '0.00',
+                projected_score_avg varchar(16) not null default '0.00',
+                primary key (player_id, cache_key)
+            )
+        });
+        return;
+    }
+
+    my $table = eval { $schema->storage->dbh->selectrow_arrayref(q{
+        select 1 from equity_cache where 1 = 0
+    }) };
+    return if $table || !$@;
+
+    die 'equity_cache table is missing and automatic creation is only implemented for MySQL/SQLite';
 }
 
 1;

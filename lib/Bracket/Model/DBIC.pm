@@ -34,9 +34,12 @@ sub update_points {
 sub _update_points_for_schema {
     my ($schema) = @_;
     my $driver = lc($schema->storage->dbh->{Driver}->{Name} || '');
-    return $driver eq 'mysql'
+    my $stats = $driver eq 'mysql'
       ? _update_points_mysql($schema)
       : _update_points_portable($schema);
+
+    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+    return $stats;
 }
 
 sub _update_points_mysql {
@@ -292,10 +295,6 @@ sub _update_points_portable {
     });
     $current_time = time();
     $times{update_player_points} = $current_time - $previous_time;
-
-    Bracket::Service::EquityProjection->refresh_default_cache($schema);
-    $current_time = time();
-    $times{equity_cache} = $current_time - $previous_time;
 
     return _format_update_stats(\%times);
 }

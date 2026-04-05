@@ -106,4 +106,46 @@ my $after_update = Bracket::Service::EquityProjection->load_default_cache($schem
 ok(defined $after_update, '_update_points_for_schema refreshes the equity cache');
 ok(exists $after_update->{player_projections}, 'cache populated by update_points has player_projections');
 
+# ── Test 5: MySQL update_points path also refreshes the cache ─────────────────
+
+{
+    package Local::TestDBH;
+    sub new { bless { Driver => { Name => 'mysql' } }, shift }
+
+    package Local::TestStorage;
+    sub new { bless { dbh => Local::TestDBH->new }, shift }
+    sub dbh { shift->{dbh} }
+
+    package Local::TestSchema;
+    sub new { bless { storage => Local::TestStorage->new }, shift }
+    sub storage { shift->{storage} }
+}
+
+my $fake_schema = Local::TestSchema->new;
+my $mysql_path_called = 0;
+my $cache_refresh_called = 0;
+my $cache_refresh_schema;
+
+{
+    no warnings 'redefine';
+    local *Bracket::Model::DBIC::_update_points_mysql = sub {
+        my ($schema_arg) = @_;
+        $mysql_path_called++;
+        return 'mysql stats';
+    };
+    local *Bracket::Service::EquityProjection::refresh_default_cache = sub {
+        my ($class, $schema_arg) = @_;
+        $cache_refresh_called++;
+        $cache_refresh_schema = $schema_arg;
+        return;
+    };
+
+    my $stats = Bracket::Model::DBIC::_update_points_for_schema($fake_schema);
+    is($stats, 'mysql stats', 'mysql path returns raw update_points stats');
+}
+
+is($mysql_path_called, 1, 'mysql update_points path invoked exactly once');
+is($cache_refresh_called, 1, 'mysql update_points path refreshes equity cache');
+is($cache_refresh_schema, $fake_schema, 'mysql cache refresh receives same schema object');
+
 done_testing();
