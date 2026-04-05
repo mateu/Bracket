@@ -10,30 +10,34 @@
        rw3_routes_to = game_routes.$rw3;
        rw4_routes_to = game_routes.$rw4;
    -%]
+   [% BLOCK render_pick_slot %]
+     [% SET slot_pick = picks.$game %]
+     [% SET actual_winner = actual_winner_for.$game %]
+     [% IF class_for.$game == 'out' && actual_winner %]
+       <span class="actual_winner">[% actual_winner.seed %]. [% actual_winner.name %]</span><br />
+       <span class="out">[% slot_pick.seed %]. [% slot_pick.name %]</span>
+     [% ELSE %]
+       <span class="[% class_for.$game %]">[% slot_pick.seed %]. [% slot_pick.name %]</span>
+     [% END %]
+   [% END %]
    <table summary="Tournament Bracket" class="regional_bracket">  
 		<tr>  
 		<td>
 		<p data-routes-to="[% rw1_routes_to %]">
 			<span id="w[% rw1 %]-t[% region_1.pick.id %]"></span>
-			<span class="[% class_for.$rw1 %]">
-			[% region_1.pick.seed %]. [% region_1.pick.name %]
-			</span>
+			[% game = rw1 %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		<td rowspan="2">
 		<p id="w[% sf1 %]" data-routes-to="[% champ %]">
 			<span id="w[% sf1 %]-t[% picks.$sf1.id %]"></span>
-			<span class="[% class_for.$sf1 %]">
-			[% picks.$sf1.seed %].	[% picks.$sf1.name %]
-			</span>
+			[% game = sf1 %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		<td rowspan="4">
 		<p id="w[% champ %]">
 			<span id="w[% champ %]-t[% picks.$champ.id %]"></span>
-			<span class="[% class_for.$champ %]">
-			[% picks.$champ.seed %]. [% picks.$champ.name %]
-			</span>
+			[% game = champ %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		</tr> 		
@@ -42,9 +46,7 @@
 		<td>
 		<p data-routes-to="[% rw2_routes_to %]">
             <span id="w[% rw2 %]-t[% region_2.pick.id %]"></span>
-            <span class="[% class_for.$rw2 %]">
-            [% region_2.pick.seed %]. [% region_2.pick.name %]
-            </span>
+            [% game = rw2 %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		</tr> 
@@ -52,17 +54,13 @@
 		<td>
 		<p data-routes-to="[% rw3_routes_to %]">
 			<span id="w[% rw3 %]-t[% region_3.pick.id %]"></span>
-            <span class="[% class_for.$rw3 %]">
-            [% region_3.pick.seed %]. [% region_3.pick.name %]
-            </span>
+            [% game = rw3 %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		<td rowspan="2">
 		<p id="w[% sf2 %]" data-routes-to="[% champ %]">
 			<span id="w[% sf2 %]-t[% picks.$sf2.id %]"></span>
-			<span class="[% class_for.$sf2 %]">
-			[% picks.$sf2.seed %]. [% picks.$sf2.name %]
-			</span>
+			[% game = sf2 %][% PROCESS render_pick_slot %]
 		</p>
 		</td>  
 		</tr> 
@@ -70,9 +68,7 @@
 		<td>
 		<p data-routes-to="[% rw4_routes_to %]">
 			<span id="w[% rw4 %]-t[% region_4.pick.id %]"></span>
-			<span class="[% class_for.$rw4 %]">
-			[% region_4.pick.seed %]. [% region_4.pick.name %]
-			</span>
+			[% game = rw4 %][% PROCESS render_pick_slot %]
 		</p>
 		</td> 
 		</tr>  
