@@ -64,6 +64,34 @@ sub pick_targets {
     };
 }
 
+sub submission_targets {
+    my ($class, $schema, $region_ids) = @_;
+    my $pick_targets = $class->pick_targets($schema) || {};
+
+    my @normalized_region_ids = _normalize_region_ids($region_ids);
+    if (!@normalized_region_ids) {
+        @normalized_region_ids = _normalize_region_ids(
+            [ keys %{ $pick_targets->{region_picks_by_region} || {} } ]
+        );
+    }
+    @normalized_region_ids = (1 .. 4) if !@normalized_region_ids;
+
+    my $expected_total_picks = _positive_int_or_default($pick_targets->{total_picks}, 63);
+    my $expected_final4_picks = _positive_int_or_default($pick_targets->{final4_picks}, 3);
+
+    my $raw_region_targets = $pick_targets->{region_picks_by_region} || {};
+    my %expected_region_picks_by_region = map {
+        $_ => _positive_int_or_default($raw_region_targets->{$_}, 15)
+    } @normalized_region_ids;
+
+    return {
+        expected_total_picks             => $expected_total_picks,
+        expected_final4_picks            => $expected_final4_picks,
+        expected_region_picks_by_region  => \%expected_region_picks_by_region,
+        region_ids                       => \@normalized_region_ids,
+    };
+}
+
 sub _derive_structure {
     my ($schema) = @_;
     return {
@@ -232,6 +260,21 @@ sub _round1_ancestor_games {
     }
 
     return sort { $a <=> $b } keys %round1;
+}
+
+sub _normalize_region_ids {
+    my ($region_ids) = @_;
+    $region_ids ||= [];
+    my %seen;
+    return sort { $a <=> $b } grep {
+        defined $_ && $_ =~ /^\d+$/ && $_ > 0 && !$seen{$_}++
+    } @{$region_ids};
+}
+
+sub _positive_int_or_default {
+    my ($value, $default) = @_;
+    return $default if !defined $value || $value !~ /^\d+$/ || $value < 1;
+    return $value;
 }
 
 1;

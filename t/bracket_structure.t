@@ -45,4 +45,54 @@ is_deeply(
     'pick targets derive expected region pick counts from topology',
 );
 
+my $targets = Bracket::Service::BracketStructure->submission_targets($schema);
+is($targets->{expected_total_picks}, 63, 'submission targets expose total expected picks');
+is($targets->{expected_final4_picks}, 3, 'submission targets expose final4 expected picks');
+is_deeply(
+    $targets->{region_ids},
+    [1, 2, 3, 4],
+    'submission targets expose normalized region ids',
+);
+is_deeply(
+    $targets->{expected_region_picks_by_region},
+    {
+        1 => 15,
+        2 => 15,
+        3 => 15,
+        4 => 15,
+    },
+    'submission targets expose per-region expected picks',
+);
+
+{
+    no warnings 'redefine';
+    local *Bracket::Service::BracketStructure::pick_targets = sub {
+        return {
+            total_picks            => 0,
+            final4_picks           => 'x',
+            region_picks_by_region => {
+                2 => 0,
+                5 => 7,
+            },
+        };
+    };
+
+    my $fallback = Bracket::Service::BracketStructure->submission_targets(
+        undef,
+        [2, 5, 9]
+    );
+    is($fallback->{expected_total_picks}, 63, 'submission targets fallback total to 63');
+    is($fallback->{expected_final4_picks}, 3, 'submission targets fallback final4 to 3');
+    is_deeply($fallback->{region_ids}, [2, 5, 9], 'submission targets preserve provided region ids');
+    is_deeply(
+        $fallback->{expected_region_picks_by_region},
+        {
+            2 => 15,
+            5 => 7,
+            9 => 15,
+        },
+        'submission targets fallback per-region expected picks to 15',
+    );
+}
+
 done_testing();

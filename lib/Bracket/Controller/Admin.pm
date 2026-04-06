@@ -130,23 +130,17 @@ sub continuity_audit : Global {
 sub incomplete_submissions : Global {
     my ($self, $c) = @_;
 
-    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
-        $c->model('DBIC')->schema
+    my @regions = $c->model('DBIC')->schema->resultset('Region')->search({})->all;
+    my %region_name_for_id = map { $_->id => $_->name } @regions;
+    my $targets = Bracket::Service::BracketStructure->submission_targets(
+        $c->model('DBIC')->schema,
+        [ map { $_->id } @regions ],
     );
-    my $expected_total_picks = $pick_targets->{total_picks} || 63;
-    my $expected_final4_picks = $pick_targets->{final4_picks} || 3;
-    my $expected_region_picks_by_region = $pick_targets->{region_picks_by_region} || {};
-    my @region_ids = sort { $a <=> $b } keys %{$expected_region_picks_by_region};
-    if (!@region_ids) {
-        @region_ids = (1 .. 4);
-        $expected_region_picks_by_region = {
-            map { $_ => 15 } @region_ids
-        };
-    }
+    my $expected_total_picks = $targets->{expected_total_picks};
+    my $expected_final4_picks = $targets->{expected_final4_picks};
+    my $expected_region_picks_by_region = $targets->{expected_region_picks_by_region};
+    my @region_ids = @{$targets->{region_ids} || []};
 
-    my %region_name_for_id = map {
-        $_->id => $_->name
-    } $c->model('DBIC')->schema->resultset('Region')->search({})->all;
 
     my $total_picks_by_player = $c->model('DBIC')->count_player_picks || {};
     my @active_players = $c->model('DBIC::Player')->search(

@@ -4,7 +4,6 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Bracket::Service::BracketStructure;
 use Bracket::Service::EquityProjection;
-use Bracket::Service::BracketStructure;
 
 =head1 NAME
 
@@ -34,23 +33,13 @@ sub home : Path('/player') {
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
 
-    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
-        $c->model('DBIC')->schema
+    my $targets = Bracket::Service::BracketStructure->submission_targets(
+        $c->model('DBIC')->schema,
+        [ map { $_->id } @regions ],
     );
-    my $expected_total_picks = $pick_targets->{total_picks} || 63;
-    my $expected_final4_picks = $pick_targets->{final4_picks} || 3;
-    my $expected_region_picks_by_region = $pick_targets->{region_picks_by_region} || {};
-    my %region_targets = map {
-        my $region_id = $_->id;
-        $region_id => (
-            exists $expected_region_picks_by_region->{$region_id}
-            ? $expected_region_picks_by_region->{$region_id}
-            : 15
-        )
-    } @regions;
-    $c->stash->{expected_total_picks} = $expected_total_picks;
-    $c->stash->{expected_final4_picks} = $expected_final4_picks;
-    $c->stash->{expected_region_picks_by_region} = \%region_targets;
+    $c->stash->{expected_total_picks} = $targets->{expected_total_picks};
+    $c->stash->{expected_final4_picks} = $targets->{expected_final4_picks};
+    $c->stash->{expected_region_picks_by_region} = $targets->{expected_region_picks_by_region};
 
     # Picks made per region
     my $number_of_picks_per_region = $c->model('DBIC')->count_region_picks($player_id);
@@ -85,10 +74,10 @@ sub all : Global {
 	my @players = $c->model('DBIC::Player')->search( { active => 1 } )->all;
 	my $picks_per_player = $c->model('DBIC')->count_player_picks;
 	$c->stash->{picks_per_player} = $picks_per_player;
-    my $pick_targets = Bracket::Service::BracketStructure->pick_targets(
+    my $targets = Bracket::Service::BracketStructure->submission_targets(
         $c->model('DBIC')->schema
     );
-    my $expected_total_picks = $pick_targets->{total_picks} || 63;
+    my $expected_total_picks = $targets->{expected_total_picks};
     $c->stash->{expected_total_picks} = $expected_total_picks;
 	my @regions = $c->model('DBIC::Region')->search({},{order_by => 'id'})->all;
 	$c->stash->{regions} = \@regions;
