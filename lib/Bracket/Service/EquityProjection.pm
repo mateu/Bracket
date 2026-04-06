@@ -528,7 +528,7 @@ sub refresh_default_cache {
     my ($class, $schema) = @_;
     return if !$schema;
 
-    _ensure_cache_table($schema);
+    return unless _ensure_cache_table($schema);
 
     my $projection = $class->project($schema, {
         iterations => DEFAULT_ITERATIONS,
@@ -567,7 +567,7 @@ sub load_default_cache {
     my ($class, $schema) = @_;
     return undef if !$schema;
 
-    _ensure_cache_table($schema);
+    return undef unless _ensure_cache_table($schema);
 
     my @rows = $schema->resultset('EquityCache')
         ->search({ cache_key => DEFAULT_CACHE_KEY })
@@ -609,7 +609,7 @@ sub _ensure_cache_table {
                 primary key (player_id, cache_key)
             )
         });
-        return;
+        return 1;
     }
 
     if ($driver eq 'sqlite') {
@@ -625,15 +625,18 @@ sub _ensure_cache_table {
                 primary key (player_id, cache_key)
             )
         });
-        return;
+        return 1;
     }
 
-    my $table = eval { $schema->storage->dbh->selectrow_arrayref(q{
+    # For other drivers (e.g. PostgreSQL): check if the table already exists.
+    # If not, treat the cache as unavailable rather than dying, so callers can
+    # fall back to live projection.  Create the table via a migration first.
+    my $table = eval { $dbh->selectrow_arrayref(q{
         select 1 from equity_cache where 1 = 0
     }) };
-    return if $table || !$@;
+    return 1 if defined $table || !$@;
 
-    die 'equity_cache table is missing and automatic creation is only implemented for MySQL/SQLite';
+    return 0;
 }
 
 1;

@@ -39,10 +39,20 @@ sub _update_points_for_schema {
       : _update_points_portable($schema);
 
     my $cache_started = time();
-    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+    my $cache_error;
+    eval {
+        Bracket::Service::EquityProjection->refresh_default_cache($schema);
+        1;
+    } or do {
+        $cache_error = "$@";
+        chomp $cache_error if defined $cache_error;
+    };
     my $cache_elapsed = time() - $cache_started;
 
-    return _append_update_stat($stats, equity_cache => $cache_elapsed);
+    $stats = _append_update_stat($stats, equity_cache => $cache_elapsed);
+    $stats = _append_update_stat($stats, equity_cache_error => $cache_error)
+      if defined $cache_error && length $cache_error;
+    return $stats;
 }
 
 sub _update_points_mysql {
