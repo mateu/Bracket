@@ -28,6 +28,16 @@ my $dbh = $schema->storage->dbh;
 $dbh->sqlite_create_function('get_loser', 1, sub { return -1; });
 $dbh->sqlite_create_function('get_first_round_loser', 1, sub { return -1; });
 
+# Regression: max_left must be 0 (not an error) when no non-admin players have picks.
+{
+    my ($tl, $ml) = Bracket::Model::DBIC::count_player_teams_left($model);
+    is($ml, 0, 'count_player_teams_left: max_left is 0 when no non-admin players have picks');
+}
+{
+    my ($tl, $ml) = Bracket::Model::DBIC::count_player_final4_teams_left($model);
+    is($ml, 0, 'count_player_final4_teams_left: max_left is 0 when no non-admin players have picks');
+}
+
 my $player = $schema->resultset('Player')->create({
     email      => 'round-based-final4@example.com',
     password   => 'secret',
