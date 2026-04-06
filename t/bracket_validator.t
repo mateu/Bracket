@@ -37,6 +37,17 @@ my $invalid_region = Bracket::Service::BracketValidator->validate_region_payload
 ok(!$invalid_region->{ok}, 'invalid region payload fails');
 like(join(' ', @{$invalid_region->{errors}}), qr/not a valid advancement/, 'invalid region failure is continuity-related');
 
+my $outside_region = Bracket::Service::BracketValidator->validate_region_payload(
+    $schema,
+    $player_id,
+    1,
+    {
+        p16 => 17,
+    }
+);
+ok(!$outside_region->{ok}, 'region payload rejects out-of-scope game id');
+like(join(' ', @{$outside_region->{errors}}), qr/outside region 1/, 'region out-of-scope error is explicit');
+
 # Seed a full East path where UConn (team 15) advances deep, then ensure stale
 # downstream picks are rejected when an earlier game changes to Furman (team 16).
 for my $row (
@@ -166,6 +177,16 @@ my $invalid_final4 = Bracket::Service::BracketValidator->validate_final4_payload
 );
 ok(!$invalid_final4->{ok}, 'invalid final4 payload fails');
 like(join(' ', @{$invalid_final4->{errors}}), qr/not a valid advancement/, 'invalid final4 failure is continuity-related');
+
+my $outside_final4 = Bracket::Service::BracketValidator->validate_final4_payload(
+    $schema,
+    $player_id,
+    {
+        p1 => 1,
+    }
+);
+ok(!$outside_final4->{ok}, 'final4 payload rejects non-final4 game id');
+like(join(' ', @{$outside_final4->{errors}}), qr/not a Final Four game/, 'final4 out-of-scope error is explicit');
 
 my $bad_param = Bracket::Service::BracketValidator->validate_region_payload(
     $schema,

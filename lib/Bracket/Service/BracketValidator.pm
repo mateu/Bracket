@@ -15,41 +15,22 @@ sub validate_region_payload {
     return { ok => 0, errors => $parse_errors } if @{$parse_errors};
 
     my $region_game_ids = _region_game_ids_for_region($schema, $region_id);
-
-    my @errors;
-    my %existing = map { $_->game->id => $_->pick->id }
-      $schema->resultset('Pick')->search({ player => $player_id })->all;
-    my %effective = (%existing, %{$pick_map});
-
-    my @changed_games;
-    foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        if (!$region_game_ids->{$game_id}) {
-            push @errors, "Game ${game_id} is outside region ${region_id}";
-            next;
-        }
-        push @changed_games, $game_id;
-    }
-
-    my $games_to_validate = _affected_games_in_scope(
-        $schema,
-        \@changed_games,
-        sub {
+    my @errors = _validate_scoped_payload(
+        schema => $schema,
+        player_id => $player_id,
+        pick_map => $pick_map,
+        validation_region_id => $region_id,
+        is_in_scope => sub {
             my ($game_id) = @_;
             return $region_game_ids->{$game_id};
-        }
+        },
+        out_of_scope_error => sub {
+            my ($game_id) = @_;
+            return "Game ${game_id} is outside region ${region_id}";
+        },
     );
 
-    foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
-        next if !exists $effective{$game_id};
-
-        my $team_id = $effective{$game_id};
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $region_id, \%effective);
-    }
-
-    @errors = grep { defined $_ && $_ ne '' } @errors;
-    return @errors
-      ? { ok => 0, errors => \@errors }
-      : { ok => 1, normalized_picks => $pick_map };
+    return @errors ? { ok => 0, errors => \@errors } : { ok => 1, normalized_picks => $pick_map };
 }
 
 sub validate_final4_payload {
@@ -67,6 +48,34 @@ sub validate_final4_payload {
     }
 
     my %allowed_games = map { $_ => 1 } @{$final4_game_ids};
+    my @errors = _validate_scoped_payload(
+        schema => $schema,
+        player_id => $player_id,
+        pick_map => $pick_map,
+        validation_region_id => undef,
+        is_in_scope => sub {
+            my ($game_id) = @_;
+            return $allowed_games{$game_id};
+        },
+        out_of_scope_error => sub {
+            my ($game_id) = @_;
+            return "Game ${game_id} is not a Final Four game";
+        },
+    );
+
+    return @errors ? { ok => 0, errors => \@errors } : { ok => 1, normalized_picks => $pick_map };
+}
+
+sub _validate_scoped_payload {
+    my (%args) = @_;
+
+    my $schema = $args{schema};
+    my $player_id = $args{player_id};
+    my $pick_map = $args{pick_map} || {};
+    my $validation_region_id = $args{validation_region_id};
+    my $is_in_scope = $args{is_in_scope} || sub { return 0 };
+    my $out_of_scope_error = $args{out_of_scope_error} || sub { return 'Game is outside allowed scope' };
+
     my @errors;
     my %existing = map { $_->game->id => $_->pick->id }
       $schema->resultset('Pick')->search({ player => $player_id })->all;
@@ -74,33 +83,22 @@ sub validate_final4_payload {
 
     my @changed_games;
     foreach my $game_id (sort { $a <=> $b } keys %{$pick_map}) {
-        if (!$allowed_games{$game_id}) {
-            push @errors, "Game ${game_id} is not a Final Four game";
+        if (!$is_in_scope->($game_id)) {
+            push @errors, $out_of_scope_error->($game_id);
             next;
         }
         push @changed_games, $game_id;
     }
 
-    my $games_to_validate = _affected_games_in_scope(
-        $schema,
-        \@changed_games,
-        sub {
-            my ($game_id) = @_;
-            return $allowed_games{$game_id};
-        }
-    );
-
+    my $games_to_validate = _affected_games_in_scope($schema, \@changed_games, $is_in_scope);
     foreach my $game_id (sort { $a <=> $b } keys %{$games_to_validate}) {
         next if !exists $effective{$game_id};
 
         my $team_id = $effective{$game_id};
-        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, undef, \%effective);
+        push @errors, _validate_pick_for_game($schema, $game_id, $team_id, $validation_region_id, \%effective);
     }
 
-    @errors = grep { defined $_ && $_ ne '' } @errors;
-    return @errors
-      ? { ok => 0, errors => \@errors }
-      : { ok => 1, normalized_picks => $pick_map };
+    return grep { defined $_ && $_ ne '' } @errors;
 }
 
 sub _extract_pick_map {
