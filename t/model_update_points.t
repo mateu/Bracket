@@ -16,6 +16,11 @@ my $player = $schema->resultset('Player')->create({
     last_name  => 'Points',
 });
 
+$schema->resultset('Region')->create({
+    id   => 5,
+    name => 'Wildcard',
+});
+
 sub set_pick {
     my ($player_id, $game_id, $team_id) = @_;
     my ($pick) = $schema->resultset('Pick')->search({
@@ -70,7 +75,7 @@ ok($region1_score, 'region score created for player');
 is($region1_score->get_column('points'), 47, 'player receives expected region points from current-round state');
 
 my $all_region_scores = $schema->resultset('RegionScore')->search({ player => $player->id })->count;
-is($all_region_scores, 4, 'portable path maintains all region score rows per player');
+is($all_region_scores, 5, 'portable path maintains region score rows for all regions in schema');
 
 my $player_row = $schema->resultset('Player')->find($player->id);
 is($player_row->get_column('points'), 47, 'player total points updated from region scores');

@@ -169,6 +169,7 @@ sub _update_points_portable {
     my %times;
     my $current_time  = time();
     my $previous_time = $current_time;
+    my @region_ids = _region_ids_for_schema($schema);
 
     my @perfect_picks = $schema->resultset('Pick')->search(
         { player => 1 },
@@ -282,7 +283,7 @@ sub _update_points_portable {
     $schema->txn_do(sub {
         foreach my $player ($schema->resultset('Player')->search({})->all) {
             my $player_id = $player->get_column('id');
-            foreach my $region_id (1 .. 4) {
+            foreach my $region_id (@region_ids) {
                 my $points = $points_for{$player_id}{$region_id} || 0;
                 $schema->resultset('RegionScore')->update_or_create({
                     player => $player_id,
@@ -299,10 +300,7 @@ sub _update_points_portable {
     $schema->txn_do(sub {
         foreach my $player ($schema->resultset('Player')->search({})->all) {
             my $player_id = $player->get_column('id');
-            my $total_points = 0;
-            foreach my $region_id (1 .. 4) {
-                $total_points += $points_for{$player_id}{$region_id} || 0;
-            }
+            my $total_points = sum(values %{$points_for{$player_id} || {}}) || 0;
             $player->update({ points => $total_points });
         }
     });
@@ -345,6 +343,7 @@ Displayed on Player home page.
 
 sub count_region_picks {
     my ($self, $player_id) = @_;
+    my @region_ids = _region_ids_for_schema($self->schema);
     my $storage = $self->schema->storage;
     return $storage->dbh_do(
         sub {
@@ -360,7 +359,7 @@ sub count_region_picks {
             ;'
             );
             $sth->execute($player_id) or die $sth->errstr;;
-            my $picks_per_region = { 1 => 0, 2 => 0, 3 => 0, 4 => 0 };
+            my $picks_per_region = { map { $_ => 0 } @region_ids };
             my $result = $sth->fetchall_arrayref;
             foreach my $row (@{$result}) {
                 $picks_per_region->{$row->[0]} = $row->[1];
@@ -632,6 +631,13 @@ sub count_final4_picks {
         $where,
         { join => 'game' }
     )->count;
+}
+
+sub _region_ids_for_schema {
+    my ($schema) = @_;
+    return () if !$schema;
+    return map { $_->id }
+      $schema->resultset('Region')->search({}, { order_by => 'id' })->all;
 }
 
 =head1 NAME
