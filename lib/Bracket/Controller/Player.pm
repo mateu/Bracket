@@ -127,7 +127,9 @@ sub all : Global {
       $projection_metrics->{act_by_player} = $c->stash->{teams_left_per_player} || {};
       $projection_metrics->{fi4_by_player} = $c->stash->{final4_teams_left_per_player} || {};
 
-      my $projection = Bracket::Service::EquityProjection->project(
+      my $projection = Bracket::Service::EquityProjection->load_default_cache(
+          $c->model('DBIC')->schema
+      ) || Bracket::Service::EquityProjection->project(
           $c->model('DBIC')->schema,
           {
               iterations => 2000,
