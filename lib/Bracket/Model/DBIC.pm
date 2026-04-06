@@ -5,6 +5,7 @@ use base 'Catalyst::Model::DBIC::Schema';
 use List::Util qw( first max sum );
 use Time::HiRes qw/ time /;
 use Bracket::Service::BracketStructure;
+use Bracket::Service::EquityProjection;
 
 __PACKAGE__->config(schema_class => 'Bracket::Schema',);
 
@@ -33,9 +34,15 @@ sub update_points {
 sub _update_points_for_schema {
     my ($schema) = @_;
     my $driver = lc($schema->storage->dbh->{Driver}->{Name} || '');
-    return $driver eq 'mysql'
+    my $stats = $driver eq 'mysql'
       ? _update_points_mysql($schema)
       : _update_points_portable($schema);
+
+    my $cache_started = time();
+    Bracket::Service::EquityProjection->refresh_default_cache($schema);
+    my $cache_elapsed = time() - $cache_started;
+
+    return _append_update_stat($stats, equity_cache => $cache_elapsed);
 }
 
 sub _update_points_mysql {
@@ -306,6 +313,19 @@ sub _format_update_stats {
     return join('<br>', @stats);
 }
 
+sub _append_update_stat {
+    my ($stats, $label, $seconds) = @_;
+    $stats ||= _format_update_stats({});
+    $seconds ||= 0;
+
+    my $new_ms = sprintf('%.1f', 1000 * $seconds);
+    if ($stats =~ s{<u>total time: ([0-9.]+)</u>}{'<u>total time: ' . sprintf('%.1f', $1 + $new_ms) . '</u>'}e) {
+        return $stats . '<br>' . $label . ': ' . $new_ms;
+    }
+
+    return $stats . '<br>' . $label . ': ' . $new_ms;
+}
+
 =heads2 count_region_picks
 
 Count up how many picks a player has made for each region.
@@ -380,32 +400,8 @@ Displayed on All Players home page.
 
 sub count_player_picks_correct {
     my $self = shift;
-    my $storage = $self->schema->storage;
-    return $storage->dbh_do(
-        sub {
-            my $self = shift;
-            my $dbh  = shift;
-            my $sth  = $dbh->prepare('
-            select player_picks.player, count(*)
-              from pick player_picks, pick perfect_picks, game game, team team
-             where perfect_picks.pick   = player_picks.pick 
-               and perfect_picks.game   = player_picks.game 
-               and player_picks.game    = game.id
-               and player_picks.pick    = team.id
-               and perfect_picks.player = 1
-          group by player_picks.player
-          ;'
-          );
-          $sth->execute() or die $sth->errstr;
-          my $picks_per_player = {};
-          my $result = $sth->fetchall_arrayref;
-          foreach my $row (@{$result}) {
-              $picks_per_player->{$row->[0]} = $row->[1];
-          }
-          my $max_correct = max map { $picks_per_player->{$_} } grep { $_ != 1 } keys %{$picks_per_player};
-          return $picks_per_player, $max_correct;
-        }
-    );
+    my ($correct_picks, $max_correct) = Bracket::Model::DBIC::count_player_pick_accuracy_metrics($self);
+    return $correct_picks, $max_correct;
 }
 
 =heads2 count_player_picks_upset
@@ -416,33 +412,8 @@ Count up how many upset picks a player has made correct so far.
 
 sub count_player_picks_upset {
     my $self = shift;
-    my $storage = $self->schema->storage;
-    return $storage->dbh_do(
-        sub {
-            my $self = shift;
-            my $dbh  = shift;
-            my $sth  = $dbh->prepare('
-            select player_picks.player, count(*)
-              from pick player_picks, pick perfect_picks, game game, team team
-             where perfect_picks.pick   = player_picks.pick
-               and perfect_picks.game   = player_picks.game
-               and player_picks.game    = game.id
-               and player_picks.pick    = team.id
-               and perfect_picks.player = 1
-               and game.lower_seed      = 1
-          group by player_picks.player
-          ;'
-          );
-          $sth->execute() or die $sth->errstr;
-          my $upset_picks_per_player = {};
-          my $result = $sth->fetchall_arrayref;
-          foreach my $row (@{$result}) {
-              $upset_picks_per_player->{$row->[0]} = $row->[1];
-          }
-          my $max_upsets = max map { $upset_picks_per_player->{$_} } grep { $_ != 1 } keys %{$upset_picks_per_player};
-          return $upset_picks_per_player, $max_upsets;
-        }
-    );
+    my (undef, undef, $upset_picks, $max_upsets) = Bracket::Model::DBIC::count_player_pick_accuracy_metrics($self);
+    return $upset_picks, $max_upsets;
 }
 
 =heads2 count_player_teams_left
@@ -454,55 +425,8 @@ in the next game.
 
 sub count_player_teams_left {
     my $self = shift;
-    my $storage = $self->schema->storage;
-    return $storage->dbh_do(
-        sub {
-            my $self = shift;
-            my $dbh  = shift;
-            my $sth  = $dbh->prepare('
-                with games_played as (
-                    select p.game, g.round
-                    from pick p
-                    join game g
-                    on p.game = g.id
-                    where p.player = 1
-                ),
-                losing_teams as (
-                    select
-                    CASE 
-                        WHEN round > 1 THEN get_loser(game)
-                        ELSE get_first_round_loser(game)
-                        END as team
-                    from games_played
-                ),
-                games_remaining as (
-                    select p.game
-                    from pick p
-                    where p.player = 24
-                    and p.game not in (select game from games_played)
-                ),
-                player_teams_remaining as (
-                    select player, pick
-                    from pick
-                    where game in (select game from games_remaining)
-                    and pick not in (select team from losing_teams)
-                    group by player, pick
-                )
-                select player, count(*) as teams_left
-                from player_teams_remaining
-                group by player
-          ;'
-          );
-          $sth->execute() or die $sth->errstr;
-          my $teams_left_per_player = {};
-          my $result = $sth->fetchall_arrayref;
-          foreach my $row (@{$result}) {
-              $teams_left_per_player->{$row->[0]} = $row->[1];
-          }
-          my $max_left = max map { $teams_left_per_player->{$_} } grep { $_ != 1 } keys %{$teams_left_per_player};
-          return $teams_left_per_player, $max_left;
-        }
-    );
+    my ($teams_left, $max_left) = Bracket::Model::DBIC::count_player_remaining_team_metrics($self);
+    return $teams_left, $max_left;
 }
 
 =heads2 count_player_final4_teams_left
@@ -513,6 +437,53 @@ in the next game.
 =cut
 
 sub count_player_final4_teams_left {
+    my $self = shift;
+    my (undef, undef, $final4_teams_left, $max_final4_left) = Bracket::Model::DBIC::count_player_remaining_team_metrics($self);
+    return $final4_teams_left, $max_final4_left;
+}
+
+sub count_player_pick_accuracy_metrics {
+    my $self = shift;
+    my $storage = $self->schema->storage;
+    return $storage->dbh_do(
+        sub {
+            my $self = shift;
+            my $dbh  = shift;
+            my $sth  = $dbh->prepare('
+            select player_picks.player,
+                   count(*) as correct_picks,
+                   sum(case when game.lower_seed = 1 then 1 else 0 end) as upset_picks
+              from pick player_picks
+              join pick perfect_picks
+                on perfect_picks.pick = player_picks.pick
+               and perfect_picks.game = player_picks.game
+              join game
+                on player_picks.game = game.id
+              join team
+                on player_picks.pick = team.id
+             where perfect_picks.player = 1
+          group by player_picks.player
+          ;'
+          );
+            $sth->execute() or die $sth->errstr;
+
+            my $correct_picks_per_player = {};
+            my $upset_picks_per_player = {};
+            my $result = $sth->fetchall_arrayref;
+            foreach my $row (@{$result}) {
+                my $player_id = $row->[0];
+                $correct_picks_per_player->{$player_id} = $row->[1] || 0;
+                $upset_picks_per_player->{$player_id} = $row->[2] || 0;
+            }
+
+            my $max_correct = _max_non_admin_player_metric($correct_picks_per_player);
+            my $max_upsets = _max_non_admin_player_metric($upset_picks_per_player);
+            return $correct_picks_per_player, $max_correct, $upset_picks_per_player, $max_upsets;
+        }
+    );
+}
+
+sub count_player_remaining_team_metrics {
     my $self = shift;
     my $storage = $self->schema->storage;
     return $storage->dbh_do(
@@ -542,32 +513,44 @@ sub count_player_final4_teams_left {
                     and p.game not in (select game from games_played)
                 ),
                 player_teams_remaining as (
-                    select player, pick
+                    select pick.player, pick.pick, max(game.round) as max_round
                     from pick
-                    where game in (select game from games_remaining)
-                    and game in (
-                        select id
-                        from game
-                        where round >= 4
-                    )
-                    and pick not in (select team from losing_teams)
-                    group by player, pick
+                    join game
+                    on pick.game = game.id
+                    where pick.game in (select game from games_remaining)
+                    and pick.pick not in (select team from losing_teams)
+                    group by pick.player, pick.pick
                 )
-                select player, count(*) as teams_left
+                select player,
+                       count(*) as teams_left,
+                       sum(case when max_round >= 4 then 1 else 0 end) as final4_teams_left
                 from player_teams_remaining
                 group by player
           ;'
           );
-          $sth->execute() or die $sth->errstr;
-          my $final4_teams_left_per_player = {};
-          my $result = $sth->fetchall_arrayref;
-          foreach my $row (@{$result}) {
-              $final4_teams_left_per_player->{$row->[0]} = $row->[1];
-          }
-          my $max_left = max map { $final4_teams_left_per_player->{$_} } grep { $_ != 1 } keys %{$final4_teams_left_per_player};
-          return $final4_teams_left_per_player, $max_left;
+            $sth->execute() or die $sth->errstr;
+
+            my $teams_left_per_player = {};
+            my $final4_teams_left_per_player = {};
+            my $result = $sth->fetchall_arrayref;
+            foreach my $row (@{$result}) {
+                my $player_id = $row->[0];
+                $teams_left_per_player->{$player_id} = $row->[1] || 0;
+                $final4_teams_left_per_player->{$player_id} = $row->[2] || 0;
+            }
+
+            my $max_left = _max_non_admin_player_metric($teams_left_per_player);
+            my $max_final4_left = _max_non_admin_player_metric($final4_teams_left_per_player);
+            return $teams_left_per_player, $max_left, $final4_teams_left_per_player, $max_final4_left;
         }
     );
+}
+
+sub _max_non_admin_player_metric {
+    my ($metrics) = @_;
+    $metrics ||= {};
+    my @values = map { $metrics->{$_} } grep { $_ != 1 } keys %{$metrics};
+    return @values ? max(@values) : 0;
 }
 
 =heads2 count_final4_picks

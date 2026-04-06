@@ -98,9 +98,9 @@
 <br />
 	</td>
     <td style="font-size:0.85em; text-align:center; white-space:nowrap;">
-      [% SET champion_pick = champion_pick_by_player.$row_player_id %]
-      [% IF champion_pick %]
-        <a class="player-link" href="[% c.uri_for("/final4/view/$player.id") %]">[% champion_pick.name %]</a>
+      [% SET champion_name = champion_display_name_by_player.$row_player_id %]
+      [% IF champion_name %]
+        <a class="player-link" href="[% c.uri_for("/final4/view/$player.id") %]">[% champion_name %]</a>
       [% ELSE %]
         --
       [% END %]

@@ -4,7 +4,6 @@ use Moose;
 BEGIN { extends 'Catalyst::Controller' }
 use Bracket::Service::BracketStructure;
 use Bracket::Service::EquityProjection;
-use Bracket::Service::BracketStructure;
 
 =head1 NAME
 
@@ -99,35 +98,44 @@ sub all : Global {
     my $championship_game_id = $structure->{championship_game_id};
     $c->stash->{championship_game_id} = $championship_game_id;
 
-    my %champion_pick_by_player;
+    my %champion_display_name_by_player;
     my %champion_name_by_player;
     if ($championship_game_id) {
-        my @champion_picks = $c->model('DBIC::Pick')->search({ game => $championship_game_id })->all;
+        my @champion_picks = $c->model('DBIC::Pick')->search(
+            { 'me.game' => $championship_game_id },
+            {
+                join     => ['pick'],
+                columns  => ['me.player'],
+                '+select' => ['pick.name'],
+                '+as'    => ['team_name'],
+            }
+        )->all;
         foreach my $pick (@champion_picks) {
-            my $player_id = $pick->player->id;
-            my $team = $pick->pick;
-            $champion_pick_by_player{$player_id} = $team;
-            $champion_name_by_player{$player_id} = lc($team->name || '');
+            my $player_id = $pick->get_column('player');
+            my $team_name = $pick->get_column('team_name') || '';
+            $champion_display_name_by_player{$player_id} = $team_name;
+            $champion_name_by_player{$player_id} = lc($team_name);
         }
     }
-    $c->stash->{champion_pick_by_player} = \%champion_pick_by_player;
+    $c->stash->{champion_display_name_by_player} = \%champion_display_name_by_player;
+    $c->stash->{champion_name_by_player} = \%champion_name_by_player;
 
     my $projection_metrics = {
         champion_name_by_player => \%champion_name_by_player,
     };
 
-	if ($c->stash->{is_game_time}) {
-      # Count of correct picks per player
-      ($c->stash->{correct_picks_per_player}, $c->stash->{max_correct}) = $c->model('DBIC')->count_player_picks_correct;
-      ($c->stash->{upset_picks_per_player}, $c->stash->{max_upsets}) = $c->model('DBIC')->count_player_picks_upset;
-      ($c->stash->{teams_left_per_player}, $c->stash->{max_left}) = $c->model('DBIC')->count_player_teams_left;
-      ($c->stash->{final4_teams_left_per_player}, $c->stash->{max_final4_left}) = $c->model('DBIC')->count_player_final4_teams_left;
+		if ($c->stash->{is_game_time}) {
+	      # Count live leaderboard metrics with two aggregate queries instead of four.
+	      ($c->stash->{correct_picks_per_player}, $c->stash->{max_correct}, $c->stash->{upset_picks_per_player}, $c->stash->{max_upsets}) = $c->model('DBIC')->count_player_pick_accuracy_metrics;
+	      ($c->stash->{teams_left_per_player}, $c->stash->{max_left}, $c->stash->{final4_teams_left_per_player}, $c->stash->{max_final4_left}) = $c->model('DBIC')->count_player_remaining_team_metrics;
       $projection_metrics->{cor_by_player} = $c->stash->{correct_picks_per_player} || {};
       $projection_metrics->{ups_by_player} = $c->stash->{upset_picks_per_player} || {};
       $projection_metrics->{act_by_player} = $c->stash->{teams_left_per_player} || {};
       $projection_metrics->{fi4_by_player} = $c->stash->{final4_teams_left_per_player} || {};
 
-      my $projection = Bracket::Service::EquityProjection->project(
+      my $projection = Bracket::Service::EquityProjection->load_default_cache(
+          $c->model('DBIC')->schema
+      ) || Bracket::Service::EquityProjection->project(
           $c->model('DBIC')->schema,
           {
               iterations => 2000,
