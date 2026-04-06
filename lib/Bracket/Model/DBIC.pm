@@ -506,10 +506,9 @@ sub count_player_teams_left {
                     from games_played
                 ),
                 games_remaining as (
-                    select p.game
-                    from pick p
-                    where p.player = 24
-                    and p.game not in (select game from games_played)
+                    select g.id as game
+                    from game g
+                    where g.id not in (select game from games_played)
                 ),
                 player_teams_remaining as (
                     select player, pick
@@ -529,7 +528,10 @@ sub count_player_teams_left {
           foreach my $row (@{$result}) {
               $teams_left_per_player->{$row->[0]} = $row->[1];
           }
-          my $max_left = max map { $teams_left_per_player->{$_} } grep { $_ != 1 } keys %{$teams_left_per_player};
+          my @players = grep { $_ != 1 } keys %{$teams_left_per_player};
+          my $max_left = @players
+            ? max(map { $teams_left_per_player->{$_} } @players)
+            : 0;
           return $teams_left_per_player, $max_left;
         }
     );
@@ -566,10 +568,9 @@ sub count_player_final4_teams_left {
                     from games_played
                 ),
                 games_remaining as (
-                    select p.game
-                    from pick p
-                    where p.player = 24
-                    and p.game not in (select game from games_played)
+                    select g.id as game
+                    from game g
+                    where g.id not in (select game from games_played)
                 ),
                 player_teams_remaining as (
                     select player, pick
@@ -594,7 +595,10 @@ sub count_player_final4_teams_left {
           foreach my $row (@{$result}) {
               $final4_teams_left_per_player->{$row->[0]} = $row->[1];
           }
-          my $max_left = max map { $final4_teams_left_per_player->{$_} } grep { $_ != 1 } keys %{$final4_teams_left_per_player};
+          my @players = grep { $_ != 1 } keys %{$final4_teams_left_per_player};
+          my $max_left = @players
+            ? max(map { $final4_teams_left_per_player->{$_} } @players)
+            : 0;
           return $final4_teams_left_per_player, $max_left;
         }
     );
