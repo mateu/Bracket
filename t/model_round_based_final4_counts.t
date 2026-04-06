@@ -64,21 +64,11 @@ $schema->resultset('Team')->create({
     round_out => 7,
 });
 
-# Create a player with id 24 to satisfy foreign key constraints on Pick.
-$schema->resultset('Player')->create({
-    id         => 24,
-    email      => 'player-24@example.com',
-    password   => 'secret',
-    first_name => 'Player',
-    last_name  => 'TwentyFour',
-});
-
-# player 24 drives games_remaining in count_player_final4_teams_left.
-$schema->resultset('Pick')->create({
-    player => 24,
-    game   => $round4_game_id,
-    pick   => $round4_team_id,
-});
+# Regression: teams-left queries should not rely on a sentinel player id.
+ok(
+    !$schema->resultset('Player')->find(24),
+    'test fixture intentionally omits player 24 sentinel',
+);
 $schema->resultset('Pick')->create({
     player => $player->id,
     game   => $round4_game_id,
@@ -94,6 +84,17 @@ is(
 ok(
     defined $max_left && $max_left >= 1,
     'count_player_final4_teams_left reports max_left from computed map',
+);
+
+my ($all_teams_left, $all_max_left) = Bracket::Model::DBIC::count_player_teams_left($model);
+is(
+    ($all_teams_left->{$player->id} || 0) >= 1,
+    1,
+    'count_player_teams_left no longer depends on sentinel player rows',
+);
+ok(
+    defined $all_max_left && $all_max_left >= 1,
+    'count_player_teams_left reports max_left without sentinel player data',
 );
 
 done_testing();
