@@ -25,66 +25,7 @@ sub make : Local {
         return;
     }
 
-    my $player = $c->model('DBIC::Player')->find($player_id);
-    $c->stash->{player} = $player;
-
-    # Get the player's regional winner picks.  Later we deal w/ whether they actually won or not.
-    # region_id => game_id
-    my $structure = Bracket::Service::BracketStructure->describe_bracket(
-        $c->model('DBIC')->schema
-    );
-    my $region_winner_picks = $structure->{region_winner_games_by_region};
-    $c->stash->{region_winner_game_id_for} = $region_winner_picks;
-    $c->stash->{semifinal_game_ids}        = $structure->{semifinal_game_ids};
-    $c->stash->{championship_game_id}      = $structure->{championship_game_id};
-    $c->stash->{game_routes}               = $structure->{game_routes};
-    foreach my $region_id (sort { $a <=> $b } keys %{$region_winner_picks}) {
-        my $region_name = 'region' . "_${region_id}";
-        my $game        = $region_winner_picks->{$region_id};
-        $c->stash->{$region_name} =
-          $c->model('DBIC::Pick')->search({ player => $player_id, game => $game })->first;
-    }
-
-    # Get all player picks for loading when in edit of existing picks mode
-    my @picks = $c->model('DBIC::Pick')->search({ player => $player_id });
-    my %picks;
-    foreach my $pick (@picks) {
-        $picks{ $pick->game->id } = $pick->pick;
-    }
-    $c->stash->{picks} = \%picks;
-
-    # Create Class for Final Four Teams
-    my %class_for;
-    my %actual_winner_for;
-    foreach my $player_pick (@picks) {
-        my ($winning_pick) =
-          $c->model('DBIC::Pick')->search({ player => 1, game => $player_pick->game->id });
-        if (defined $winning_pick) {
-            $actual_winner_for{ $player_pick->game->id } = $winning_pick->pick;
-            if ($winning_pick->pick->id == $player_pick->pick->id) {
-                $class_for{ $player_pick->game->id } = 'in';
-            }
-            else {
-                $class_for{ $player_pick->game->id } = 'out';
-            }
-        }
-        else {
-            if ($player_pick->game->round >= $player_pick->pick->round_out) {
-
-                #if ($player_pick->game == 63) {
-#                warn "round: " . $player_pick->game->round . "\n";
-#                warn "round_out: " . $player_pick->pick->round_out . "\n";
-
-                #}
-                $class_for{ $player_pick->game->id } = 'out';
-            }
-            else {
-                $class_for{ $player_pick->game->id } = 'pending';
-            }
-        }
-    }
-    $c->stash->{actual_winner_for} = \%actual_winner_for;
-    $c->stash->{class_for} = \%class_for;
+    $self->_stash_final4_context($c, $player_id);
 
     # Inform to load final 4 javascript
     $c->stash->{final_4_javascript} = 1;
@@ -165,10 +106,21 @@ sub save_picks : Local {
 sub view : Local {
     my ($self, $c, $player_id) = @_;
 
+    $self->_stash_final4_context($c, $player_id);
+    $c->stash->{regions}      = $c->model('DBIC::Region')->search({},{order_by => 'id'});
+
+    # Turn off javascript
+    $c->stash->{no_javascript} = 1;
+    $c->stash->{template}      = 'final4/view_final4_picks.tt';
+    return;
+}
+
+sub _stash_final4_context {
+    my ($self, $c, $player_id) = @_;
+
     my $player = $c->model('DBIC::Player')->find($player_id);
     $c->stash->{player} = $player;
 
-    # Get the player's regional winner picks.
     my $structure = Bracket::Service::BracketStructure->describe_bracket(
         $c->model('DBIC')->schema
     );
@@ -184,18 +136,23 @@ sub view : Local {
           $c->model('DBIC::Pick')->search({ player => $player_id, game => $game })->first;
     }
 
-    # Get all player picks for loading when in edit of existing picks mode
     my @picks = $c->model('DBIC::Pick')->search({ player => $player_id });
-    my %picks;
+    my %pick_for_game;
     foreach my $pick (@picks) {
-        $picks{ $pick->game->id } = $pick->pick;
+        $pick_for_game{ $pick->game->id } = $pick->pick;
     }
-    $c->stash->{picks} = \%picks;
+    $c->stash->{picks} = \%pick_for_game;
 
-    # Create Class for Final Four Teams
-    my %class_for;
-    my %actual_winner_for;
-    foreach my $player_pick (@picks) {
+    my ($class_for, $actual_winner_for) = $self->_status_for_picks($c, \@picks);
+    $c->stash->{actual_winner_for} = $actual_winner_for;
+    $c->stash->{class_for}         = $class_for;
+}
+
+sub _status_for_picks {
+    my ($self, $c, $pick_rows) = @_;
+
+    my (%class_for, %actual_winner_for);
+    foreach my $player_pick (@{$pick_rows || []}) {
         my ($winning_pick) =
           $c->model('DBIC::Pick')->search({ player => 1, game => $player_pick->game->id });
         if (defined $winning_pick) {
@@ -206,24 +163,18 @@ sub view : Local {
             else {
                 $class_for{ $player_pick->game->id } = 'out';
             }
+            next;
+        }
+
+        if ($player_pick->game->round >= $player_pick->pick->round_out) {
+            $class_for{ $player_pick->game->id } = 'out';
         }
         else {
-            if ($player_pick->game->round >= $player_pick->pick->round_out) {
-                $class_for{ $player_pick->game->id } = 'out';
-            }
-            else {
-                $class_for{ $player_pick->game->id } = 'pending';
-            }
+            $class_for{ $player_pick->game->id } = 'pending';
         }
     }
-    $c->stash->{actual_winner_for} = \%actual_winner_for;
-    $c->stash->{class_for} = \%class_for;
-    $c->stash->{regions}      = $c->model('DBIC::Region')->search({},{order_by => 'id'});
 
-    # Turn off javascript
-    $c->stash->{no_javascript} = 1;
-    $c->stash->{template}      = 'final4/view_final4_picks.tt';
-    return;
+    return (\%class_for, \%actual_winner_for);
 }
 
 =head1 AUTHOR
