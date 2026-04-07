@@ -41,6 +41,9 @@ sub update_player_points : Global {
 
     $c->stash->{template} = 'player/all_home.tt';
     my @players = $c->model('DBIC::Player')->all;
+    my @region_ids = map { $_->id }
+      $c->model('DBIC')->schema->resultset('Region')->search({}, { order_by => 'id' })->all;
+    @region_ids = (1 .. 4) unless @region_ids;
 
     # Get player scores
     foreach my $player (@players) {
@@ -52,7 +55,7 @@ sub update_player_points : Global {
         my $points_ref = $c->forward('player_points', [ $player->id ]);
         $player->points($points_ref->[0] || 0);
         $player->update;
-        foreach my $region_id (1 .. 4) {
+        foreach my $region_id (@region_ids) {
             my $region_score = $c->model('DBIC::RegionScore')->update_or_create(
                 {
                     player => $player->id,
@@ -138,7 +141,9 @@ sub incomplete_submissions : Global {
     my $expected_region_picks_by_region = $pick_targets->{region_picks_by_region} || {};
     my @region_ids = sort { $a <=> $b } keys %{$expected_region_picks_by_region};
     if (!@region_ids) {
-        @region_ids = (1 .. 4);
+        @region_ids = map { $_->id }
+          $c->model('DBIC')->schema->resultset('Region')->search({}, { order_by => 'id' })->all;
+        @region_ids = (1 .. 4) if !@region_ids;
         $expected_region_picks_by_region = {
             map { $_ => 15 } @region_ids
         };

@@ -62,7 +62,7 @@ use Bracket::Service::BracketStructure;
 
     sub count_region_picks {
         my ($self, $player_id) = @_;
-        my %counts = (1 => 0, 2 => 0, 3 => 0, 4 => 0);
+        my %counts = map { $_->id => 0 } $self->{schema}->resultset('Region')->search({})->all;
         my $rs = $self->{schema}->resultset('Pick')->search(
             {
                 'me.player' => $player_id,
