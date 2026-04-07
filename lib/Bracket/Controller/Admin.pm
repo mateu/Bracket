@@ -43,6 +43,7 @@ sub update_player_points : Global {
     my @players = $c->model('DBIC::Player')->all;
     my @region_ids = map { $_->id }
       $c->model('DBIC')->schema->resultset('Region')->search({}, { order_by => 'id' })->all;
+    @region_ids = (1 .. 4) unless @region_ids;
 
     # Get player scores
     foreach my $player (@players) {

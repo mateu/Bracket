@@ -170,6 +170,7 @@ sub _update_points_portable {
     my $current_time  = time();
     my $previous_time = $current_time;
     my @region_ids = _region_ids_for_schema($schema);
+    @region_ids = (1 .. 4) unless @region_ids;
 
     my @perfect_picks = $schema->resultset('Pick')->search(
         { player => 1 },
@@ -344,6 +345,7 @@ Displayed on Player home page.
 sub count_region_picks {
     my ($self, $player_id) = @_;
     my @region_ids = _region_ids_for_schema($self->schema);
+    @region_ids = (1 .. 4) unless @region_ids;
     my $storage = $self->schema->storage;
     return $storage->dbh_do(
         sub {
